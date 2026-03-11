@@ -1,4 +1,6 @@
-export const GET_SERVICES = /*graphql*/ `
+import { gql } from "graphql-request";
+
+export const GET_SERVICES = gql`
   query GetServices {
     services {
       id
@@ -14,7 +16,24 @@ export const GET_SERVICES = /*graphql*/ `
   }
 `;
 
-export const GET_SERVICE = /*graphql*/ `
+export const GET_DELETED_SERVICES = gql`
+  query GetDeletedServices {
+    deletedServices {
+      id
+      name
+      category
+      description
+      logoUrl
+      isActive
+      showOnHomepage
+      createdAt
+      updatedAt
+      deletedAt
+    }
+  }
+`;
+
+export const GET_SERVICE = gql`
   query GetService($id: ID!) {
     service(id: $id) {
       id
@@ -36,7 +55,7 @@ export const GET_SERVICE = /*graphql*/ `
   }
 `;
 
-export const CREATE_SERVICE = /*graphql*/ `
+export const CREATE_SERVICE = gql`
   mutation CreateService($input: CreateServiceInput!) {
     createService(input: $input) {
       id
@@ -51,7 +70,7 @@ export const CREATE_SERVICE = /*graphql*/ `
   }
 `;
 
-export const UPDATE_SERVICE = /*graphql*/ `
+export const UPDATE_SERVICE = gql`
   mutation UpdateService($id: ID!, $input: UpdateServiceInput!) {
     updateService(id: $id, input: $input) {
       id
@@ -66,9 +85,25 @@ export const UPDATE_SERVICE = /*graphql*/ `
   }
 `;
 
-export const DELETE_SERVICE = /*graphql*/ `
-  mutation DeleteService($id: ID!) {
-    deleteService(id: $id)
+export const DELETE_SERVICE = gql`
+  mutation DeleteService($id: ID!, $force: Boolean) {
+    deleteService(id: $id, force: $force)
+  }
+`;
+
+export const RESTORE_SERVICE = gql`
+  mutation RestoreService($id: ID!) {
+    restoreService(id: $id) {
+      id
+      name
+      category
+      description
+      logoUrl
+      isActive
+      showOnHomepage
+      createdAt
+      updatedAt
+    }
   }
 `;
 
@@ -83,6 +118,7 @@ export interface ServiceDto {
   showOnHomepage: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface CreateServiceInput {

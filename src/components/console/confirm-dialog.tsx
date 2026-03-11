@@ -1,12 +1,13 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -14,8 +15,9 @@ interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmLabel?: string;
+  confirmVariant?: "destructive" | "default";
   onConfirm: () => void;
   loading?: boolean;
 }
@@ -26,6 +28,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel = "Supprimer",
+  confirmVariant = "destructive",
   onConfirm,
   loading,
 }: ConfirmDialogProps) {
@@ -34,7 +37,9 @@ export function ConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription asChild>
+            <div>{description}</div>
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
           <Button
@@ -44,7 +49,11 @@ export function ConfirmDialog({
           >
             Annuler
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={loading}>
+          <Button
+            variant={confirmVariant}
+            onClick={onConfirm}
+            disabled={loading}
+          >
             {loading ? "En cours…" : confirmLabel}
           </Button>
         </DialogFooter>

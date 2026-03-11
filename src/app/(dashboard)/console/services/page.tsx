@@ -12,6 +12,7 @@ export default async function ServicesPage() {
     ...s,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
+    deletedAt: s.deletedAt?.toISOString() ?? null,
   }));
   return <ServicesEditor initialData={services} defaultCurrency={currency} />;
 }

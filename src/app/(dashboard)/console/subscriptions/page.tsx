@@ -49,6 +49,7 @@ export default async function SubscriptionsPage() {
     logoUrl: s.logoUrl ?? null,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
+    deletedAt: s.deletedAt?.toISOString() ?? null,
   }));
 
   const clients: ClientDto[] = clientRows.map((c) => ({
@@ -73,6 +74,7 @@ export default async function SubscriptionsPage() {
     expiresAt: p.expiresAt ? p.expiresAt.toISOString() : null,
     services: [],
     plans: [],
+    showOnHomepage: p.showOnHomepage,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   }));

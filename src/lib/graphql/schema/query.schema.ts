@@ -3,6 +3,7 @@ export const querySchema = /* GraphQL */ `
     # Services
     services: [Service!]!
     service(id: ID!): Service
+    deletedServices: [Service!]!
 
     # Plans
     plans(serviceId: ID, promotionId: ID): [Plan!]!

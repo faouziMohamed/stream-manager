@@ -4,8 +4,9 @@ import {
   promotions,
   promotionServices,
   services,
+  subscriptions,
 } from "@/lib/db/tables/subscription-management.table";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { createLogger } from "@/lib/logger";
 
@@ -20,11 +21,19 @@ export type CreateServiceInput = {
 };
 
 export type UpdateServiceInput = Partial<
-  CreateServiceInput & { isActive: boolean; showOnHomepage: boolean }
+  CreateServiceInput & {
+    isActive: boolean;
+    showOnHomepage: boolean;
+    deletedAt: Date | null;
+  }
 >;
 
 export async function getAllServices() {
-  return db.select().from(services).orderBy(services.name);
+  return db
+    .select()
+    .from(services)
+    .where(isNull(services.deletedAt))
+    .orderBy(services.name);
 }
 
 /** Only active services that are flagged to show on the public homepage. */
@@ -32,8 +41,22 @@ export async function getPublicServices() {
   return db
     .select()
     .from(services)
-    .where(and(eq(services.isActive, true), eq(services.showOnHomepage, true)))
+    .where(
+      and(
+        eq(services.isActive, true),
+        eq(services.showOnHomepage, true),
+        isNull(services.deletedAt),
+      ),
+    )
     .orderBy(services.name);
+}
+
+export async function getDeletedServices() {
+  return db
+    .select()
+    .from(services)
+    .where(isNotNull(services.deletedAt))
+    .orderBy(services.deletedAt);
 }
 
 export async function getServiceById(id: string) {
@@ -71,10 +94,56 @@ export async function updateService(id: string, input: UpdateServiceInput) {
   return service ?? null;
 }
 
-export async function deleteService(id: string) {
-  await db.delete(services).where(eq(services.id, id));
-  logger.info({ id }, "Deleted service");
+export async function softDeleteService(id: string) {
+  await db
+    .update(services)
+    .set({ deletedAt: new Date(), isActive: false })
+    .where(eq(services.id, id));
+  logger.info({ id }, "Soft-deleted service");
   return true;
+}
+
+export async function countLinkedSubscriptions(
+  serviceId: string,
+): Promise<number> {
+  const servicePlans = await db
+    .select({ id: plans.id })
+    .from(plans)
+    .where(eq(plans.serviceId, serviceId));
+  if (servicePlans.length === 0) return 0;
+  const planIds = servicePlans.map((p) => p.id);
+  let count = 0;
+  for (const planId of planIds) {
+    const rows = await db
+      .select({ id: subscriptions.id })
+      .from(subscriptions)
+      .where(eq(subscriptions.planId, planId));
+    count += rows.length;
+  }
+  return count;
+}
+
+export async function hardDeleteService(id: string) {
+  // Plans cascade-delete automatically (onDelete: 'cascade' on plans.serviceId).
+  // Subscriptions reference plans with onDelete: 'restrict', so we must delete
+  // them first, then plans will cascade, then the service row is deleted.
+  const servicePlans = await db
+    .select({ id: plans.id })
+    .from(plans)
+    .where(eq(plans.serviceId, id));
+
+  for (const plan of servicePlans) {
+    await db.delete(subscriptions).where(eq(subscriptions.planId, plan.id));
+  }
+
+  await db.delete(services).where(eq(services.id, id));
+  logger.info({ id }, "Hard-deleted service with all children");
+  return true;
+}
+
+/** @deprecated Use softDeleteService or hardDeleteService instead */
+export async function deleteService(id: string) {
+  return softDeleteService(id);
 }
 
 // ─── Plans ─────────────────────────────────────────────────────────────────

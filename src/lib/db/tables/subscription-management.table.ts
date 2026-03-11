@@ -98,6 +98,7 @@ export const services = pgTable("services_services", {
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
 // ─── Plans ────────────────────────────────────────────────────────────────────

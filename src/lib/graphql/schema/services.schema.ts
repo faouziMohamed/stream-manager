@@ -10,6 +10,7 @@ export const servicesSchema = /* GraphQL */ `
     plans: [Plan!]!
     createdAt: DateTime!
     updatedAt: DateTime!
+    deletedAt: DateTime
   }
 
   input CreateServiceInput {

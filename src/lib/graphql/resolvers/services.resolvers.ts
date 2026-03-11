@@ -1,13 +1,19 @@
-import { requireAdmin, requireAuth } from "./guards";
+import { GraphQLError } from "graphql";
+import { requireAdmin, requireAuth } from "@/lib/graphql/resolvers/guards";
 import {
   createService,
-  deleteService,
   getAllServices,
+  getDeletedServices,
   getPlansByService,
   getServiceById,
+  hardDeleteService,
+  softDeleteService,
   updateService,
 } from "@/lib/db/repositories/services.repository";
-import type { GraphQLContext } from "../context";
+import { createLogger } from "@/lib/logger";
+import type { GraphQLContext } from "@/lib/graphql/context";
+
+const logger = createLogger("services-resolvers");
 
 export const servicesResolvers = {
   Query: {
@@ -22,6 +28,10 @@ export const servicesResolvers = {
     ) => {
       requireAuth(ctx);
       return getServiceById(id);
+    },
+    deletedServices: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
+      requireAdmin(ctx);
+      return getDeletedServices();
     },
   },
   Mutation: {
@@ -63,16 +73,48 @@ export const servicesResolvers = {
     ) => {
       requireAdmin(ctx);
       const service = await updateService(id, input);
-      if (!service) throw new Error(`Service ${id} not found`);
+      if (!service)
+        throw new GraphQLError(`Service ${id} introuvable`, {
+          extensions: { code: "NOT_FOUND" },
+        });
       return service;
     },
     deleteService: async (
+      _: unknown,
+      { id, force }: { id: string; force?: boolean },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      try {
+        if (force) {
+          return await hardDeleteService(id);
+        }
+        return await softDeleteService(id);
+      } catch (err: unknown) {
+        const cause = (err as { cause?: { code?: string } })?.cause;
+        if (cause?.code === "23503") {
+          throw new GraphQLError(
+            "Ce service ne peut pas être supprimé car des abonnements y sont encore liés.",
+            { extensions: { code: "CONSTRAINT_VIOLATION" } },
+          );
+        }
+        logger.error({ id, err }, "Failed to delete service");
+        throw err;
+      }
+    },
+    restoreService: async (
       _: unknown,
       { id }: { id: string },
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
-      return deleteService(id);
+      const service = await updateService(id, { deletedAt: null } as never);
+      if (!service)
+        throw new GraphQLError(`Service ${id} introuvable`, {
+          extensions: { code: "NOT_FOUND" },
+        });
+      logger.info({ id }, "Restored service");
+      return service;
     },
   },
   Service: {

@@ -3,7 +3,8 @@ export const mutationSchema = /* GraphQL */ `
     # Services
     createService(input: CreateServiceInput!): Service!
     updateService(id: ID!, input: UpdateServiceInput!): Service!
-    deleteService(id: ID!): Boolean!
+    deleteService(id: ID!, force: Boolean): Boolean!
+    restoreService(id: ID!): Service!
 
     # Plans
     createPlan(input: CreatePlanInput!): Plan!

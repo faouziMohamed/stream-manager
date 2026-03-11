@@ -11,8 +11,10 @@ import {
   CREATE_SERVICE,
   type CreateServiceInput,
   DELETE_SERVICE,
+  GET_DELETED_SERVICES,
   GET_SERVICE,
   GET_SERVICES,
+  RESTORE_SERVICE,
   type ServiceDto,
   UPDATE_SERVICE,
   type UpdateServiceInput,
@@ -30,6 +32,7 @@ import { toastError, toastSuccess } from "@/lib/utils/toast";
 
 export const serviceKeys = {
   all: ["services"] as QueryKey,
+  deleted: ["services", "deleted"] as QueryKey,
   detail: (id: string) => ["services", id] as QueryKey,
   plans: (serviceId?: string) => ["plans", serviceId] as QueryKey,
 };
@@ -74,6 +77,7 @@ export function useCreateService() {
         ...input,
         description: input.description ?? null,
         logoUrl: input.logoUrl ?? null,
+        showOnHomepage: input.showOnHomepage ?? true,
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -119,14 +123,26 @@ export function useUpdateService() {
   });
 }
 
+export function useDeletedServices(initialData?: ServiceDto[]) {
+  return useQuery({
+    queryKey: serviceKeys.deleted,
+    queryFn: () =>
+      gqlRequest<{ deletedServices: ServiceDto[] }>(GET_DELETED_SERVICES).then(
+        (r) => r.deletedServices,
+      ),
+    initialData,
+  });
+}
+
 export function useDeleteService() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) =>
-      gqlRequest<{ deleteService: boolean }>(DELETE_SERVICE, { id }).then(
-        (r) => r.deleteService,
-      ),
-    onMutate: async (id) => {
+    mutationFn: ({ id, force }: { id: string; force?: boolean }) =>
+      gqlRequest<{ deleteService: boolean }>(DELETE_SERVICE, {
+        id,
+        force,
+      }).then((r) => r.deleteService),
+    onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: serviceKeys.all });
       const prev = qc.getQueryData<ServiceDto[]>(serviceKeys.all);
       qc.setQueryData<ServiceDto[]>(
@@ -139,8 +155,42 @@ export function useDeleteService() {
       toastError(err, "Suppression du service");
       if (ctx?.prev) qc.setQueryData(serviceKeys.all, ctx.prev);
     },
-    onSuccess: () => toastSuccess("Service supprimé"),
-    onSettled: () => qc.invalidateQueries({ queryKey: serviceKeys.all }),
+    onSuccess: (_, { force }) =>
+      toastSuccess(
+        force ? "Service définitivement supprimé" : "Service archivé",
+      ),
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: serviceKeys.all });
+      void qc.invalidateQueries({ queryKey: serviceKeys.deleted });
+    },
+  });
+}
+
+export function useRestoreService() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      gqlRequest<{ restoreService: ServiceDto }>(RESTORE_SERVICE, { id }).then(
+        (r) => r.restoreService,
+      ),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: serviceKeys.deleted });
+      const prev = qc.getQueryData<ServiceDto[]>(serviceKeys.deleted);
+      qc.setQueryData<ServiceDto[]>(
+        serviceKeys.deleted,
+        (old) => old?.filter((s) => s.id !== id) ?? [],
+      );
+      return { prev };
+    },
+    onError: (err, _, ctx) => {
+      toastError(err, "Restauration du service");
+      if (ctx?.prev) qc.setQueryData(serviceKeys.deleted, ctx.prev);
+    },
+    onSuccess: () => toastSuccess("Service restauré"),
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: serviceKeys.all });
+      void qc.invalidateQueries({ queryKey: serviceKeys.deleted });
+    },
   });
 }
 

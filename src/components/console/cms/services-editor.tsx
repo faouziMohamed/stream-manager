@@ -5,6 +5,7 @@ import { Controller, type Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
+  AlertTriangle,
   Check,
   ChevronDown,
   ChevronRight,
@@ -15,6 +16,7 @@ import {
   Loader2,
   Pencil,
   Plus,
+  RotateCcw,
   Trash2,
   UploadCloud,
   X,
@@ -48,14 +50,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/console/confirm-dialog";
 import { formatCurrency } from "@/lib/utils/helpers";
 import {
   useCreatePlan,
   useCreateService,
+  useDeletedServices,
   useDeletePlan,
   useDeleteService,
   usePlans,
+  useRestoreService,
   useServices,
   useUpdatePlan,
   useUpdateService,
@@ -503,21 +508,25 @@ export function ServicesEditor({
   defaultCurrency = "MAD",
 }: Props) {
   const { data: services = [] } = useServices(initialData);
+  const { data: deletedServices = [] } = useDeletedServices();
   const createService = useCreateService();
   const updateService = useUpdateService();
   const deleteService = useDeleteService();
+  const restoreService = useRestoreService();
   const deleteFromCloudinary = useDeleteFromCloudinary();
 
   const [dialog, setDialog] = useState<{ open: boolean; service?: ServiceDto }>(
     { open: false },
   );
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  // soft-delete confirm
+  const [softDeleteTarget, setSoftDeleteTarget] = useState<ServiceDto | null>(
+    null,
+  );
+  // hard-delete confirm
+  const [hardDeleteTarget, setHardDeleteTarget] = useState<ServiceDto | null>(
+    null,
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  // publicId of a logo uploaded during the current dialog session.
-  // Cleared on successful save; deleted from Cloudinary on cancel/close.
-  // Stored as state (not ref) so the React Compiler doesn't flag it as a
-  // ref mutation during render.
   const [pendingLogoPublicId, setPendingLogoPublicId] = useState<string | null>(
     null,
   );
@@ -534,9 +543,7 @@ export function ServicesEditor({
 
   const cleanupPendingLogo = useCallback(
     (publicId: string | null) => {
-      if (publicId) {
-        deleteFromCloudinary.mutate(publicId);
-      }
+      if (publicId) deleteFromCloudinary.mutate(publicId);
     },
     [deleteFromCloudinary],
   );
@@ -546,7 +553,6 @@ export function ServicesEditor({
   }, []);
 
   const handleLogoCleared = useCallback(() => {
-    // Delete from Cloudinary immediately — user hit ✕ to swap it out
     if (pendingLogoPublicId) {
       deleteFromCloudinary.mutate(pendingLogoPublicId);
       setPendingLogoPublicId(null);
@@ -590,7 +596,6 @@ export function ServicesEditor({
     } else {
       await createService.mutateAsync(payload);
     }
-    // Saved successfully — logo is now owned by the service, do not delete
     setPendingLogoPublicId(null);
     setDialog({ open: false });
   };
@@ -610,99 +615,196 @@ export function ServicesEditor({
         </Button>
       </div>
 
-      {services.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Aucun service. Créez-en un pour commencer.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {services.map((service) => (
-            <Card
-              key={service.id}
-              className={service.isActive ? "" : "opacity-60"}
-            >
-              <CardHeader className="py-3 px-4">
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 font-semibold hover:text-primary transition-colors text-left cursor-pointer"
-                    onClick={() =>
-                      setExpandedId(
-                        expandedId === service.id ? null : service.id,
-                      )
-                    }
-                  >
-                    {expandedId === service.id ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                    {service.logoUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={service.logoUrl}
-                        alt=""
-                        className="h-6 w-6 rounded object-cover shrink-0 bg-muted/40"
-                      />
-                    )}
-                    {service.name}
-                    <Badge variant="outline" className="text-xs">
-                      {service.category}
-                    </Badge>
-                    {!service.isActive && (
-                      <Badge variant="secondary">Inactif</Badge>
-                    )}
-                    {service.showOnHomepage === false && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs text-muted-foreground gap-1"
-                      >
-                        <EyeOff className="h-3 w-3" />
-                        Masqué
-                      </Badge>
-                    )}
-                  </button>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 cursor-pointer"
-                      onClick={() => openEdit(service)}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-destructive cursor-pointer"
-                      onClick={() => setDeleteTarget(service.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                {service.description && (
-                  <p className="text-xs text-muted-foreground ml-6">
-                    {service.description}
-                  </p>
-                )}
-              </CardHeader>
-              {expandedId === service.id && (
-                <CardContent className="pt-0 pb-4 px-4">
-                  <PlansTable
-                    serviceId={service.id}
-                    currency={defaultCurrency}
-                  />
-                </CardContent>
-              )}
-            </Card>
-          ))}
-        </div>
-      )}
+      <Tabs defaultValue="active">
+        <TabsList>
+          <TabsTrigger value="active">
+            Actifs
+            {services.length > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {services.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="deleted">
+            Supprimés
+            {deletedServices.length > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {deletedServices.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Service dialog */}
+        {/* ── Active services ── */}
+        <TabsContent value="active" className="space-y-2 mt-4">
+          {services.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                Aucun service. Créez-en un pour commencer.
+              </CardContent>
+            </Card>
+          ) : (
+            services.map((service) => (
+              <Card
+                key={service.id}
+                className={service.isActive ? "" : "opacity-60"}
+              >
+                <CardHeader className="py-3 px-4">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 font-semibold hover:text-primary transition-colors text-left cursor-pointer"
+                      onClick={() =>
+                        setExpandedId(
+                          expandedId === service.id ? null : service.id,
+                        )
+                      }
+                    >
+                      {expandedId === service.id ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                      {service.logoUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={service.logoUrl}
+                          alt=""
+                          className="h-6 w-6 rounded object-cover shrink-0 bg-muted/40"
+                        />
+                      )}
+                      {service.name}
+                      <Badge variant="outline" className="text-xs">
+                        {service.category}
+                      </Badge>
+                      {!service.isActive && (
+                        <Badge variant="secondary">Inactif</Badge>
+                      )}
+                      {service.showOnHomepage === false && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs text-muted-foreground gap-1"
+                        >
+                          <EyeOff className="h-3 w-3" />
+                          Masqué
+                        </Badge>
+                      )}
+                    </button>
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 cursor-pointer"
+                        onClick={() => openEdit(service)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-destructive cursor-pointer"
+                        onClick={() => setSoftDeleteTarget(service)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  {service.description && (
+                    <p className="text-xs text-muted-foreground ml-6">
+                      {service.description}
+                    </p>
+                  )}
+                </CardHeader>
+                {expandedId === service.id && (
+                  <CardContent className="pt-0 pb-4 px-4">
+                    <PlansTable
+                      serviceId={service.id}
+                      currency={defaultCurrency}
+                    />
+                  </CardContent>
+                )}
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        {/* ── Deleted services ── */}
+        <TabsContent value="deleted" className="space-y-2 mt-4">
+          {deletedServices.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                Aucun service archivé.
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>
+                  La suppression définitive d&apos;un service effacera également
+                  toutes ses formules et tous les abonnements associés. Cette
+                  action est irréversible.
+                </span>
+              </div>
+              {deletedServices.map((service) => (
+                <Card key={service.id} className="opacity-70 border-dashed">
+                  <CardHeader className="py-3 px-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-semibold">
+                        {service.logoUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={service.logoUrl}
+                            alt=""
+                            className="h-6 w-6 rounded object-cover shrink-0 bg-muted/40 grayscale"
+                          />
+                        )}
+                        {service.name}
+                        <Badge variant="outline" className="text-xs">
+                          {service.category}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Archivé
+                        </Badge>
+                        {service.deletedAt && (
+                          <span className="text-xs text-muted-foreground">
+                            le{" "}
+                            {new Date(service.deletedAt).toLocaleDateString(
+                              "fr-FR",
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 cursor-pointer gap-1.5"
+                          onClick={() => restoreService.mutate(service.id)}
+                          disabled={restoreService.isPending}
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Restaurer
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive cursor-pointer"
+                          onClick={() => setHardDeleteTarget(service)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* ── Service create/edit dialog ── */}
       <Dialog open={dialog.open} onOpenChange={handleDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
@@ -789,15 +891,69 @@ export function ServicesEditor({
         </DialogContent>
       </Dialog>
 
+      {/* ── Soft-delete confirm (first step) ── */}
       <ConfirmDialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && setDeleteTarget(null)}
-        title="Supprimer le service"
-        description="Toutes les formules associées seront supprimées. Cette action est irréversible."
+        open={!!softDeleteTarget}
+        onOpenChange={(o) => !o && setSoftDeleteTarget(null)}
+        title="Archiver le service"
+        description={
+          <span className="space-y-2 block">
+            <span className="block">
+              Le service <strong>{softDeleteTarget?.name}</strong> sera archivé
+              et n&apos;apparaîtra plus dans la liste principale ni sur le site
+              public.
+            </span>
+            <span className="flex items-start gap-1.5 text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Les formules et abonnements existants sont conservés. Vous
+                pourrez restaurer ce service depuis l&apos;onglet{" "}
+                <em>Supprimés</em>.
+              </span>
+            </span>
+          </span>
+        }
+        confirmLabel="Archiver"
         onConfirm={async () => {
-          if (deleteTarget) {
-            await deleteService.mutateAsync(deleteTarget);
-            setDeleteTarget(null);
+          if (softDeleteTarget) {
+            await deleteService.mutateAsync({ id: softDeleteTarget.id });
+            setSoftDeleteTarget(null);
+          }
+        }}
+        loading={deleteService.isPending}
+      />
+
+      {/* ── Hard-delete confirm (second step, destructive) ── */}
+      <ConfirmDialog
+        open={!!hardDeleteTarget}
+        onOpenChange={(o) => !o && setHardDeleteTarget(null)}
+        title="Suppression définitive"
+        description={
+          <span className="space-y-2 block">
+            <span className="block">
+              Vous êtes sur le point de supprimer{" "}
+              <strong>définitivement</strong> le service{" "}
+              <strong>{hardDeleteTarget?.name}</strong>.
+            </span>
+            <span className="flex items-start gap-1.5 text-destructive">
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+              <span>
+                Toutes les formules et tous les abonnements liés à ce service
+                seront également supprimés. Cette action est{" "}
+                <strong>irréversible</strong>.
+              </span>
+            </span>
+          </span>
+        }
+        confirmLabel="Supprimer définitivement"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          if (hardDeleteTarget) {
+            await deleteService.mutateAsync({
+              id: hardDeleteTarget.id,
+              force: true,
+            });
+            setHardDeleteTarget(null);
           }
         }}
         loading={deleteService.isPending}
