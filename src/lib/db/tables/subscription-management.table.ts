@@ -1,13 +1,4 @@
-import {
-    pgTable,
-    text,
-    timestamp,
-    numeric,
-    integer,
-    boolean,
-    pgEnum,
-    date,
-} from 'drizzle-orm/pg-core';
+import {boolean, date, integer, numeric, pgEnum, pgTable, text, timestamp,} from 'drizzle-orm/pg-core';
 import {relations} from 'drizzle-orm';
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -37,7 +28,7 @@ export const paymentStatusEnum = pgEnum('payment_status', [
 /**
  * Key-value store for app-wide settings (e.g. default currency).
  */
-export const appSettings = pgTable('app_settings', {
+export const appSettings = pgTable('settings_app_settings', {
     key: text('key').primaryKey(),
     value: text('value').notNull(),
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
@@ -48,7 +39,7 @@ export const appSettings = pgTable('app_settings', {
 /**
  * A streaming service (e.g. Netflix, Shahid VIP, Spotify).
  */
-export const services = pgTable('services', {
+export const services = pgTable('services_services', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     category: text('category').notNull().default('streaming'),
@@ -65,7 +56,7 @@ export const services = pgTable('services', {
  * A specific plan for a service (e.g. Netflix 3 months = 119 DH).
  * Plans can belong to a single service OR a promotion (bundle of services).
  */
-export const plans = pgTable('plans', {
+export const plans = pgTable('services_plans', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     durationMonths: integer('duration_months').notNull(),
@@ -87,7 +78,7 @@ export const plans = pgTable('plans', {
  * A promotion is a named bundle of multiple services sold at a package price.
  * e.g. "Netflix + Shahid VIP + Prime Video"
  */
-export const promotions = pgTable('promotions', {
+export const promotions = pgTable('promotions_promotions', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     description: text('description'),
@@ -109,9 +100,8 @@ export const promotionServices = pgTable('promotion_services', {
         .references(() => services.id, {onDelete: 'cascade'}),
 });
 
-// ─── Clients ──────────────────────────────────────────────────────────────────
-
-export const clients = pgTable('clients', {
+// ─── Subscriptions ────────────────────────────────────────────────────────────
+export const clients = pgTable('subscriptions_clients', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     email: text('email'),
@@ -122,13 +112,12 @@ export const clients = pgTable('clients', {
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
 });
 
-// ─── Subscriptions ────────────────────────────────────────────────────────────
 
 /**
  * A client's subscription to a plan (single service or promotion bundle).
  * isRecurring: if true, a new subscription is auto-suggested on renewal.
  */
-export const subscriptions = pgTable('subscriptions', {
+export const subscriptions = pgTable('subscriptions_subscriptions', {
     id: text('id').primaryKey(),
     clientId: text('client_id')
         .notNull()
@@ -154,7 +143,7 @@ export const subscriptions = pgTable('subscriptions', {
  * One payment is created per subscription period.
  * On renewal, a new subscription + payment is created.
  */
-export const payments = pgTable('payments', {
+export const payments = pgTable('subscriptions_payments', {
     id: text('id').primaryKey(),
     subscriptionId: text('subscription_id')
         .notNull()

@@ -1,5 +1,5 @@
 {
-  "id": "76092ca2-277f-4819-966b-5e9145863b65",
+  "id": "7f7328ae-8c7d-463f-85e9-dec6c902f658",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -474,8 +474,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.payments_payments": {
-      "name": "payments_payments",
+    "public.subscriptions_payments": {
+      "name": "subscriptions_payments",
       "schema": "",
       "columns": {
         "id": {
@@ -546,9 +546,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "payments_payments_subscription_id_subscriptions_subscriptions_id_fk": {
-          "name": "payments_payments_subscription_id_subscriptions_subscriptions_id_fk",
-          "tableFrom": "payments_payments",
+        "subscriptions_payments_subscription_id_subscriptions_subscriptions_id_fk": {
+          "name": "subscriptions_payments_subscription_id_subscriptions_subscriptions_id_fk",
+          "tableFrom": "subscriptions_payments",
           "tableTo": "subscriptions_subscriptions",
           "columnsFrom": [
             "subscription_id"

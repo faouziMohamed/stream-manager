@@ -78,7 +78,7 @@ CREATE TABLE "contact_inquiries" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "payments_payments" (
+CREATE TABLE "subscriptions_payments" (
 	"id" text PRIMARY KEY NOT NULL,
 	"subscription_id" text NOT NULL,
 	"due_date" date NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE "summary_links" (
 --> statement-breakpoint
 ALTER TABLE "auth_account" ADD CONSTRAINT "auth_account_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "auth_session" ADD CONSTRAINT "auth_session_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payments_payments" ADD CONSTRAINT "payments_payments_subscription_id_subscriptions_subscriptions_id_fk" FOREIGN KEY ("subscription_id") REFERENCES "public"."subscriptions_subscriptions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "subscriptions_payments" ADD CONSTRAINT "subscriptions_payments_subscription_id_subscriptions_subscriptions_id_fk" FOREIGN KEY ("subscription_id") REFERENCES "public"."subscriptions_subscriptions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "services_plans" ADD CONSTRAINT "services_plans_service_id_services_services_id_fk" FOREIGN KEY ("service_id") REFERENCES "public"."services_services"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "services_plans" ADD CONSTRAINT "services_plans_promotion_id_promotions_promotions_id_fk" FOREIGN KEY ("promotion_id") REFERENCES "public"."promotions_promotions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "promotion_services" ADD CONSTRAINT "promotion_services_promotion_id_promotions_promotions_id_fk" FOREIGN KEY ("promotion_id") REFERENCES "public"."promotions_promotions"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
