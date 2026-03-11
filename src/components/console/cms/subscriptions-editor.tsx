@@ -6,34 +6,22 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {z} from "zod";
 import {Pencil, Plus, RefreshCw, Trash2} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table";
 import {ConfirmDialog} from "@/components/console/confirm-dialog";
+import {DatePicker} from "@/components/ui/date-picker";
 import {
     useCreateSubscription,
     useDeleteSubscription,
@@ -42,12 +30,14 @@ import {
     useUpdateSubscription,
 } from "@/lib/hooks/queries/use-subscriptions.queries";
 import {useClients} from "@/lib/hooks/queries/use-clients.queries";
-import {
-    usePlans,
-    useServices,
-} from "@/lib/hooks/queries/use-services.queries";
+import {usePlans, useServices,} from "@/lib/hooks/queries/use-services.queries";
 import {usePromotions} from "@/lib/hooks/queries/use-promotions.queries";
 import type {SubscriptionDto} from "@/lib/graphql/operations/subscriptions.operations";
+import type {PlanDto} from "@/lib/graphql/operations/plans.operations";
+import type {ServiceDto} from "@/lib/graphql/operations/services.operations";
+import type {ClientDto} from "@/lib/graphql/operations/clients.operations";
+import type {PromotionDto} from "@/lib/graphql/operations/promotions.operations";
+import {Label} from "@/components/ui/label";
 
 const statusLabels: Record<string, string> = {
     active: "Actif",
@@ -92,18 +82,26 @@ type UpdateForm = z.infer<typeof updateSchema>;
 
 interface Props {
     initialData?: SubscriptionDto[];
+    initialPlans?: PlanDto[];
+    initialServices?: ServiceDto[];
+    initialClients?: ClientDto[];
+    initialPromotions?: PromotionDto[];
     defaultCurrency?: string;
 }
 
 export function SubscriptionsEditor({
                                         initialData,
+                                        initialPlans,
+                                        initialServices,
+                                        initialClients,
+                                        initialPromotions,
                                         defaultCurrency = "MAD",
                                     }: Props) {
     const {data: subscriptions = []} = useSubscriptions(undefined, initialData);
-    const {data: clients = []} = useClients();
-    const {data: servicePlans = []} = usePlans();
-    const {data: services = []} = useServices();
-    const {data: promotions = []} = usePromotions();
+    const {data: clients = []} = useClients(initialClients);
+    const {data: servicePlans = []} = usePlans(undefined, initialPlans);
+    const {data: services = []} = useServices(initialServices);
+    const {data: promotions = []} = usePromotions(initialPromotions);
     const createSubscription = useCreateSubscription();
     const updateSubscription = useUpdateSubscription();
     const deleteSubscription = useDeleteSubscription();
@@ -344,46 +342,38 @@ export function SubscriptionsEditor({
                                     <SelectValue placeholder="Sélectionner une formule"/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {services.length > 0 &&
-                                        services.map((svc) => {
-                                            const svcPlans = allPlans.filter(
-                                                (p) => p.serviceId === svc.id,
-                                            );
-                                            return svcPlans.length > 0 ? (
-                                                <div key={svc.id}>
-                                                    <div
-                                                        className="px-2 py-1 text-xs font-semibold text-muted-foreground">
-                                                        {svc.name}
-                                                    </div>
-                                                    {svcPlans.map((p) => (
-                                                        <SelectItem key={p.id} value={p.id}>
-                                                            {p.durationMonths} mois — {p.price}{" "}
-                                                            {p.currencyCode}
-                                                        </SelectItem>
-                                                    ))}
-                                                </div>
-                                            ) : null;
-                                        })}
-                                    {promotions.length > 0 &&
-                                        promotions.map((promo) => {
-                                            const promoPlans = allPlans.filter(
-                                                (p) => p.promotionId === promo.id,
-                                            );
-                                            return promoPlans.length > 0 ? (
-                                                <div key={promo.id}>
-                                                    <div
-                                                        className="px-2 py-1 text-xs font-semibold text-muted-foreground">
-                                                        [Promo] {promo.name}
-                                                    </div>
-                                                    {promoPlans.map((p) => (
-                                                        <SelectItem key={p.id} value={p.id}>
-                                                            {p.durationMonths} mois — {p.price}{" "}
-                                                            {p.currencyCode}
-                                                        </SelectItem>
-                                                    ))}
-                                                </div>
-                                            ) : null;
-                                        })}
+                                    {services.map((svc) => {
+                                        const svcPlans = allPlans.filter(
+                                            (p) => p.serviceId === svc.id,
+                                        );
+                                        if (svcPlans.length === 0) return null;
+                                        return (
+                                            <SelectGroup key={svc.id}>
+                                                <SelectLabel>{svc.name}</SelectLabel>
+                                                {svcPlans.map((p) => (
+                                                    <SelectItem key={p.id} value={p.id}>
+                                                        {p.durationMonths} mois — {p.price}{" "}{p.currencyCode}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        );
+                                    })}
+                                    {promotions.map((promo) => {
+                                        const promoPlans = allPlans.filter(
+                                            (p) => p.promotionId === promo.id,
+                                        );
+                                        if (promoPlans.length === 0) return null;
+                                        return (
+                                            <SelectGroup key={promo.id}>
+                                                <SelectLabel>[Promo] {promo.name}</SelectLabel>
+                                                {promoPlans.map((p) => (
+                                                    <SelectItem key={p.id} value={p.id}>
+                                                        {p.durationMonths} mois — {p.price}{" "}{p.currencyCode}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        );
+                                    })}
                                 </SelectContent>
                             </Select>
                             {createForm.formState.errors.planId && (
@@ -394,11 +384,15 @@ export function SubscriptionsEditor({
                         </div>
                         <div className="space-y-1.5">
                             <Label>Date de début *</Label>
-                            <Input
-                                type="date"
-                                {...createForm.register("startDate")}
-                                error={createForm.formState.errors.startDate?.message}
+                            <DatePicker
+                                value={createForm.watch("startDate") || undefined}
+                                onChange={(v) => createForm.setValue("startDate", v ?? "")}
                             />
+                            {createForm.formState.errors.startDate && (
+                                <p className="text-xs text-destructive">
+                                    {createForm.formState.errors.startDate.message}
+                                </p>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
                             <input
@@ -527,11 +521,15 @@ export function SubscriptionsEditor({
                     >
                         <div className="space-y-1.5">
                             <Label>Nouvelle date de début *</Label>
-                            <Input
-                                type="date"
-                                {...renewForm.register("startDate")}
-                                error={renewForm.formState.errors.startDate?.message}
+                            <DatePicker
+                                value={renewForm.watch("startDate") || undefined}
+                                onChange={(v) => renewForm.setValue("startDate", v ?? "")}
                             />
+                            {renewForm.formState.errors.startDate && (
+                                <p className="text-xs text-destructive">
+                                    {renewForm.formState.errors.startDate.message}
+                                </p>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
                             <input

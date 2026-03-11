@@ -4,21 +4,22 @@ import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
 import {useState} from 'react';
-import {Copy, Check, Trash2, Plus, ToggleLeft, ToggleRight} from 'lucide-react';
+import {Check, Copy, Plus, ToggleLeft, ToggleRight, Trash2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
-import {Card, CardContent, CardHeader, CardTitle, CardDescription} from '@/components/ui/card';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter} from '@/components/ui/dialog';
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {ConfirmDialog} from '@/components/console/confirm-dialog';
+import {DatePicker} from '@/components/ui/date-picker';
 import {
+    useCreateSummaryLink,
     useDefaultCurrency,
+    useDeleteSummaryLink,
     useSetDefaultCurrency,
     useSummaryLinks,
-    useCreateSummaryLink,
-    useDeleteSummaryLink,
     useToggleSummaryLink,
 } from '@/lib/hooks/queries/use-settings.queries';
 
@@ -204,7 +205,11 @@ export function SettingsEditor({defaultCurrency = 'MAD'}: Props) {
                         </div>
                         <div className="space-y-1.5">
                             <Label>Expiration (optionnel)</Label>
-                            <Input type="date" {...linkForm.register('expiresAt')} />
+                            <DatePicker
+                                value={linkForm.watch('expiresAt') || undefined}
+                                onChange={(v) => linkForm.setValue('expiresAt', v ?? '')}
+                                fromDate={new Date()}
+                            />
                         </div>
                         <div className="flex items-center gap-2">
                             <input type="checkbox" id="showSensitive" {...linkForm.register('showSensitiveInfo')}

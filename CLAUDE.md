@@ -34,7 +34,10 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 4. **Limit scope** — if a task touches more than 3 files, break it into smaller tasks first.
 5. **Bug-fix workflow** — write a reproducing test first, then fix until the test passes.
 6. **Never use `cat`/shell redirection to write files** — use IDE file-edit tools.
-7. **Prefer file tools over CLI for reading** — `read_file`, `list_dir`, `file_search`, `grep_search`.
+7. **Prefer file tools over CLI for reading** — `read_file`, `list_dir`, `file_search`, `grep_search` are reliable and
+   tracked. Use CLI (`cat`, `grep`, `ls`, etc.) only as a **fallback** when a file tool cannot accomplish the task (e.g.
+   `npm install`, running migrations, checking process output). If CLI returns empty output, fall back to file tools
+   immediately.
 8. **No new REST routes** — every new server operation must be a GraphQL query or mutation. The only REST routes are
    BetterAuth at `/api/auth/[...all]`. Do not create `route.ts` files outside `api/auth/` and `api/graphql/`.
 9. **Never call `router.refresh()` after mutations** — optimistic updates + `invalidateQueries` handle UI sync.
