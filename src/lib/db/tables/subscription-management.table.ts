@@ -8,7 +8,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations } from "drizzle-orm"; // ─── Enums ────────────────────────────────────────────────────────────────────
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
@@ -248,6 +248,19 @@ export const contactInquiries = pgTable("contact_inquiries", {
     .defaultNow(),
 });
 
+/**
+ * Admin replies to a contact inquiry — stored for discussion thread.
+ * Sent via SMTP and stored here for audit trail.
+ */
+export const inquiryReplies = pgTable("contact_inquiry_replies", {
+  id: text("id").primaryKey(),
+  inquiryId: text("inquiry_id")
+    .notNull()
+    .references(() => contactInquiries.id, { onDelete: "cascade" }),
+  body: text("body").notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ─── Shared Summary Links ─────────────────────────────────────────────────────
 
 /**
@@ -438,6 +451,20 @@ export const subscriptionProfilesRelations = relations(
   }),
 );
 
+export const contactInquiriesRelations = relations(
+  contactInquiries,
+  ({ many }) => ({
+    replies: many(inquiryReplies),
+  }),
+);
+
+export const inquiryRepliesRelations = relations(inquiryReplies, ({ one }) => ({
+  inquiry: one(contactInquiries, {
+    fields: [inquiryReplies.inquiryId],
+    references: [contactInquiries.id],
+  }),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Service = typeof services.$inferSelect;
@@ -454,6 +481,7 @@ export type NewSubscription = typeof subscriptions.$inferInsert;
 export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
 export type ContactInquiry = typeof contactInquiries.$inferSelect;
+export type InquiryReply = typeof inquiryReplies.$inferSelect;
 export type SummaryLink = typeof summaryLinks.$inferSelect;
 export type StreamingAccount = typeof streamingAccounts.$inferSelect;
 export type NewStreamingAccount = typeof streamingAccounts.$inferInsert;

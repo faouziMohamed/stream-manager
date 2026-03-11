@@ -9,19 +9,22 @@ import {
 import { gqlRequest } from "@/lib/graphql/client";
 import {
   type AppSettingDto,
-  type CloudinaryResourceDto,
   type CloudinarySettingsDto,
   type CloudinarySettingsInput,
   type CloudinaryTestResultDto,
   CREATE_SUMMARY_LINK,
   DELETE_FROM_CLOUDINARY,
+  DELETE_INQUIRY,
   DELETE_SUMMARY_LINK,
-  GET_CLOUDINARY_MEDIA,
   GET_CLOUDINARY_SETTINGS,
   GET_DEFAULT_CURRENCY,
+  GET_INQUIRIES,
   GET_SMTP_SETTINGS,
   GET_SUMMARY_LINKS,
+  type InquiryDto,
+  MARK_INQUIRY_READ,
   REPLACE_CLOUDINARY_IMAGE,
+  REPLY_TO_INQUIRY,
   SET_APP_SETTING,
   SET_CLOUDINARY_SETTINGS,
   SET_SMTP_SETTINGS,
@@ -43,7 +46,11 @@ export const settingsKeys = {
   cloudinary: ["settings", "cloudinary"] as QueryKey,
   media: (folder?: string) =>
     ["settings", "cloudinaryMedia", folder ?? "all"] as QueryKey,
+  inquiries: (unreadOnly?: boolean) =>
+    ["settings", "inquiries", unreadOnly ?? false] as QueryKey,
 };
+
+// ─── Currency settings hooks ─────────────────────────────────────────────────
 
 export function useDefaultCurrency(initialData?: string) {
   return useQuery({
@@ -79,6 +86,8 @@ export function useSetDefaultCurrency() {
     onSettled: () => qc.invalidateQueries({ queryKey: settingsKeys.currency }),
   });
 }
+
+// ─── Summary links hooks ─────────────────────────────────────────────────────
 
 export function useSummaryLinks(initialData?: SummaryLinkDto[]) {
   return useQuery({
@@ -166,6 +175,8 @@ export function useToggleSummaryLink() {
   });
 }
 
+// ─── SMTP settings hooks ─────────────────────────────────────────────────────
+
 export function useSmtpSettings(initialData?: SmtpSettingsDto) {
   return useQuery({
     queryKey: settingsKeys.smtp,
@@ -198,6 +209,8 @@ export function useTestSmtp() {
       ),
   });
 }
+
+// ─── Cloudinary settings hooks ────────────────────────────────────────────────
 
 export function useCloudinarySettings(initialData?: CloudinarySettingsDto) {
   return useQuery({
@@ -278,13 +291,75 @@ export function useReplaceCloudinaryImage() {
   });
 }
 
-export function useCloudinaryMedia(folder?: string) {
+// ─── Inquiry hooks ────────────────────────────────────────────────────────────
+
+export function useInquiries(unreadOnly?: boolean, initialData?: InquiryDto[]) {
   return useQuery({
-    queryKey: settingsKeys.media(folder),
+    queryKey: settingsKeys.inquiries(unreadOnly),
     queryFn: () =>
-      gqlRequest<{ cloudinaryMedia: CloudinaryResourceDto[] }>(
-        GET_CLOUDINARY_MEDIA,
-        { folder },
-      ).then((r) => r.cloudinaryMedia),
+      gqlRequest<{ inquiries: InquiryDto[] }>(GET_INQUIRIES, {
+        unreadOnly,
+      }).then((r) => r.inquiries),
+    initialData,
+  });
+}
+
+export function useMarkInquiryRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, isRead }: { id: string; isRead: boolean }) =>
+      gqlRequest<{ markInquiryRead: InquiryDto }>(MARK_INQUIRY_READ, {
+        id,
+        isRead,
+      }).then((r) => r.markInquiryRead),
+    onMutate: async ({ id, isRead }) => {
+      await qc.cancelQueries({ queryKey: settingsKeys.inquiries() });
+      const prev = qc.getQueryData<InquiryDto[]>(settingsKeys.inquiries());
+      qc.setQueryData<InquiryDto[]>(settingsKeys.inquiries(), (old) =>
+        old?.map((i) => (i.id === id ? { ...i, isRead } : i)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(settingsKeys.inquiries(), ctx.prev);
+    },
+    onSettled: () =>
+      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() }),
+  });
+}
+
+export function useReplyToInquiry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: string }) =>
+      gqlRequest(REPLY_TO_INQUIRY, { id, body }),
+    onSuccess: (_, { id }) => {
+      toastSuccess("Réponse envoyée");
+      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() });
+      qc.invalidateQueries({ queryKey: settingsKeys.inquiries(false) });
+      qc.invalidateQueries({ queryKey: ["settings", "inquiries", id] });
+    },
+    onError: (err) => toastError(err, "Envoi de la réponse"),
+  });
+}
+
+export function useDeleteInquiry() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => gqlRequest(DELETE_INQUIRY, { id }),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: settingsKeys.inquiries() });
+      const prev = qc.getQueryData<InquiryDto[]>(settingsKeys.inquiries());
+      qc.setQueryData<InquiryDto[]>(settingsKeys.inquiries(), (old) =>
+        old?.filter((i) => i.id !== id),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(settingsKeys.inquiries(), ctx.prev);
+    },
+    onSuccess: () => toastSuccess("Message supprimé"),
+    onSettled: () =>
+      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() }),
   });
 }

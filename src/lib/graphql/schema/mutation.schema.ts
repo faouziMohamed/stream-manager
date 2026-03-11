@@ -46,6 +46,10 @@ export const mutationSchema = /* GraphQL */ `
 
     # Contact inquiries (public — no auth)
     createInquiry(input: CreateInquiryInput!): Boolean!
+    # Contact inquiry management (admin)
+    markInquiryRead(id: ID!, isRead: Boolean!): Inquiry!
+    replyToInquiry(id: ID!, body: String!): InquiryReply!
+    deleteInquiry(id: ID!): Boolean!
 
     # Summary links
     createSummaryLink(

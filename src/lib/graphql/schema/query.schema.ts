@@ -46,6 +46,10 @@ export const querySchema = /* GraphQL */ `
     summaryLinks: [SummaryLink!]!
     summaryByToken(token: String!): SummaryData
 
+    # Contact inquiries (admin)
+    inquiries(unreadOnly: Boolean): [Inquiry!]!
+    inquiry(id: ID!): Inquiry
+
     # Streaming accounts & profiles
     streamingAccounts(serviceId: ID): [StreamingAccount!]!
     streamingAccount(id: ID!): StreamingAccount

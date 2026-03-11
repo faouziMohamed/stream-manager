@@ -37,6 +37,9 @@ export const ROUTES = {
     // Account
     summary: "/console/summary",
 
+    // Inquiries / contact messages
+    inquiries: "/console/inquiries",
+
     // Outils
     media: "/console/media",
 

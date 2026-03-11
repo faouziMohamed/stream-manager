@@ -3,9 +3,10 @@ import { db } from "@/lib/db";
 import {
   appSettings,
   contactInquiries,
+  inquiryReplies,
   summaryLinks,
 } from "@/lib/db/tables/subscription-management.table";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { env } from "@/lib/settings/env";
 import { createLogger } from "@/lib/logger";
@@ -21,6 +22,53 @@ import {
 import type { GraphQLContext } from "../context";
 
 const logger = createLogger("settings-resolvers");
+
+// ─── Shared SMTP helper ───────────────────────────────────────────────────────
+
+interface MailOptions {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
+/**
+ * Send an email using the SMTP settings stored in the DB.
+ * Always closes the transporter to avoid hanging connections in serverless.
+ * Returns null on success, or an error message string on failure.
+ */
+async function sendViaSMTP(mail: MailOptions): Promise<string | null> {
+  const smtp = await getSmtpSettings();
+  if (!smtp.host || !smtp.user) return "Configuration SMTP incomplète.";
+  const password = await getSmtpPassword();
+  if (!password) return "Mot de passe SMTP manquant.";
+  try {
+    const nodemailer = await import("nodemailer");
+    const transportOptions = {
+      host: smtp.host,
+      port: smtp.port ?? 587,
+      secure: smtp.secure ?? false,
+      auth: { user: smtp.user, pass: password },
+      pool: false,
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    const transporter = nodemailer.createTransport(transportOptions);
+    try {
+      await transporter.sendMail({
+        from: `"${smtp.senderName ?? "StreamManager"}" <${smtp.senderEmail ?? smtp.user}>`,
+        ...mail,
+      });
+    } finally {
+      transporter.close();
+    }
+    return null; // success
+  } catch (err) {
+    return err instanceof Error ? err.message : "Erreur inconnue";
+  }
+}
 
 export const settingsResolvers = {
   Query: {
@@ -111,6 +159,47 @@ export const settingsResolvers = {
       const stats = await getDashboardStats();
       return { stats, showSensitiveInfo: link.showSensitiveInfo };
     },
+    inquiries: async (
+      _: unknown,
+      { unreadOnly }: { unreadOnly?: boolean },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      const rows = await db
+        .select()
+        .from(contactInquiries)
+        .orderBy(desc(contactInquiries.createdAt));
+      const filtered = unreadOnly ? rows.filter((r) => !r.isRead) : rows;
+      // Attach replies for each inquiry
+      return Promise.all(
+        filtered.map(async (inquiry) => {
+          const replies = await db
+            .select()
+            .from(inquiryReplies)
+            .where(eq(inquiryReplies.inquiryId, inquiry.id))
+            .orderBy(inquiryReplies.sentAt);
+          return { ...inquiry, replies };
+        }),
+      );
+    },
+    inquiry: async (
+      _: unknown,
+      { id }: { id: string },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      const [inquiry] = await db
+        .select()
+        .from(contactInquiries)
+        .where(eq(contactInquiries.id, id));
+      if (!inquiry) return null;
+      const replies = await db
+        .select()
+        .from(inquiryReplies)
+        .where(eq(inquiryReplies.inquiryId, id))
+        .orderBy(inquiryReplies.sentAt);
+      return { ...inquiry, replies };
+    },
   },
   Mutation: {
     setAppSetting: async (
@@ -176,35 +265,18 @@ export const settingsResolvers = {
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
-      const smtp = await getSmtpSettings();
-      if (!smtp.host || !smtp.user) {
-        return { success: false, message: "Configuration SMTP incomplète." };
+      const error = await sendViaSMTP({
+        to: toEmail,
+        subject: "Test SMTP — StreamManager",
+        text: "Ceci est un e-mail de test envoyé par StreamManager pour vérifier la configuration SMTP.",
+        html: "<p>Ceci est un e-mail de test envoyé par <strong>StreamManager</strong> pour vérifier la configuration SMTP.</p>",
+      });
+      if (error) {
+        logger.error({ error }, "Test SMTP échoué");
+        return { success: false, message: `Échec : ${error}` };
       }
-      const password = await getSmtpPassword();
-      if (!password) {
-        return { success: false, message: "Mot de passe SMTP manquant." };
-      }
-      try {
-        const nodemailer = await import("nodemailer");
-        const transporter = nodemailer.createTransport({
-          host: smtp.host,
-          port: smtp.port ?? 587,
-          secure: smtp.secure ?? false,
-          auth: { user: smtp.user, pass: password },
-        });
-        await transporter.sendMail({
-          from: `"${smtp.senderName}" <${smtp.senderEmail}>`,
-          to: toEmail,
-          subject: "Test SMTP — StreamManager",
-          text: "Ceci est un e-mail de test envoyé par StreamManager pour vérifier la configuration SMTP.",
-        });
-        logger.info({ toEmail }, "Test SMTP envoyé");
-        return { success: true, message: `E-mail de test envoyé à ${toEmail}` };
-      } catch (err) {
-        logger.error({ err }, "Test SMTP échoué");
-        const message = err instanceof Error ? err.message : "Erreur inconnue";
-        return { success: false, message: `Échec : ${message}` };
-      }
+      logger.info({ toEmail }, "Test SMTP envoyé");
+      return { success: true, message: `E-mail de test envoyé à ${toEmail}` };
     },
     testCloudinary: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
       requireAdmin(ctx);
@@ -455,11 +527,140 @@ export const settingsResolvers = {
           phone: input.phone ?? null,
           message: input.message,
         });
+
+        // Notify admin via email — non-blocking, failure does not affect the response
+        const smtp = await getSmtpSettings();
+        const adminEmail = smtp.senderEmail ?? smtp.user;
+        if (adminEmail) {
+          const contactInfo = [
+            input.email ? `E-mail : ${input.email}` : null,
+            input.phone ? `Téléphone : ${input.phone}` : null,
+          ]
+            .filter(Boolean)
+            .join("\n");
+
+          const error = await sendViaSMTP({
+            to: adminEmail,
+            subject: `📩 Nouveau message de ${input.name} — StreamManager`,
+            text: [
+              `Vous avez reçu un nouveau message via le formulaire de contact.`,
+              ``,
+              `De : ${input.name}`,
+              contactInfo,
+              ``,
+              `Message :`,
+              input.message,
+            ]
+              .filter((l) => l !== null)
+              .join("\n"),
+            html: `
+              <h2 style="margin:0 0 16px">Nouveau message de contact</h2>
+              <table style="border-collapse:collapse;width:100%">
+                <tr><td style="padding:6px 0;color:#666;width:120px">De</td><td style="padding:6px 0;font-weight:600">${input.name}</td></tr>
+                ${input.email ? `<tr><td style="padding:6px 0;color:#666">E-mail</td><td style="padding:6px 0"><a href="mailto:${input.email}">${input.email}</a></td></tr>` : ""}
+                ${input.phone ? `<tr><td style="padding:6px 0;color:#666">Téléphone</td><td style="padding:6px 0">${input.phone}</td></tr>` : ""}
+              </table>
+              <hr style="margin:16px 0;border:none;border-top:1px solid #eee"/>
+              <p style="white-space:pre-wrap;margin:0">${input.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            `,
+          });
+
+          if (error) {
+            logger.warn(
+              { error },
+              "Notification e-mail du formulaire de contact échouée",
+            );
+          } else {
+            logger.info(
+              { adminEmail },
+              "Notification e-mail du formulaire de contact envoyée",
+            );
+          }
+        }
+
         return true;
       } catch (err) {
         logger.error({ err }, "Failed to save contact inquiry");
         return false;
       }
+    },
+    markInquiryRead: async (
+      _: unknown,
+      { id, isRead }: { id: string; isRead: boolean },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      const [inquiry] = await db
+        .update(contactInquiries)
+        .set({ isRead })
+        .where(eq(contactInquiries.id, id))
+        .returning();
+      const replies = await db
+        .select()
+        .from(inquiryReplies)
+        .where(eq(inquiryReplies.inquiryId, id))
+        .orderBy(inquiryReplies.sentAt);
+      return { ...inquiry, replies };
+    },
+    replyToInquiry: async (
+      _: unknown,
+      { id, body }: { id: string; body: string },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      // Fetch inquiry to get email + name
+      const [inquiry] = await db
+        .select()
+        .from(contactInquiries)
+        .where(eq(contactInquiries.id, id));
+      if (!inquiry) throw new Error("Inquiry not found");
+
+      // Save reply to DB
+      const replyId = nanoid();
+      const [reply] = await db
+        .insert(inquiryReplies)
+        .values({ id: replyId, inquiryId: id, body })
+        .returning();
+
+      // Mark as read automatically on reply
+      await db
+        .update(contactInquiries)
+        .set({ isRead: true })
+        .where(eq(contactInquiries.id, id));
+
+      // Send email if contact provided an email address
+      if (inquiry.email) {
+        const error = await sendViaSMTP({
+          to: inquiry.email,
+          subject: `Re: Votre message — StreamManager`,
+          text: body,
+          html: `
+            <p>Bonjour ${inquiry.email ? inquiry.name : ""},</p>
+            <p style="white-space:pre-wrap">${body.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            <hr style="margin:24px 0;border:none;border-top:1px solid #eee"/>
+            <p style="color:#999;font-size:12px">Votre message original :</p>
+            <blockquote style="border-left:3px solid #eee;margin:0;padding:0 0 0 12px;color:#666;font-size:13px">
+              <p style="white-space:pre-wrap">${inquiry.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            </blockquote>
+          `,
+        });
+        if (error) {
+          logger.warn({ error, inquiryId: id }, "Failed to send reply email");
+        } else {
+          logger.info({ inquiryId: id, to: inquiry.email }, "Reply email sent");
+        }
+      }
+
+      return reply;
+    },
+    deleteInquiry: async (
+      _: unknown,
+      { id }: { id: string },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      await db.delete(contactInquiries).where(eq(contactInquiries.id, id));
+      return true;
     },
     createSummaryLink: async (
       _: unknown,
