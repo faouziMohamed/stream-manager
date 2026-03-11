@@ -1,18 +1,17 @@
 'use client';
 
-import {useQuery, useMutation, useQueryClient, type QueryKey} from '@tanstack/react-query';
+import {type QueryKey, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {gqlRequest} from '@/lib/graphql/client';
 import {
     GET_PAYMENTS,
-    UPDATE_PAYMENT,
     MARK_PAYMENT_PAID,
     type PaymentDto,
     type PaymentStatus,
+    UPDATE_PAYMENT,
     type UpdatePaymentInput,
 } from '@/lib/graphql/operations/payments.operations';
-import {clientLogger} from '@/lib/logger/client-logger';
+import {toastError} from '@/lib/utils/toast';
 
-const logger = clientLogger('use-payments-queries');
 
 export const paymentKeys = {
     all: ['payments'] as QueryKey,
@@ -49,7 +48,7 @@ export function useUpdatePayment() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('updatePayment failed', err);
+            toastError(err, 'Modification du paiement');
             if (ctx?.prev) qc.setQueryData(paymentKeys.all, ctx.prev);
         },
         onSettled: () => {
@@ -79,7 +78,7 @@ export function useMarkPaymentPaid() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('markPaymentPaid failed', err);
+            toastError(err, 'Marquage du paiement');
             if (ctx?.prev) qc.setQueryData(paymentKeys.all, ctx.prev);
         },
         onSettled: () => {

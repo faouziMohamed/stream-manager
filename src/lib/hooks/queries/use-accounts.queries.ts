@@ -20,9 +20,8 @@ import {
     type UpdateAccountInput,
     type UpdateProfileInput,
 } from '@/lib/graphql/operations/accounts.operations';
-import {clientLogger} from '@/lib/logger/client-logger';
+import {toastError} from '@/lib/utils/toast';
 
-const logger = clientLogger('use-accounts-queries');
 
 export const accountKeys = {
     all: ['streamingAccounts'] as QueryKey,
@@ -52,7 +51,7 @@ export function useCreateAccount() {
             gqlRequest<{ createAccount: StreamingAccountDto }>(CREATE_ACCOUNT, {input}).then(
                 (r) => r.createAccount,
             ),
-        onError: (err) => logger.error('createAccount failed', err),
+        onError: (err) => toastError(err, 'Création du compte'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }
@@ -73,7 +72,7 @@ export function useUpdateAccount() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('updateAccount failed', err);
+            toastError(err, 'Modification du compte');
             if (ctx?.prev) qc.setQueryData(accountKeys.all, ctx.prev);
         },
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
@@ -96,7 +95,7 @@ export function useDeleteAccount() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('deleteAccount failed', err);
+            toastError(err, 'Suppression du compte');
             if (ctx?.prev) qc.setQueryData(accountKeys.all, ctx.prev);
         },
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
@@ -110,7 +109,7 @@ export function useCreateProfile() {
     return useMutation({
         mutationFn: (input: CreateProfileInput) =>
             gqlRequest(CREATE_PROFILE, {input}),
-        onError: (err) => logger.error('createProfile failed', err),
+        onError: (err) => toastError(err, 'Création du profil'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }
@@ -120,7 +119,7 @@ export function useUpdateProfile() {
     return useMutation({
         mutationFn: ({id, input}: { id: string; input: UpdateProfileInput }) =>
             gqlRequest(UPDATE_PROFILE, {id, input}),
-        onError: (err) => logger.error('updateProfile failed', err),
+        onError: (err) => toastError(err, 'Modification du profil'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }
@@ -129,7 +128,7 @@ export function useDeleteProfile() {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (id: string) => gqlRequest(DELETE_PROFILE, {id}),
-        onError: (err) => logger.error('deleteProfile failed', err),
+        onError: (err) => toastError(err, 'Suppression du profil'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }
@@ -143,7 +142,7 @@ export function useAssignProfile() {
             gqlRequest<{ assignProfile: SubscriptionAssignmentDto }>(ASSIGN_PROFILE, {input}).then(
                 (r) => r.assignProfile,
             ),
-        onError: (err) => logger.error('assignProfile failed', err),
+        onError: (err) => toastError(err, 'Assignation du profil'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }
@@ -153,7 +152,7 @@ export function useRemoveAssignment() {
     return useMutation({
         mutationFn: (subscriptionId: string) =>
             gqlRequest(REMOVE_ASSIGNMENT, {subscriptionId}),
-        onError: (err) => logger.error('removeAssignment failed', err),
+        onError: (err) => toastError(err, 'Retrait de l\'assignation'),
         onSettled: () => qc.invalidateQueries({queryKey: accountKeys.all}),
     });
 }

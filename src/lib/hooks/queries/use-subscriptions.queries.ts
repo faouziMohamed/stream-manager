@@ -1,23 +1,22 @@
 'use client';
 
-import {useQuery, useMutation, useQueryClient, type QueryKey} from '@tanstack/react-query';
+import {type QueryKey, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {gqlRequest} from '@/lib/graphql/client';
 import {
-    GET_SUBSCRIPTIONS,
-    GET_SUBSCRIPTION,
     CREATE_SUBSCRIPTION,
-    UPDATE_SUBSCRIPTION,
-    DELETE_SUBSCRIPTION,
-    RENEW_SUBSCRIPTION,
-    type SubscriptionDto,
     type CreateSubscriptionInput,
-    type UpdateSubscriptionInput,
+    DELETE_SUBSCRIPTION,
+    GET_SUBSCRIPTION,
+    GET_SUBSCRIPTIONS,
+    RENEW_SUBSCRIPTION,
     type RenewSubscriptionInput,
+    type SubscriptionDto,
     type SubscriptionStatus,
+    UPDATE_SUBSCRIPTION,
+    type UpdateSubscriptionInput,
 } from '@/lib/graphql/operations/subscriptions.operations';
-import {clientLogger} from '@/lib/logger/client-logger';
+import {toastError} from '@/lib/utils/toast';
 
-const logger = clientLogger('use-subscriptions-queries');
 
 export const subscriptionKeys = {
     all: ['subscriptions'] as QueryKey,
@@ -58,7 +57,7 @@ export function useCreateSubscription() {
             gqlRequest<{ createSubscription: SubscriptionDto }>(CREATE_SUBSCRIPTION, {input}).then(
                 (r) => r.createSubscription,
             ),
-        onError: (err) => logger.error('createSubscription failed', err),
+        onError: (err) => toastError(err, 'Création de l\'abonnement'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});
             qc.invalidateQueries({queryKey: ['payments']});
@@ -83,7 +82,7 @@ export function useUpdateSubscription() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('updateSubscription failed', err);
+            toastError(err, 'Modification de l\'abonnement');
             if (ctx?.prev) qc.setQueryData(subscriptionKeys.all, ctx.prev);
         },
         onSettled: () => {
@@ -109,7 +108,7 @@ export function useDeleteSubscription() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('deleteSubscription failed', err);
+            toastError(err, 'Suppression de l\'abonnement');
             if (ctx?.prev) qc.setQueryData(subscriptionKeys.all, ctx.prev);
         },
         onSettled: () => {
@@ -126,7 +125,7 @@ export function useRenewSubscription() {
             gqlRequest<{ renewSubscription: SubscriptionDto }>(RENEW_SUBSCRIPTION, {input}).then(
                 (r) => r.renewSubscription,
             ),
-        onError: (err) => logger.error('renewSubscription failed', err),
+        onError: (err) => toastError(err, 'Renouvellement de l\'abonnement'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});
             qc.invalidateQueries({queryKey: ['payments']});

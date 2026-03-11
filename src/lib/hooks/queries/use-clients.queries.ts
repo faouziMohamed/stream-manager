@@ -1,20 +1,19 @@
 'use client';
 
-import {useQuery, useMutation, useQueryClient, type QueryKey} from '@tanstack/react-query';
+import {type QueryKey, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {gqlRequest} from '@/lib/graphql/client';
 import {
-    GET_CLIENTS,
-    GET_CLIENT,
-    CREATE_CLIENT,
-    UPDATE_CLIENT,
-    DELETE_CLIENT,
     type ClientDto,
+    CREATE_CLIENT,
     type CreateClientInput,
+    DELETE_CLIENT,
+    GET_CLIENT,
+    GET_CLIENTS,
+    UPDATE_CLIENT,
     type UpdateClientInput,
 } from '@/lib/graphql/operations/clients.operations';
-import {clientLogger} from '@/lib/logger/client-logger';
+import {toastError} from '@/lib/utils/toast';
 
-const logger = clientLogger('use-clients-queries');
 
 export const clientKeys = {
     all: ['clients'] as QueryKey,
@@ -65,7 +64,7 @@ export function useCreateClient() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('createClient failed', err);
+            toastError(err, 'Création du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
         onSettled: () => qc.invalidateQueries({queryKey: clientKeys.all}),
@@ -88,7 +87,7 @@ export function useUpdateClient() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('updateClient failed', err);
+            toastError(err, 'Modification du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
         onSettled: () => {
@@ -111,7 +110,7 @@ export function useDeleteClient() {
             return {prev};
         },
         onError: (err, _, ctx) => {
-            logger.error('deleteClient failed', err);
+            toastError(err, 'Suppression du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
         onSettled: () => qc.invalidateQueries({queryKey: clientKeys.all}),
