@@ -1,56 +1,103 @@
-import { requireAdmin, requireAuth } from './guards';
+import {requireAdmin, requireAuth} from './guards';
 import {
+  createPromotion,
+  createService,
+  deletePromotion,
   getAllPromotions,
+  getPlansByPromotion,
   getPromotionById,
   getServicesForPromotion,
-  createPromotion,
   updatePromotion,
-  deletePromotion,
-  getPlansByPromotion,
 } from '@/lib/db/repositories/services.repository';
-import type { GraphQLContext } from '../context';
+import type {GraphQLContext} from '../context';
 
 export const promotionsResolvers = {
-  Query: {
-    promotions: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
-      requireAuth(ctx);
-      return getAllPromotions();
+    Query: {
+        promotions: async (_: unknown, __: unknown, ctx: GraphQLContext) => {
+            requireAuth(ctx);
+            return getAllPromotions();
+        },
+        promotion: async (_: unknown, {id}: { id: string }, ctx: GraphQLContext) => {
+            requireAuth(ctx);
+            return getPromotionById(id);
+        },
     },
-    promotion: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
-      requireAuth(ctx);
-      return getPromotionById(id);
+    Mutation: {
+        createPromotion: async (
+            _: unknown,
+            {
+                input,
+            }: {
+                input: {
+                    name: string;
+                    description?: string;
+                    serviceIds: string[];
+                    newServiceName?: string;
+                    newServiceCategory?: string;
+                    startsAt?: string;
+                    expiresAt?: string;
+                };
+            },
+            ctx: GraphQLContext,
+        ) => {
+            requireAdmin(ctx);
+
+            // If a new service should be created inline, create it first then add its id
+            const serviceIds = [...input.serviceIds];
+            if (input.newServiceName?.trim()) {
+                const newSvc = await createService({
+                    name: input.newServiceName.trim(),
+                    category: input.newServiceCategory ?? 'streaming',
+                });
+                serviceIds.push(newSvc.id);
+            }
+
+            return createPromotion({
+                name: input.name,
+                description: input.description,
+                serviceIds,
+                startsAt: input.startsAt,
+                expiresAt: input.expiresAt,
+            });
+        },
+        updatePromotion: async (
+            _: unknown,
+            {
+                id,
+                input,
+            }: {
+                id: string;
+                input: {
+                    name?: string;
+                    description?: string;
+                    isActive?: boolean;
+                    serviceIds?: string[];
+                    startsAt?: string;
+                    expiresAt?: string;
+                };
+            },
+            ctx: GraphQLContext,
+        ) => {
+            requireAdmin(ctx);
+            const promo = await updatePromotion(id, input);
+            if (!promo) throw new Error(`Promotion ${id} not found`);
+            return promo;
+        },
+        deletePromotion: async (
+            _: unknown,
+            {id}: { id: string },
+            ctx: GraphQLContext,
+        ) => {
+            requireAdmin(ctx);
+            return deletePromotion(id);
+        },
     },
-  },
-  Mutation: {
-    createPromotion: async (
-      _: unknown,
-      { input }: { input: { name: string; description?: string; serviceIds: string[] } },
-      ctx: GraphQLContext,
-    ) => {
-      requireAdmin(ctx);
-      return createPromotion(input);
+    Promotion: {
+        services: (parent: { id: string }) => getServicesForPromotion(parent.id),
+        plans: (parent: { id: string }) => getPlansByPromotion(parent.id),
+        isExpired: (parent: { expiresAt?: Date | null }) => {
+            if (!parent.expiresAt) return false;
+            return new Date(parent.expiresAt) < new Date();
+        },
     },
-    updatePromotion: async (
-      _: unknown,
-      { id, input }: { id: string; input: { name?: string; description?: string; isActive?: boolean; serviceIds?: string[] } },
-      ctx: GraphQLContext,
-    ) => {
-      requireAdmin(ctx);
-      const promo = await updatePromotion(id, input);
-      if (!promo) throw new Error(`Promotion ${id} not found`);
-      return promo;
-    },
-    deletePromotion: async (
-      _: unknown,
-      { id }: { id: string },
-      ctx: GraphQLContext,
-    ) => {
-      requireAdmin(ctx);
-      return deletePromotion(id);
-    },
-  },
-  Promotion: {
-    services: (parent: { id: string }) => getServicesForPromotion(parent.id),
-    plans: (parent: { id: string }) => getPlansByPromotion(parent.id),
-  },
 };

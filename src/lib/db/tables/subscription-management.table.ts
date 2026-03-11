@@ -83,6 +83,8 @@ export const promotions = pgTable('promotions_promotions', {
     name: text('name').notNull(),
     description: text('description'),
     isActive: boolean('is_active').notNull().default(true),
+    startsAt: timestamp('starts_at', {withTimezone: true}),
+    expiresAt: timestamp('expires_at', {withTimezone: true}),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
 });
