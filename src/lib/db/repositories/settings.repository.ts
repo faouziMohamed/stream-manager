@@ -1,13 +1,20 @@
 import {db} from "@/lib/db";
-import {appSettings, contactInquiries, summaryLinks,} from "@/lib/db/tables/subscription-management.table";
+import {
+    appSettings,
+    cloudinarySettings,
+    contactInquiries,
+    smtpSettings,
+    summaryLinks,
+} from "@/lib/db/tables/subscription-management.table";
 import {eq} from "drizzle-orm";
 import {nanoid} from "nanoid";
 import {createLogger} from "@/lib/logger";
-import type {SmtpSettingsDto} from "@/lib/graphql/operations/settings.operations";
+import {encrypt, safeDecrypt} from "@/lib/utils/crypto";
+import type {CloudinarySettingsDto, SmtpSettingsDto} from "@/lib/graphql/operations/settings.operations";
 
 const logger = createLogger("settings-repository");
 
-// ── App settings ──────────────────────────────────────────────────────────────
+// ── App settings (key-value) ──────────────────────────────────────────────────
 
 export async function getAppSetting(key: string) {
     try {
@@ -44,38 +51,146 @@ export async function getDefaultCurrencySetting(): Promise<string> {
     }
 }
 
-const SMTP_KEYS = ['smtpHost', 'smtpPort', 'smtpSecure', 'smtpUser', 'smtpPassword', 'senderEmail', 'senderName'] as const;
+// ── SMTP settings ─────────────────────────────────────────────────────────────
+
+const SMTP_EMPTY: SmtpSettingsDto = {
+    host: null, port: null, secure: null, user: null,
+    senderEmail: null, senderName: null, hasPassword: false,
+};
 
 export async function getSmtpSettings(): Promise<SmtpSettingsDto> {
     try {
-        const results = await Promise.all(
-            SMTP_KEYS.map(async (k) => {
-                const [row] = await db.select().from(appSettings).where(eq(appSettings.key, k));
-                return {key: k, value: row?.value ?? null};
-            }),
-        );
-        const get = (k: string) => results.find((r) => r.key === k)?.value ?? null;
+        const [row] = await db.select().from(smtpSettings).where(eq(smtpSettings.id, 'default'));
+        if (!row) return SMTP_EMPTY;
         return {
-            host: get('smtpHost'),
-            port: get('smtpPort') ? parseInt(get('smtpPort')!) : null,
-            secure: get('smtpSecure') ? get('smtpSecure') === 'true' : null,
-            user: get('smtpUser'),
-            senderEmail: get('senderEmail'),
-            senderName: get('senderName'),
-            hasPassword: !!get('smtpPassword'),
+            host: row.host,
+            port: row.port,
+            secure: row.secure,
+            user: row.user,
+            senderEmail: row.senderEmail,
+            senderName: row.senderName,
+            hasPassword: !!row.passwordEncrypted,
         };
     } catch {
-        return {
-            host: null,
-            port: null,
-            secure: null,
-            user: null,
-            senderEmail: null,
-            senderName: null,
-            hasPassword: false
-        };
+        return SMTP_EMPTY;
     }
 }
+
+export async function saveSmtpSettings(input: {
+    host: string; port: number; secure: boolean;
+    user: string; password?: string;
+    senderEmail: string; senderName: string;
+}): Promise<SmtpSettingsDto> {
+    const existing = await db.select().from(smtpSettings).where(eq(smtpSettings.id, 'default'));
+    const passwordEncrypted = input.password
+        ? encrypt(input.password)
+        : (existing[0]?.passwordEncrypted ?? null);
+
+    await db.insert(smtpSettings)
+        .values({
+            id: 'default',
+            host: input.host,
+            port: input.port,
+            secure: input.secure,
+            user: input.user,
+            passwordEncrypted,
+            senderEmail: input.senderEmail,
+            senderName: input.senderName,
+        })
+        .onConflictDoUpdate({
+            target: smtpSettings.id,
+            set: {
+                host: input.host,
+                port: input.port,
+                secure: input.secure,
+                user: input.user,
+                passwordEncrypted,
+                senderEmail: input.senderEmail,
+                senderName: input.senderName,
+                updatedAt: new Date(),
+            },
+        });
+    return {
+        host: input.host, port: input.port, secure: input.secure,
+        user: input.user, senderEmail: input.senderEmail, senderName: input.senderName,
+        hasPassword: !!passwordEncrypted,
+    };
+}
+
+/** Returns the decrypted SMTP password for internal server use (sending mail). Never expose to client. */
+export async function getSmtpPassword(): Promise<string | null> {
+    const [row] = await db.select().from(smtpSettings).where(eq(smtpSettings.id, 'default'));
+    if (!row?.passwordEncrypted) return null;
+    return safeDecrypt(row.passwordEncrypted);
+}
+
+// ── Cloudinary settings ───────────────────────────────────────────────────────
+
+const CLOUDINARY_EMPTY: CloudinarySettingsDto = {
+    cloudName: null, apiKey: null, uploadPreset: null, folder: null, hasApiSecret: false,
+};
+
+export async function getCloudinarySettings(): Promise<CloudinarySettingsDto> {
+    try {
+        const [row] = await db.select().from(cloudinarySettings).where(eq(cloudinarySettings.id, 'default'));
+        if (!row) return CLOUDINARY_EMPTY;
+        return {
+            cloudName: row.cloudName,
+            apiKey: row.apiKey,
+            uploadPreset: row.uploadPreset ?? null,
+            folder: row.folder ?? null,
+            hasApiSecret: !!row.apiSecretEncrypted,
+        };
+    } catch {
+        return CLOUDINARY_EMPTY;
+    }
+}
+
+export async function saveCloudinarySettings(input: {
+    cloudName: string; apiKey: string; apiSecret?: string;
+    uploadPreset?: string; folder?: string;
+}): Promise<CloudinarySettingsDto> {
+    const existing = await db.select().from(cloudinarySettings).where(eq(cloudinarySettings.id, 'default'));
+    const apiSecretEncrypted = input.apiSecret
+        ? encrypt(input.apiSecret)
+        : (existing[0]?.apiSecretEncrypted ?? '');
+
+    await db.insert(cloudinarySettings)
+        .values({
+            id: 'default',
+            cloudName: input.cloudName,
+            apiKey: input.apiKey,
+            apiSecretEncrypted,
+            uploadPreset: input.uploadPreset ?? null,
+            folder: input.folder ?? 'streammanager',
+        })
+        .onConflictDoUpdate({
+            target: cloudinarySettings.id,
+            set: {
+                cloudName: input.cloudName,
+                apiKey: input.apiKey,
+                apiSecretEncrypted,
+                uploadPreset: input.uploadPreset ?? null,
+                folder: input.folder ?? 'streammanager',
+                updatedAt: new Date(),
+            },
+        });
+    return {
+        cloudName: input.cloudName,
+        apiKey: input.apiKey,
+        uploadPreset: input.uploadPreset ?? null,
+        folder: input.folder ?? 'streammanager',
+        hasApiSecret: !!apiSecretEncrypted,
+    };
+}
+
+/** Returns the decrypted API secret for internal server use. Never expose to client. */
+export async function getCloudinaryApiSecret(): Promise<string | null> {
+    const [row] = await db.select().from(cloudinarySettings).where(eq(cloudinarySettings.id, 'default'));
+    if (!row?.apiSecretEncrypted) return null;
+    return safeDecrypt(row.apiSecretEncrypted);
+}
+
 
 // ── Contact inquiries ─────────────────────────────────────────────────────────
 

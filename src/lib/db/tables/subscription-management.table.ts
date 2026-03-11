@@ -34,6 +34,36 @@ export const appSettings = pgTable('settings_app_settings', {
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
 });
 
+/**
+ * Dedicated SMTP configuration row (single row, id = 'default').
+ * Sensitive fields (password) are AES-256-GCM encrypted at the application layer.
+ */
+export const smtpSettings = pgTable('settings_smtp', {
+    id: text('id').primaryKey().default('default'),
+    host: text('host').notNull(),
+    port: integer('port').notNull().default(587),
+    secure: boolean('secure').notNull().default(false),
+    user: text('user').notNull(),
+    passwordEncrypted: text('password_encrypted'),
+    senderEmail: text('sender_email').notNull(),
+    senderName: text('sender_name').notNull(),
+    updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
+});
+
+/**
+ * Dedicated Cloudinary configuration row (single row, id = 'default').
+ * apiSecret is AES-256-GCM encrypted at the application layer.
+ */
+export const cloudinarySettings = pgTable('settings_cloudinary', {
+    id: text('id').primaryKey().default('default'),
+    cloudName: text('cloud_name').notNull(),
+    apiKey: text('api_key').notNull(),
+    apiSecretEncrypted: text('api_secret_encrypted').notNull(),
+    uploadPreset: text('upload_preset'),
+    folder: text('folder').default('streammanager'),
+    updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
+});
+
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 /**
@@ -46,6 +76,7 @@ export const services = pgTable('services_services', {
     description: text('description'),
     logoUrl: text('logo_url'),
     isActive: boolean('is_active').notNull().default(true),
+    showOnHomepage: boolean('show_on_homepage').notNull().default(true),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
 });
@@ -83,6 +114,7 @@ export const promotions = pgTable('promotions_promotions', {
     name: text('name').notNull(),
     description: text('description'),
     isActive: boolean('is_active').notNull().default(true),
+    showOnHomepage: boolean('show_on_homepage').notNull().default(true),
     startsAt: timestamp('starts_at', {withTimezone: true}),
     expiresAt: timestamp('expires_at', {withTimezone: true}),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),

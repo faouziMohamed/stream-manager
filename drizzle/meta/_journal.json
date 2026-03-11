@@ -36,6 +36,20 @@
       "when": 1773222394358,
       "tag": "0004_chubby_logan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1773228728691,
+      "tag": "0005_remarkable_rocket_racer",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773233517569,
+      "tag": "0006_add_show_on_homepage",
+      "breakpoints": true
     }
   ]
 }

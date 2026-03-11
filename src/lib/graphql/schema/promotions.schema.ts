@@ -4,6 +4,7 @@ export const promotionsSchema = /* GraphQL */ `
         name: String!
         description: String
         isActive: Boolean!
+        showOnHomepage: Boolean!
         startsAt: DateTime
         expiresAt: DateTime
         isExpired: Boolean!
@@ -21,12 +22,14 @@ export const promotionsSchema = /* GraphQL */ `
         newServiceCategory: String
         startsAt: DateTime
         expiresAt: DateTime
+        showOnHomepage: Boolean
     }
 
     input UpdatePromotionInput {
         name: String
         description: String
         isActive: Boolean
+        showOnHomepage: Boolean
         serviceIds: [ID!]
         startsAt: DateTime
         expiresAt: DateTime

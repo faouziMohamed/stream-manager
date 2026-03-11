@@ -7,8 +7,10 @@ import {
     BarChart3,
     Calendar,
     ChevronDown,
+    Cloud,
     CreditCard,
     Globe,
+    Images,
     LayoutDashboard,
     Link2,
     Mail,
@@ -45,6 +47,8 @@ const navItems: NavItem[] = [
     {label: 'Analytiques', href: '/console/analytics', icon: BarChart3},
     {type: 'separator', label: 'Compte'},
     {label: 'Résumé partagé', href: '/console/summary', icon: Link2},
+    {type: 'separator', label: 'Outils'},
+    {label: 'Médiathèque', href: '/console/media', icon: Images},
     {
         type: 'group',
         label: 'Paramètres',
@@ -52,6 +56,7 @@ const navItems: NavItem[] = [
         children: [
             {label: 'Général', href: '/console/settings', icon: Settings2},
             {label: 'SMTP', href: '/console/settings/smtp', icon: Mail},
+            {label: 'Cloudinary', href: '/console/settings/cloudinary', icon: Cloud},
         ],
     },
 ];
@@ -119,7 +124,7 @@ function SidebarContent({onNav}: { onNav?: () => void }) {
             {/* Logo */}
             <div className="px-4 py-4 border-b border-white/10">
                 <Link href="/console" onClick={onNav} className="flex items-center gap-2 mb-2">
-                    <Monitor className="h-6 w-6 text-primary shrink-0"/>
+                    <Monitor className="h-6 w-6 text-white shrink-0"/>
                     <span className="font-bold text-lg">StreamManager</span>
                 </Link>
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30 px-0.5">

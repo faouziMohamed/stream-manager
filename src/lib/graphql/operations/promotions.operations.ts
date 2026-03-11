@@ -6,10 +6,11 @@ export const GET_PROMOTIONS = /* GraphQL */ `
             name
             description
             isActive
+            showOnHomepage
             isExpired
             startsAt
             expiresAt
-            services { id name }
+            services { id name logoUrl }
             plans { id name durationMonths price currencyCode }
         }
     }
@@ -18,8 +19,8 @@ export const GET_PROMOTIONS = /* GraphQL */ `
 export const CREATE_PROMOTION = /* GraphQL */ `
     mutation CreatePromotion($input: CreatePromotionInput!) {
         createPromotion(input: $input) {
-            id name description isActive isExpired startsAt expiresAt
-            services { id name }
+            id name description isActive showOnHomepage isExpired startsAt expiresAt
+            services { id name logoUrl }
         }
     }
 `;
@@ -27,8 +28,8 @@ export const CREATE_PROMOTION = /* GraphQL */ `
 export const UPDATE_PROMOTION = /* GraphQL */ `
     mutation UpdatePromotion($id: ID!, $input: UpdatePromotionInput!) {
         updatePromotion(id: $id, input: $input) {
-            id name description isActive isExpired startsAt expiresAt
-            services { id name }
+            id name description isActive showOnHomepage isExpired startsAt expiresAt
+            services { id name logoUrl }
         }
     }
 `;
@@ -44,10 +45,11 @@ export interface PromotionDto {
     name: string;
     description: string | null;
     isActive: boolean;
+    showOnHomepage: boolean;
     isExpired: boolean;
     startsAt: string | null;
     expiresAt: string | null;
-    services: Array<{ id: string; name: string }>;
+    services: Array<{ id: string; name: string; logoUrl?: string | null }>;
     plans: Array<{
         id: string;
         name: string;
@@ -65,12 +67,14 @@ export interface CreatePromotionInput {
     newServiceCategory?: string;
     startsAt?: string;
     expiresAt?: string;
+    showOnHomepage?: boolean;
 }
 
 export interface UpdatePromotionInput {
     name?: string;
     description?: string;
     isActive?: boolean;
+    showOnHomepage?: boolean;
     serviceIds?: string[];
     startsAt?: string;
     expiresAt?: string;

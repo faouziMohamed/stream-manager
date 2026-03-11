@@ -1,10 +1,10 @@
 'use client';
 
 import {useState} from 'react';
-import {type Resolver, useForm} from 'react-hook-form';
+import {Controller, type Resolver, type SubmitHandler, useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import {CalendarClock, ChevronDown, ChevronRight, Package, Pencil, Plus, Trash2} from 'lucide-react';
+import {CalendarClock, ChevronDown, ChevronRight, Eye, EyeOff, Package, Pencil, Plus, Trash2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -15,6 +15,7 @@ import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {DateTimePicker} from '@/components/ui/date-time-picker';
 import {ConfirmDialog} from '@/components/console/confirm-dialog';
+import {Switch} from '@/components/ui/switch';
 import {formatCurrency} from '@/lib/utils/helpers';
 import {
     useCreatePromotion,
@@ -37,13 +38,13 @@ import type {PlanDto} from '@/lib/graphql/operations/plans.operations';
 const promotionSchema = z.object({
     name: z.string().min(1, 'Nom requis'),
     description: z.string().optional(),
-    // 'existing' = pick from list | 'new' = create inline
     serviceMode: z.enum(['existing', 'new']),
     serviceIds: z.array(z.string()),
     newServiceName: z.string().optional(),
     newServiceCategory: z.string().optional(),
     startsAt: z.string().optional(),
     expiresAt: z.string().optional(),
+    showOnHomepage: z.boolean().default(true),
 }).superRefine((data, ctx) => {
     if (data.serviceMode === 'existing' && data.serviceIds.length === 0) {
         ctx.addIssue({code: 'custom', path: ['serviceIds'], message: 'Sélectionnez au moins un service'});
@@ -234,10 +235,10 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
 
-    const {register, handleSubmit, reset, watch, setValue, formState: {errors, isSubmitting}} =
+    const {register, handleSubmit, reset, watch, setValue, control, formState: {errors, isSubmitting}} =
         useForm<PromotionForm>({
-            resolver: zodResolver(promotionSchema),
-            defaultValues: {serviceMode: 'existing', serviceIds: []},
+            resolver: zodResolver(promotionSchema) as Resolver<PromotionForm>,
+            defaultValues: {serviceMode: 'existing', serviceIds: [], showOnHomepage: true},
         });
 
     const serviceMode = watch('serviceMode');
@@ -252,7 +253,7 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
     };
 
     const openCreate = () => {
-        reset({serviceMode: 'existing', serviceIds: []});
+        reset({serviceMode: 'existing', serviceIds: [], showOnHomepage: true});
         setDialog({open: true});
     };
 
@@ -264,11 +265,12 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
             serviceIds: p.services?.map((s) => s.id) ?? [],
             startsAt: p.startsAt ?? undefined,
             expiresAt: p.expiresAt ?? undefined,
+            showOnHomepage: p.showOnHomepage ?? true,
         });
         setDialog({open: true, promo: p});
     };
 
-    const onSubmit = async (data: PromotionForm) => {
+    const onSubmit: SubmitHandler<PromotionForm> = async (data) => {
         if (dialog.promo) {
             await updatePromotion.mutateAsync({
                 id: dialog.promo.id,
@@ -278,6 +280,7 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
                     serviceIds: data.serviceIds,
                     startsAt: data.startsAt || undefined,
                     expiresAt: data.expiresAt || undefined,
+                    showOnHomepage: data.showOnHomepage,
                 },
             });
         } else {
@@ -289,6 +292,7 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
                 newServiceCategory: data.serviceMode === 'new' ? data.newServiceCategory : undefined,
                 startsAt: data.startsAt || undefined,
                 expiresAt: data.expiresAt || undefined,
+                showOnHomepage: data.showOnHomepage,
             });
         }
         setDialog({open: false});
@@ -333,6 +337,12 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
                                             <span className="truncate">{promo.name}</span>
                                             <Badge variant={status.variant}
                                                    className="text-xs shrink-0">{status.label}</Badge>
+                                            {promo.showOnHomepage === false && (
+                                                <Badge variant="outline"
+                                                       className="text-xs text-muted-foreground gap-1 shrink-0">
+                                                    <EyeOff className="h-3 w-3"/>Masqué
+                                                </Badge>
+                                            )}
                                         </button>
                                         <div className="flex gap-1 shrink-0">
                                             <Button size="icon" variant="ghost" className="h-8 w-8"
@@ -394,7 +404,7 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
                         </DialogTitle>
                     </DialogHeader>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit as Parameters<typeof handleSubmit>[0])} className="space-y-4">
                         {/* Name */}
                         <div className="space-y-1.5">
                             <Label>Nom *</Label>
@@ -519,6 +529,25 @@ export function PromotionsEditor({initialData, defaultCurrency = 'MAD'}: Props) 
                                 Une promotion expirée ne s&apos;affiche plus sur la page publique. Les abonnements
                                 existants restent actifs.
                             </p>
+                        </div>
+
+                        {/* Visibility toggle */}
+                        <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
+                            <div className="space-y-0.5">
+                                <Label className="text-sm font-medium flex items-center gap-1.5">
+                                    <Eye className="h-3.5 w-3.5 text-muted-foreground"/>
+                                    Afficher sur la page d&apos;accueil
+                                </Label>
+                                <p className="text-xs text-muted-foreground">Cette promotion sera visible par les
+                                    visiteurs</p>
+                            </div>
+                            <Controller
+                                name="showOnHomepage"
+                                control={control}
+                                render={({field}) => (
+                                    <Switch checked={field.value} onCheckedChange={field.onChange}/>
+                                )}
+                            />
                         </div>
 
                         <DialogFooter>

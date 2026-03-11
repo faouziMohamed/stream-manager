@@ -33,6 +33,12 @@ export const mutationSchema = /* GraphQL */ `
         # Settings
         setAppSetting(key: String!, value: String!): AppSetting!
         setSmtpSettings(input: SmtpSettingsInput!): SmtpSettings!
+        setCloudinarySettings(input: CloudinarySettingsInput!): CloudinarySettings!
+        testSmtp(toEmail: String!): TestResult!
+        testCloudinary: CloudinaryTestResult!
+        uploadToCloudinary(base64: String!, filename: String): CloudinaryTestResult!
+        deleteFromCloudinary(publicId: String!): TestResult!
+        replaceCloudinaryImage(oldPublicId: String!, base64: String!, filename: String): CloudinaryTestResult!
 
         # Contact inquiries (public — no auth)
         createInquiry(input: CreateInquiryInput!): Boolean!

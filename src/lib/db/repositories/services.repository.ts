@@ -11,12 +11,22 @@ export type CreateServiceInput = {
     category: string;
     description?: string | null;
     logoUrl?: string | null;
+    showOnHomepage?: boolean;
 };
 
-export type UpdateServiceInput = Partial<CreateServiceInput & { isActive: boolean }>;
+export type UpdateServiceInput = Partial<CreateServiceInput & { isActive: boolean; showOnHomepage: boolean }>;
 
 export async function getAllServices() {
     return db.select().from(services).orderBy(services.name);
+}
+
+/** Only active services that are flagged to show on the public homepage. */
+export async function getPublicServices() {
+    return db
+        .select()
+        .from(services)
+        .where(and(eq(services.isActive, true), eq(services.showOnHomepage, true)))
+        .orderBy(services.name);
 }
 
 export async function getServiceById(id: string) {
@@ -131,12 +141,14 @@ export type CreatePromotionInput = {
     serviceIds: string[];
     startsAt?: string | null;
     expiresAt?: string | null;
+    showOnHomepage?: boolean;
 };
 
 export type UpdatePromotionInput = {
     name?: string;
     description?: string | null;
     isActive?: boolean;
+    showOnHomepage?: boolean;
     serviceIds?: string[];
     startsAt?: string | null;
     expiresAt?: string | null;
@@ -144,6 +156,17 @@ export type UpdatePromotionInput = {
 
 export async function getAllPromotions() {
     return db.select().from(promotions).orderBy(promotions.name);
+}
+
+/** Only active, non-expired promotions flagged to show on the public homepage. */
+export async function getPublicPromotions() {
+    const now = new Date();
+    const all = await db
+        .select()
+        .from(promotions)
+        .where(and(eq(promotions.isActive, true), eq(promotions.showOnHomepage, true)))
+        .orderBy(promotions.name);
+    return all.filter((p) => !p.expiresAt || new Date(p.expiresAt) > now);
 }
 
 export async function getPromotionById(id: string) {

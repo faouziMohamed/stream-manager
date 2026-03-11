@@ -39,6 +39,8 @@ export const querySchema = /* GraphQL */ `
         appSetting(key: String!): AppSetting
         defaultCurrency: String!
         smtpSettings: SmtpSettings!
+        cloudinarySettings: CloudinarySettings!
+        cloudinaryMedia(folder: String): [CloudinaryResource!]!
 
         # Summary links
         summaryLinks: [SummaryLink!]!

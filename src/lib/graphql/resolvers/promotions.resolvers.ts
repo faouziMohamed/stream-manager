@@ -1,13 +1,13 @@
 import {requireAdmin, requireAuth} from './guards';
 import {
-  createPromotion,
-  createService,
-  deletePromotion,
-  getAllPromotions,
-  getPlansByPromotion,
-  getPromotionById,
-  getServicesForPromotion,
-  updatePromotion,
+    createPromotion,
+    createService,
+    deletePromotion,
+    getAllPromotions,
+    getPlansByPromotion,
+    getPromotionById,
+    getServicesForPromotion,
+    updatePromotion,
 } from '@/lib/db/repositories/services.repository';
 import type {GraphQLContext} from '../context';
 
@@ -25,52 +25,42 @@ export const promotionsResolvers = {
     Mutation: {
         createPromotion: async (
             _: unknown,
-            {
-                input,
-            }: {
+            {input}: {
                 input: {
-                    name: string;
-                    description?: string;
-                    serviceIds: string[];
-                    newServiceName?: string;
-                    newServiceCategory?: string;
-                    startsAt?: string;
-                    expiresAt?: string;
+                    name: string; description?: string; serviceIds: string[];
+                    newServiceName?: string; newServiceCategory?: string;
+                    startsAt?: string; expiresAt?: string; showOnHomepage?: boolean;
                 };
             },
             ctx: GraphQLContext,
         ) => {
             requireAdmin(ctx);
-
-            // If a new service should be created inline, create it first then add its id
             const serviceIds = [...input.serviceIds];
             if (input.newServiceName?.trim()) {
                 const newSvc = await createService({
                     name: input.newServiceName.trim(),
-                    category: input.newServiceCategory ?? 'streaming',
+                    category: input.newServiceCategory ?? 'streaming'
                 });
                 serviceIds.push(newSvc.id);
             }
-
             return createPromotion({
                 name: input.name,
                 description: input.description,
                 serviceIds,
                 startsAt: input.startsAt,
                 expiresAt: input.expiresAt,
+                showOnHomepage: input.showOnHomepage
             });
         },
         updatePromotion: async (
             _: unknown,
-            {
-                id,
-                input,
-            }: {
+            {id, input}: {
                 id: string;
                 input: {
                     name?: string;
                     description?: string;
                     isActive?: boolean;
+                    showOnHomepage?: boolean;
                     serviceIds?: string[];
                     startsAt?: string;
                     expiresAt?: string;

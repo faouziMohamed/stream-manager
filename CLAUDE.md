@@ -67,19 +67,21 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 
 ## Domain Model
 
-| Table                | Key fields                                                                    |
-|----------------------|-------------------------------------------------------------------------------|
-| `users`              | BetterAuth user table + `role` enum (`admin`/`accountant`/`user`)             |
-| `services`           | name, category, description, logoUrl, isActive                                |
-| `promotions`         | name, description, isActive (bundle of services)                              |
-| `promotion_services` | promotionId FK, serviceId FK (junction)                                       |
-| `plans`              | name, durationMonths, price, currencyCode, planType, serviceId OR promotionId |
-| `clients`            | name, email, phone, notes, isActive                                           |
-| `subscriptions`      | clientId, planId, startDate, endDate, isRecurring, status, renewedFromId      |
-| `payments`           | subscriptionId, dueDate, paidDate, amount, currencyCode, status               |
-| `app_settings`       | key-value store (defaultCurrency, etc.)                                       |
-| `summary_links`      | short shareable tokens for read-only accountant summary                       |
-| `contact_inquiries`  | public contact form submissions                                               |
+| Table                 | Key fields                                                                    |
+|-----------------------|-------------------------------------------------------------------------------|
+| `users`               | BetterAuth user table + `role` enum (`admin`/`accountant`/`user`)             |
+| `services`            | name, category, description, logoUrl, isActive                                |
+| `promotions`          | name, description, isActive (bundle of services)                              |
+| `promotion_services`  | promotionId FK, serviceId FK (junction)                                       |
+| `plans`               | name, durationMonths, price, currencyCode, planType, serviceId OR promotionId |
+| `clients`             | name, email, phone, notes, isActive                                           |
+| `subscriptions`       | clientId, planId, startDate, endDate, isRecurring, status, renewedFromId      |
+| `payments`            | subscriptionId, dueDate, paidDate, amount, currencyCode, status               |
+| `app_settings`        | key-value store (defaultCurrency, etc.)                                       |
+| `settings_smtp`       | Single-row SMTP config (password AES-256-GCM encrypted)                       |
+| `settings_cloudinary` | Single-row Cloudinary config (apiSecret AES-256-GCM encrypted)                |
+| `summary_links`       | short shareable tokens for read-only accountant summary                       |
+| `contact_inquiries`   | public contact form submissions                                               |
 
 ### Key business rules
 
@@ -244,23 +246,25 @@ src/
 
 ## Console Routes
 
-| Path                     | Description                                      |
-|--------------------------|--------------------------------------------------|
-| `/console`               | Dashboard overview (stats cards)                 |
-| `/console/services`      | Service CRUD                                     |
-| `/console/promotions`    | Promotion/bundle CRUD                            |
-| `/console/clients`       | Client CRUD                                      |
-| `/console/subscriptions` | Subscription management + renewal                |
-| `/console/payments`      | Payment tracking, mark as paid                   |
-| `/console/timeline`      | Gantt / Table Grid / Calendar timeline views     |
-| `/console/analytics`     | Revenue charts, payment breakdown, service stats |
-| `/console/summary`       | Summary link manager (generate shareable links)  |
-| `/console/settings`      | App settings (default currency, etc.)            |
-| `/s/[token]`             | Public shared summary (accountant read-only)     |
-| `/auth/login`            | Login (email + GitHub OAuth)                     |
-| `/auth/signup`           | Sign up                                          |
-| `/`                      | Public offers/promotions landing page            |
-| `/contact`               | Public contact form                              |
+| Path                           | Description                                      |
+|--------------------------------|--------------------------------------------------|
+| `/console`                     | Dashboard overview (stats cards)                 |
+| `/console/services`            | Service CRUD                                     |
+| `/console/promotions`          | Promotion/bundle CRUD                            |
+| `/console/clients`             | Client CRUD                                      |
+| `/console/subscriptions`       | Subscription management + renewal                |
+| `/console/payments`            | Payment tracking, mark as paid                   |
+| `/console/timeline`            | Gantt / Table Grid / Calendar timeline views     |
+| `/console/analytics`           | Revenue charts, payment breakdown, service stats |
+| `/console/summary`             | Summary link manager (generate shareable links)  |
+| `/console/settings`            | App settings (default currency)                  |
+| `/console/settings/smtp`       | SMTP config + send test email                    |
+| `/console/settings/cloudinary` | Cloudinary config + upload/delete test           |
+| `/s/[token]`                   | Public shared summary (accountant read-only)     |
+| `/auth/login`                  | Login (email + GitHub OAuth)                     |
+| `/auth/signup`                 | Sign up                                          |
+| `/`                            | Public offers/promotions landing page            |
+| `/contact`                     | Public contact form                              |
 
 ---
 
