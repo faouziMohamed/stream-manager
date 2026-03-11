@@ -102,7 +102,7 @@ const navItems: NavItem[] = [
 
 function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
   const pathname = usePathname();
-  const isChildActive = item.children.some((c) => pathname.startsWith(c.href));
+  const isChildActive = item.children.some((c) => pathname === c.href);
   const [open, setOpen] = useState(isChildActive || item.defaultOpen === true);
   const Icon = item.icon;
 
@@ -130,7 +130,7 @@ function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
         <div className="ml-4 pl-3 border-l border-white/10 space-y-0.5 mb-1">
           {item.children.map((child) => {
             const CIcon = child.icon;
-            const active = pathname.startsWith(child.href);
+            const active = pathname === child.href;
             return (
               <Link
                 key={child.href}

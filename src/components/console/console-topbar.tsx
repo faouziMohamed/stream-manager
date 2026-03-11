@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/auth-client";
 import { clientLogger } from "@/lib/logger/client-logger";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,6 @@ import { useTheme } from "next-themes";
 import { useSidebar } from "@/components/console/sidebar-context";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { ROUTES } from "@/lib/config/routes";
-import { signOut } from "better-auth/api";
 
 const logger = clientLogger("console-topbar");
 
@@ -41,8 +41,7 @@ export function ConsoleTopbar({ title }: ConsoleTopbarProps) {
 
   const handleSignOut = async () => {
     try {
-      console.log("Signing out...");
-      await signOut();
+      await authClient.signOut();
       router.push(ROUTES.auth.login);
     } catch (err) {
       logger.error("Sign out failed", err);
@@ -98,14 +97,14 @@ export function ConsoleTopbar({ title }: ConsoleTopbarProps) {
         </DropdownMenu>
 
         {/* Sign out */}
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
+          type="button"
           onClick={handleSignOut}
           aria-label="Se déconnecter"
+          className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </header>
   );
