@@ -5,21 +5,20 @@ export const GET_STREAMING_ACCOUNTS = /* GraphQL */ `
             serviceId
             label
             email
+            phone
+            supportsProfiles
             maxProfiles
             usedProfiles
             notes
             isActive
             createdAt
             updatedAt
-            service {
-                id
-                name
-                logoUrl
-            }
+            service { id name logoUrl }
             profiles {
                 id
                 name
                 profileIndex
+                pin
                 isActive
                 assignment {
                     id
@@ -30,6 +29,16 @@ export const GET_STREAMING_ACCOUNTS = /* GraphQL */ `
                         endDate
                         status
                     }
+                }
+            }
+            accountAssignment {
+                id
+                subscriptionId
+                subscription {
+                    id
+                    client { id name }
+                    endDate
+                    status
                 }
             }
         }
@@ -76,6 +85,8 @@ export const CREATE_ACCOUNT = /* GraphQL */ `
             serviceId
             label
             email
+            phone
+            supportsProfiles
             maxProfiles
             usedProfiles
             notes
@@ -83,7 +94,7 @@ export const CREATE_ACCOUNT = /* GraphQL */ `
             createdAt
             updatedAt
             service { id name logoUrl }
-            profiles { id name profileIndex isActive }
+            profiles { id name profileIndex pin isActive }
         }
     }
 `;
@@ -95,6 +106,8 @@ export const UPDATE_ACCOUNT = /* GraphQL */ `
             serviceId
             label
             email
+            phone
+            supportsProfiles
             maxProfiles
             notes
             isActive
@@ -116,6 +129,7 @@ export const CREATE_PROFILE = /* GraphQL */ `
             accountId
             name
             profileIndex
+            pin
             isActive
         }
     }
@@ -127,6 +141,7 @@ export const UPDATE_PROFILE = /* GraphQL */ `
             id
             name
             profileIndex
+            pin
             isActive
         }
     }
@@ -162,6 +177,8 @@ export interface StreamingAccountDto {
     serviceId: string;
     label: string;
     email: string | null;
+    phone: string | null;
+    supportsProfiles: boolean;
     maxProfiles: number;
     usedProfiles: number;
     notes: string | null;
@@ -170,6 +187,7 @@ export interface StreamingAccountDto {
     updatedAt: string;
     service: { id: string; name: string; logoUrl: string | null } | null;
     profiles: StreamingProfileDto[];
+    accountAssignment: SubscriptionAssignmentDto | null;
 }
 
 export interface StreamingProfileDto {
@@ -177,6 +195,7 @@ export interface StreamingProfileDto {
     accountId: string;
     name: string;
     profileIndex: number;
+    pin: string | null;
     isActive: boolean;
     assignment: SubscriptionAssignmentDto | null;
 }
@@ -198,7 +217,8 @@ export interface CreateAccountInput {
     serviceId: string;
     label: string;
     email?: string;
-    password?: string;
+    phone?: string;
+    supportsProfiles?: boolean;
     maxProfiles?: number;
     notes?: string;
 }
@@ -206,7 +226,8 @@ export interface CreateAccountInput {
 export interface UpdateAccountInput {
     label?: string;
     email?: string;
-    password?: string;
+    phone?: string;
+    supportsProfiles?: boolean;
     maxProfiles?: number;
     notes?: string;
     isActive?: boolean;
@@ -216,11 +237,13 @@ export interface CreateProfileInput {
     accountId: string;
     name: string;
     profileIndex?: number;
+    pin?: string;
 }
 
 export interface UpdateProfileInput {
     name?: string;
     profileIndex?: number;
+    pin?: string | null;
     isActive?: boolean;
 }
 

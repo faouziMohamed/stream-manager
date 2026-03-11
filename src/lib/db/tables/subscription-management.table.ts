@@ -190,17 +190,19 @@ export const summaryLinks = pgTable('summary_links', {
 // ─── Streaming Accounts ───────────────────────────────────────────────────────
 
 /**
- * A real streaming account you own (credentials).
- * e.g. a Netflix account with email/password, up to 5 profiles.
+ * A real streaming account you own.
+ * Tracks which platform account is used, how many profiles it supports.
+ * No password stored — use your password manager for credentials.
  */
 export const streamingAccounts = pgTable('streaming_accounts', {
     id: text('id').primaryKey(),
     serviceId: text('service_id')
         .notNull()
         .references(() => services.id, {onDelete: 'cascade'}),
-    label: text('label').notNull(), // e.g. "Netflix compte principal"
+    label: text('label').notNull(),
     email: text('email'),
-    password: text('password'), // stored as plaintext — internal use only
+    phone: text('phone'),
+    supportsProfiles: boolean('supports_profiles').notNull().default(true), // e.g. Netflix yes, Spotify no
     maxProfiles: integer('max_profiles').notNull().default(1),
     notes: text('notes'),
     isActive: boolean('is_active').notNull().default(true),
@@ -211,15 +213,16 @@ export const streamingAccounts = pgTable('streaming_accounts', {
 /**
  * A named profile inside a streaming account.
  * e.g. "Profil 1", "Profil Kids" within a Netflix account.
- * profileIndex: position on the platform (1-based).
+ * pin: AES-256-GCM encrypted value stored as "iv:authTag:ciphertext" hex.
  */
 export const streamingProfiles = pgTable('streaming_profiles', {
     id: text('id').primaryKey(),
     accountId: text('account_id')
         .notNull()
         .references(() => streamingAccounts.id, {onDelete: 'cascade'}),
-    name: text('name').notNull(), // e.g. "Profil 1"
+    name: text('name').notNull(),           // e.g. "Profil 1", "Kids"
     profileIndex: integer('profile_index').notNull().default(1),
+    pinEncrypted: text('pin_encrypted'),    // AES-256-GCM encrypted PIN (nullable)
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),

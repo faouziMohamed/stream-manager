@@ -22,6 +22,8 @@ export default async function AccountsPage() {
                 serviceId: acc.serviceId,
                 label: acc.label,
                 email: acc.email ?? null,
+                phone: acc.phone ?? null,
+                supportsProfiles: acc.supportsProfiles,
                 maxProfiles: acc.maxProfiles,
                 usedProfiles: 0, // computed server-side resolver on client refetch
                 notes: acc.notes ?? null,
@@ -40,9 +42,11 @@ export default async function AccountsPage() {
                     accountId: p.accountId,
                     name: p.name,
                     profileIndex: p.profileIndex,
+                    pin: p.pin ?? null,
                     isActive: p.isActive,
                     assignment: null,
                 })),
+                accountAssignment: null,
             };
         }),
     );

@@ -1,0 +1,1 @@
+ALTER TABLE "streaming_accounts" ADD COLUMN "supports_profiles" boolean DEFAULT true NOT NULL;

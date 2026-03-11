@@ -9,6 +9,7 @@ export const env = createEnv({
         GITHUB_CLIENT_ID: z.string().min(1),
         GITHUB_CLIENT_SECRET: z.string().min(1),
         DB_SSL_CA: z.string().min(1),
+        ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be 64 hex chars (32 bytes)'),
         NODE_ENV: z
             .enum(['development', 'test', 'production'])
             .default('development'),
@@ -23,6 +24,7 @@ export const env = createEnv({
         GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
         GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
         DB_SSL_CA: process.env.DB_SSL_CA,
+        ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
         NODE_ENV: process.env.NODE_ENV,
         NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     },

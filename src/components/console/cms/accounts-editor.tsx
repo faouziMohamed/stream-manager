@@ -1,10 +1,23 @@
 'use client';
 
 import {useState} from 'react';
-import {useForm} from 'react-hook-form';
+import {useForm, useWatch} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
-import {ChevronDown, ChevronRight, Eye, EyeOff, Pencil, Plus, Trash2, User, UserCheck, UserX,} from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronRight,
+    Eye,
+    EyeOff,
+    Layers,
+    LayersIcon,
+    Pencil,
+    Plus,
+    Trash2,
+    User,
+    UserCheck,
+    UserX,
+} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -12,7 +25,8 @@ import {Textarea} from '@/components/ui/textarea';
 import {Badge} from '@/components/ui/badge';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Switch} from '@/components/ui/switch';
 import {ConfirmDialog} from '@/components/console/confirm-dialog';
 import {cn} from '@/lib/utils/helpers';
 import {
@@ -26,7 +40,7 @@ import {
     useUpdateAccount,
     useUpdateProfile,
 } from '@/lib/hooks/queries/use-accounts.queries';
-import type {StreamingAccountDto, StreamingProfileDto} from '@/lib/graphql/operations/accounts.operations';
+import type {StreamingAccountDto, StreamingProfileDto,} from '@/lib/graphql/operations/accounts.operations';
 import type {ServiceDto} from '@/lib/graphql/operations/services.operations';
 import type {SubscriptionDto} from '@/lib/graphql/operations/subscriptions.operations';
 
@@ -36,19 +50,25 @@ const accountSchema = z.object({
     serviceId: z.string().min(1, 'Service requis'),
     label: z.string().min(1, 'Libellé requis'),
     email: z.string().email('Email invalide').optional().or(z.literal('')),
-    password: z.string().optional(),
-    maxProfiles: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().int().min(1).max(20)),
+    phone: z.string().optional().or(z.literal('')),
+    supportsProfiles: z.boolean().default(true),
+    maxProfiles: z.union([z.number(), z.string().transform(Number)])
+        .pipe(z.number().int().min(1).max(20)),
     notes: z.string().optional(),
-});
+}).refine(
+    (d) => !!(d.email || d.phone),
+    {message: 'Au moins un email ou un numéro de téléphone est requis', path: ['email']},
+);
 
 const profileSchema = z.object({
     name: z.string().min(1, 'Nom requis'),
-    profileIndex: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().int().min(1)),
+    profileIndex: z.union([z.number(), z.string().transform(Number)])
+        .pipe(z.number().int().min(1)),
+    pin: z.string().optional().or(z.literal('')),
 });
 
 const assignSchema = z.object({
     subscriptionId: z.string().min(1, 'Abonnement requis'),
-    profileId: z.string().optional(),
 });
 
 type AccountFormInput = z.input<typeof accountSchema>;
@@ -74,7 +94,105 @@ const statusColors: Record<string, string> = {
     cancelled: 'bg-destructive/10 text-destructive',
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const statusLabels: Record<string, string> = {
+    active: 'Actif',
+    expired: 'Expiré',
+    paused: 'En pause',
+    cancelled: 'Annulé',
+};
+
+// ─── Account form inner (needs useWatch, must be a component) ─────────────────
+
+function AccountFormFields({form, isEdit, services}: {
+    form: ReturnType<typeof useForm<AccountFormInput>>;
+    isEdit: boolean;
+    services: ServiceDto[];
+}) {
+    const supportsProfiles = useWatch({control: form.control, name: 'supportsProfiles'});
+
+    return (
+        <div className="space-y-4">
+            {!isEdit && (
+                <div className="space-y-1.5">
+                    <Label>Service *</Label>
+                    <Select onValueChange={(v) => form.setValue('serviceId', v)}>
+                        <SelectTrigger error={form.formState.errors.serviceId?.message}>
+                            <SelectValue placeholder="Choisir un service"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {services.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
+            <div className="space-y-1.5">
+                <Label>Libellé *</Label>
+                <Input placeholder="ex: Netflix compte principal"
+                       {...form.register('label')}
+                       error={form.formState.errors.label?.message}/>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                    <Label>Email du compte</Label>
+                    <Input type="email" placeholder="email@exemple.com"
+                           {...form.register('email')}
+                           error={form.formState.errors.email?.message}/>
+                </div>
+                <div className="space-y-1.5">
+                    <Label>Téléphone</Label>
+                    <Input type="tel" placeholder="+212 6XX XXX XXX"
+                           {...form.register('phone')}
+                           error={form.formState.errors.phone?.message}/>
+                </div>
+            </div>
+
+            {/* at-least-one error appears on the email path via refine */}
+            {form.formState.errors.email?.message?.includes('requis') && (
+                <p className="text-xs text-destructive -mt-2">
+                    {form.formState.errors.email.message}
+                </p>
+            )}
+
+            {/* supportsProfiles toggle */}
+            <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
+                <div className="space-y-0.5">
+                    <Label className="text-sm font-medium">Gestion par profils</Label>
+                    <p className="text-xs text-muted-foreground">
+                        La plateforme supporte plusieurs profils (ex: Netflix, Disney+)
+                    </p>
+                </div>
+                <Switch
+                    checked={!!supportsProfiles}
+                    onCheckedChange={(v) => {
+                        form.setValue('supportsProfiles', v);
+                        if (!v) form.setValue('maxProfiles', 1);
+                    }}
+                />
+            </div>
+
+            {/* maxProfiles — only relevant when supportsProfiles */}
+            {supportsProfiles && (
+                <div className="space-y-1.5">
+                    <Label>Nombre de profils max *</Label>
+                    <Input type="number" min={1} max={20}
+                           {...form.register('maxProfiles')}
+                           error={form.formState.errors.maxProfiles?.message}/>
+                </div>
+            )}
+
+            <div className="space-y-1.5">
+                <Label>Notes</Label>
+                <Textarea rows={2} placeholder="Notes internes…" {...form.register('notes')}/>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AccountsEditor({initialData, services = [], subscriptions = []}: Props) {
     const {data: accounts = []} = useStreamingAccounts(undefined, initialData);
@@ -89,19 +207,23 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
 
     // UI state
     const [expandedAccount, setExpandedAccount] = useState<string | null>(null);
-    const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
-    const [accountDialog, setAccountDialog] = useState<{ open: boolean; acc?: StreamingAccountDto }>({open: false});
-    const [profileDialog, setProfileDialog] = useState<{
-        open: boolean;
-        accountId?: string;
-        profile?: StreamingProfileDto
+    const [showPin, setShowPin] = useState<Record<string, boolean>>({});
+    const [accountDialog, setAccountDialog] = useState<{
+        open: boolean; acc?: StreamingAccountDto;
     }>({open: false});
+    const [profileDialog, setProfileDialog] = useState<{
+        open: boolean; accountId?: string; profile?: StreamingProfileDto;
+    }>({open: false});
+    // assign dialog: used for both profile-level and account-level assignments
     const [assignDialog, setAssignDialog] = useState<{
         open: boolean;
         accountId?: string;
-        profile?: StreamingProfileDto
+        profile?: StreamingProfileDto | null; // null = account-level (no profile)
+        title?: string;
     }>({open: false});
-    const [deleteTarget, setDeleteTarget] = useState<{ type: 'account' | 'profile'; id: string } | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<{
+        type: 'account' | 'profile'; id: string;
+    } | null>(null);
 
     // Forms
     const accountForm = useForm<AccountFormInput>({resolver: zodResolver(accountSchema)});
@@ -111,7 +233,7 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
     // ── Account handlers ──────────────────────────────────────────────────────
 
     const openCreateAccount = () => {
-        accountForm.reset({maxProfiles: 1});
+        accountForm.reset({maxProfiles: 1, email: '', phone: '', supportsProfiles: true});
         setAccountDialog({open: true});
     };
 
@@ -120,7 +242,8 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
             serviceId: acc.serviceId,
             label: acc.label,
             email: acc.email ?? '',
-            password: '',
+            phone: acc.phone ?? '',
+            supportsProfiles: acc.supportsProfiles,
             maxProfiles: acc.maxProfiles,
             notes: acc.notes ?? '',
         });
@@ -135,8 +258,9 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 input: {
                     label: data.label,
                     email: data.email || undefined,
-                    password: data.password || undefined,
-                    maxProfiles: data.maxProfiles,
+                    phone: data.phone || undefined,
+                    supportsProfiles: data.supportsProfiles,
+                    maxProfiles: data.supportsProfiles ? data.maxProfiles : 1,
                     notes: data.notes || undefined,
                 },
             });
@@ -145,8 +269,9 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 serviceId: data.serviceId,
                 label: data.label,
                 email: data.email || undefined,
-                password: data.password || undefined,
-                maxProfiles: data.maxProfiles,
+                phone: data.phone || undefined,
+                supportsProfiles: data.supportsProfiles,
+                maxProfiles: data.supportsProfiles ? data.maxProfiles : 1,
                 notes: data.notes || undefined,
             });
         }
@@ -156,31 +281,60 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
     // ── Profile handlers ──────────────────────────────────────────────────────
 
     const openAddProfile = (accountId: string) => {
-        profileForm.reset({name: '', profileIndex: 1});
+        profileForm.reset({name: '', profileIndex: 1, pin: ''});
         setProfileDialog({open: true, accountId});
     };
 
     const openEditProfile = (accountId: string, profile: StreamingProfileDto) => {
-        profileForm.reset({name: profile.name, profileIndex: profile.profileIndex});
+        profileForm.reset({
+            name: profile.name,
+            profileIndex: profile.profileIndex,
+            pin: profile.pin ?? '',
+        });
         setProfileDialog({open: true, accountId, profile});
     };
 
     const onProfileSubmit = async (raw: ProfileFormInput) => {
         const data = raw as ProfileForm;
         if (profileDialog.profile) {
-            await updateProfile.mutateAsync({id: profileDialog.profile.id, input: data});
+            await updateProfile.mutateAsync({
+                id: profileDialog.profile.id,
+                input: {name: data.name, profileIndex: data.profileIndex, pin: data.pin || null},
+            });
         } else if (profileDialog.accountId) {
-            await createProfile.mutateAsync({accountId: profileDialog.accountId, ...data});
+            await createProfile.mutateAsync({
+                accountId: profileDialog.accountId,
+                name: data.name,
+                profileIndex: data.profileIndex,
+                pin: data.pin || undefined,
+            });
         }
         setProfileDialog({open: false});
     };
 
     // ── Assign handlers ───────────────────────────────────────────────────────
+    // Supports two modes:
+    //   • profile-level: profile != null — links subscription → specific profile
+    //   • account-level: profile == null — links subscription → account (no profile)
 
-    const openAssign = (accountId: string, profile: StreamingProfileDto) => {
-        const current = profile.assignment;
-        assignForm.reset({subscriptionId: current?.subscriptionId ?? '', profileId: profile.id});
-        setAssignDialog({open: true, accountId, profile});
+    const openAssignProfile = (accountId: string, profile: StreamingProfileDto) => {
+        assignForm.reset({subscriptionId: profile.assignment?.subscriptionId ?? ''});
+        setAssignDialog({
+            open: true,
+            accountId,
+            profile,
+            title: `Assigner le profil « ${profile.name} »`,
+        });
+    };
+
+    const openAssignAccount = (acc: StreamingAccountDto) => {
+        assignForm.reset({subscriptionId: acc.accountAssignment?.subscriptionId ?? ''});
+        setAssignDialog({
+            open: true,
+            accountId: acc.id,
+            profile: null,
+            title: `Assigner le compte « ${acc.label} »`,
+        });
     };
 
     const onAssignSubmit = async (data: AssignForm) => {
@@ -188,6 +342,7 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
         await assignProfile.mutateAsync({
             subscriptionId: data.subscriptionId,
             accountId: assignDialog.accountId,
+            // profile === null → account-level assign (profileId stays null in DB)
             profileId: assignDialog.profile?.id ?? null,
         });
         setAssignDialog({open: false});
@@ -206,10 +361,16 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
         setDeleteTarget(null);
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Stats ─────────────────────────────────────────────────────────────────
 
-    const totalSlots = accounts.reduce((s, a) => s + a.maxProfiles, 0);
-    const usedSlots = accounts.reduce((s, a) => s + a.usedProfiles, 0);
+    const profileAccounts = accounts.filter((a) => a.supportsProfiles);
+    const totalSlots = profileAccounts.reduce((s, a) => s + a.maxProfiles, 0);
+    const usedSlots = profileAccounts.reduce((s, a) => s + a.usedProfiles, 0);
+    const noProfileUsed = accounts
+        .filter((a) => !a.supportsProfiles)
+        .reduce((s, a) => s + a.usedProfiles, 0);
+
+    // ── Render ────────────────────────────────────────────────────────────────
 
     return (
         <div className="space-y-4">
@@ -218,8 +379,9 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 <div>
                     <h1 className="text-2xl font-bold">Comptes streaming</h1>
                     <p className="text-muted-foreground text-sm">
-                        {accounts.length} compte{accounts.length !== 1 ? 's' : ''} —{' '}
-                        {usedSlots}/{totalSlots} profils utilisés
+                        {accounts.length} compte{accounts.length !== 1 ? 's' : ''}
+                        {totalSlots > 0 && ` · ${usedSlots}/${totalSlots} profils utilisés`}
+                        {noProfileUsed > 0 && ` · ${noProfileUsed} compte${noProfileUsed !== 1 ? 's' : ''} sans profils assigné${noProfileUsed !== 1 ? 's' : ''}`}
                     </p>
                 </div>
                 <Button onClick={openCreateAccount}>
@@ -240,7 +402,8 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                     {accounts.map((acc) => {
                         const isExpanded = expandedAccount === acc.id;
                         const usedCount = acc.usedProfiles;
-                        const isFull = usedCount >= acc.maxProfiles;
+                        const isFull = acc.supportsProfiles && usedCount >= acc.maxProfiles;
+                        const identity = [acc.email, acc.phone].filter(Boolean).join(' · ') || '—';
 
                         return (
                             <Card key={acc.id} className={cn(!acc.isActive && 'opacity-60')}>
@@ -259,44 +422,67 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <CardTitle className="text-base">{acc.label}</CardTitle>
                                                     {acc.service && (
-                                                        <Badge variant="outline"
-                                                               className="text-xs">{acc.service.name}</Badge>
+                                                        <Badge variant="outline" className="text-xs">
+                                                            {acc.service.name}
+                                                        </Badge>
                                                     )}
-                                                    {!acc.isActive &&
-                                                      <Badge variant="secondary" className="text-xs">Inactif</Badge>}
+                                                    {/* supportsProfiles badge */}
+                                                    {acc.supportsProfiles
+                                                        ? (
+                                                            <Badge variant="outline"
+                                                                   className="text-xs gap-1 border-primary/30 text-primary">
+                                                                <Layers className="h-2.5 w-2.5"/>
+                                                                {usedCount}/{acc.maxProfiles} profils
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="outline"
+                                                                   className="text-xs text-muted-foreground gap-1">
+                                                                <LayersIcon className="h-2.5 w-2.5"/>
+                                                                Sans profils
+                                                            </Badge>
+                                                        )
+                                                    }
+                                                    {isFull && (
+                                                        <Badge variant="destructive" className="text-xs">Complet</Badge>
+                                                    )}
+                                                    {!acc.isActive && (
+                                                        <Badge variant="secondary" className="text-xs">Inactif</Badge>
+                                                    )}
                                                 </div>
                                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                                    {acc.email ?? 'Pas d\'email'} · {usedCount}/{acc.maxProfiles} profils
-                                                    {isFull && <span className="text-destructive ml-1">· Complet</span>}
+                                                    {identity}
                                                 </p>
                                             </div>
                                         </button>
 
-                                        {/* Capacity bar */}
-                                        <div className="hidden sm:flex items-center gap-1.5">
-                                            {Array.from({length: acc.maxProfiles}, (_, i) => (
-                                                <div
-                                                    key={i}
-                                                    className={cn(
-                                                        'h-5 w-5 rounded-full border-2 flex items-center justify-center',
-                                                        i < usedCount
-                                                            ? 'bg-primary border-primary'
-                                                            : 'border-muted-foreground/30',
-                                                    )}
-                                                >
-                                                    {i < usedCount &&
-                                                      <User className="h-2.5 w-2.5 text-primary-foreground"/>}
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {/* Capacity dots — only for profile-supporting accounts */}
+                                        {acc.supportsProfiles && (
+                                            <div className="hidden sm:flex items-center gap-1.5">
+                                                {Array.from({length: acc.maxProfiles}, (_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={cn(
+                                                            'h-5 w-5 rounded-full border-2 flex items-center justify-center',
+                                                            i < usedCount
+                                                                ? 'bg-primary border-primary'
+                                                                : 'border-muted-foreground/30',
+                                                        )}
+                                                    >
+                                                        {i < usedCount && (
+                                                            <User className="h-2.5 w-2.5 text-primary-foreground"/>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
 
-                                        {/* Actions */}
                                         <div className="flex gap-1 shrink-0">
                                             <Button size="icon" variant="ghost" className="h-8 w-8"
                                                     onClick={() => openEditAccount(acc)}>
                                                 <Pencil className="h-3.5 w-3.5"/>
                                             </Button>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"
+                                            <Button size="icon" variant="ghost"
+                                                    className="h-8 w-8 text-destructive"
                                                     onClick={() => setDeleteTarget({type: 'account', id: acc.id})}>
                                                 <Trash2 className="h-3.5 w-3.5"/>
                                             </Button>
@@ -304,112 +490,192 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                                     </div>
                                 </CardHeader>
 
-                                {/* Expanded: credentials + profiles */}
+                                {/* Expanded content */}
                                 {isExpanded && (
                                     <CardContent className="pt-0 pb-3 px-4 space-y-3">
-                                        {/* Credentials */}
+                                        {/* Identity */}
                                         <div
-                                            className="flex items-center gap-2 text-sm bg-muted/30 rounded-md px-3 py-2 flex-wrap">
-                                            <span className="text-muted-foreground">Email :</span>
-                                            <span className="font-mono">{acc.email ?? '—'}</span>
-                                            <span className="text-muted-foreground ml-2">Mot de passe :</span>
-                                            {showPassword[acc.id]
-                                                ? <span className="font-mono">••••••••</span>
-                                                : <span className="font-mono">••••••••</span>
-                                            }
-                                            <button
-                                                onClick={() => setShowPassword((p) => ({...p, [acc.id]: !p[acc.id]}))}
-                                                className="ml-1 text-muted-foreground hover:text-foreground"
-                                            >
-                                                {showPassword[acc.id] ? <EyeOff className="h-3.5 w-3.5"/> :
-                                                    <Eye className="h-3.5 w-3.5"/>}
-                                            </button>
-                                        </div>
-
-                                        {/* Profiles */}
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Profils</p>
-                                                {acc.profiles.length < acc.maxProfiles && (
-                                                    <Button size="sm" variant="outline" className="h-6 text-xs px-2"
-                                                            onClick={() => openAddProfile(acc.id)}>
-                                                        <Plus className="h-3 w-3 mr-1"/> Ajouter
-                                                    </Button>
-                                                )}
-                                            </div>
-                                            {acc.profiles.length === 0 ? (
-                                                <p className="text-xs text-muted-foreground italic">Aucun profil
-                                                    défini.</p>
-                                            ) : (
-                                                <div className="space-y-1.5">
-                                                    {acc.profiles.map((profile) => {
-                                                        const assignment = profile.assignment;
-                                                        const sub = assignment?.subscription;
-                                                        return (
-                                                            <div
-                                                                key={profile.id}
-                                                                className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm flex-wrap"
-                                                            >
-                                                                <div
-                                                                    className="flex items-center gap-1.5 min-w-0 flex-1">
-                                                                    {assignment
-                                                                        ? <UserCheck
-                                                                            className="h-3.5 w-3.5 text-primary shrink-0"/>
-                                                                        : <UserX
-                                                                            className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
-                                                                    }
-                                                                    <span className="font-medium">{profile.name}</span>
-                                                                    <span
-                                                                        className="text-muted-foreground text-xs">#{profile.profileIndex}</span>
-                                                                </div>
-
-                                                                {/* Assignment info */}
-                                                                {sub ? (
-                                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className={cn('text-xs', statusColors[sub.status])}
-                                                                        >
-                                                                            {sub.client?.name ?? '—'}
-                                                                        </Badge>
-                                                                        <span
-                                                                            className="text-xs text-muted-foreground">jusqu&apos;au {sub.endDate}</span>
-                                                                        <Button size="sm" variant="ghost"
-                                                                                className="h-6 text-xs px-1.5 text-destructive"
-                                                                                onClick={() => handleRemoveAssignment(assignment!.subscriptionId)}>
-                                                                            Libérer
-                                                                        </Button>
-                                                                    </div>
-                                                                ) : (
-                                                                    <Button size="sm" variant="outline"
-                                                                            className="h-6 text-xs px-2"
-                                                                            onClick={() => openAssign(acc.id, profile)}>
-                                                                        Assigner
-                                                                    </Button>
-                                                                )}
-
-                                                                {/* Profile actions */}
-                                                                <div className="flex gap-1 shrink-0">
-                                                                    <Button size="icon" variant="ghost"
-                                                                            className="h-6 w-6"
-                                                                            onClick={() => openEditProfile(acc.id, profile)}>
-                                                                        <Pencil className="h-3 w-3"/>
-                                                                    </Button>
-                                                                    <Button size="icon" variant="ghost"
-                                                                            className="h-6 w-6 text-destructive"
-                                                                            onClick={() => setDeleteTarget({
-                                                                                type: 'profile',
-                                                                                id: profile.id
-                                                                            })}>
-                                                                        <Trash2 className="h-3 w-3"/>
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                            className="flex flex-wrap gap-x-4 gap-y-1 text-sm bg-muted/30 rounded-md px-3 py-2">
+                                            {acc.email && (
+                                                <span className="text-muted-foreground">
+                                                    Email :{' '}
+                                                    <span className="font-mono text-foreground">{acc.email}</span>
+                                                </span>
+                                            )}
+                                            {acc.phone && (
+                                                <span className="text-muted-foreground">
+                                                    Tél :{' '}
+                                                    <span className="font-mono text-foreground">{acc.phone}</span>
+                                                </span>
                                             )}
                                         </div>
+
+                                        {/* ── Platform WITH profiles ─────────────────── */}
+                                        {acc.supportsProfiles ? (
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                                        Profils
+                                                    </p>
+                                                    {acc.profiles.length < acc.maxProfiles && (
+                                                        <Button size="sm" variant="outline"
+                                                                className="h-6 text-xs px-2"
+                                                                onClick={() => openAddProfile(acc.id)}>
+                                                            <Plus className="h-3 w-3 mr-1"/>Ajouter
+                                                        </Button>
+                                                    )}
+                                                </div>
+
+                                                {acc.profiles.length === 0 ? (
+                                                    <p className="text-xs text-muted-foreground italic">
+                                                        Aucun profil défini.
+                                                    </p>
+                                                ) : (
+                                                    <div className="space-y-1.5">
+                                                        {acc.profiles.map((profile) => {
+                                                            const assignment = profile.assignment;
+                                                            const sub = assignment?.subscription;
+                                                            const pinKey = `${acc.id}:${profile.id}`;
+                                                            return (
+                                                                <div key={profile.id}
+                                                                     className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm flex-wrap">
+                                                                    {/* Profile identity */}
+                                                                    <div
+                                                                        className="flex items-center gap-1.5 min-w-0 flex-1">
+                                                                        {assignment
+                                                                            ? <UserCheck
+                                                                                className="h-3.5 w-3.5 text-primary shrink-0"/>
+                                                                            : <UserX
+                                                                                className="h-3.5 w-3.5 text-muted-foreground shrink-0"/>
+                                                                        }
+                                                                        <span
+                                                                            className="font-medium">{profile.name}</span>
+                                                                        <span className="text-muted-foreground text-xs">
+                                                                            #{profile.profileIndex}
+                                                                        </span>
+                                                                        {profile.pin && (
+                                                                            <span
+                                                                                className="flex items-center gap-1 text-xs text-muted-foreground ml-1">
+                                                                                PIN :
+                                                                                <span className="font-mono">
+                                                                                    {showPin[pinKey] ? profile.pin : '••••'}
+                                                                                </span>
+                                                                                <button
+                                                                                    onClick={() => setShowPin((p) => ({
+                                                                                        ...p,
+                                                                                        [pinKey]: !p[pinKey],
+                                                                                    }))}
+                                                                                    className="hover:text-foreground transition-colors"
+                                                                                >
+                                                                                    {showPin[pinKey]
+                                                                                        ? <EyeOff className="h-3 w-3"/>
+                                                                                        : <Eye className="h-3 w-3"/>
+                                                                                    }
+                                                                                </button>
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Assignment */}
+                                                                    {sub ? (
+                                                                        <div
+                                                                            className="flex items-center gap-2 flex-wrap">
+                                                                            <Badge variant="outline"
+                                                                                   className={cn('text-xs', statusColors[sub.status])}>
+                                                                                {sub.client?.name ?? '—'}
+                                                                            </Badge>
+                                                                            <span
+                                                                                className="text-xs text-muted-foreground">
+                                                                                jusqu&apos;au {sub.endDate}
+                                                                            </span>
+                                                                            <Button size="sm" variant="ghost"
+                                                                                    className="h-6 text-xs px-1.5 text-destructive"
+                                                                                    onClick={() => handleRemoveAssignment(assignment!.subscriptionId)}>
+                                                                                Libérer
+                                                                            </Button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <Button size="sm" variant="outline"
+                                                                                className="h-6 text-xs px-2"
+                                                                                onClick={() => openAssignProfile(acc.id, profile)}>
+                                                                            Assigner
+                                                                        </Button>
+                                                                    )}
+
+                                                                    {/* Profile actions */}
+                                                                    <div className="flex gap-1 shrink-0">
+                                                                        <Button size="icon" variant="ghost"
+                                                                                className="h-6 w-6"
+                                                                                onClick={() => openEditProfile(acc.id, profile)}>
+                                                                            <Pencil className="h-3 w-3"/>
+                                                                        </Button>
+                                                                        <Button size="icon" variant="ghost"
+                                                                                className="h-6 w-6 text-destructive"
+                                                                                onClick={() => setDeleteTarget({
+                                                                                    type: 'profile',
+                                                                                    id: profile.id,
+                                                                                })}>
+                                                                            <Trash2 className="h-3 w-3"/>
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            /* ── Platform WITHOUT profiles ───────────── */
+                                            <div className="rounded-md border px-3 py-2.5">
+                                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span
+                                                            className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                                            Utilisateur assigné
+                                                        </span>
+                                                    </div>
+                                                    {/* Account-level assignment — profileId IS NULL in DB */}
+                                                    {(() => {
+                                                        const acctAssignment = acc.accountAssignment;
+                                                        const sub = acctAssignment?.subscription;
+                                                        if (sub) {
+                                                            return (
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <Badge variant="outline"
+                                                                           className={cn('text-xs', statusColors[sub.status])}>
+                                                                        <UserCheck className="h-3 w-3 mr-1"/>
+                                                                        {sub.client?.name ?? '—'}
+                                                                    </Badge>
+                                                                    <span className="text-xs text-muted-foreground">
+                                                                        {statusLabels[sub.status]} · jusqu&apos;au {sub.endDate}
+                                                                    </span>
+                                                                    <Button size="sm" variant="ghost"
+                                                                            className="h-6 text-xs px-1.5 text-destructive"
+                                                                            onClick={() => handleRemoveAssignment(acctAssignment!.subscriptionId)}>
+                                                                        Libérer
+                                                                    </Button>
+                                                                </div>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs text-muted-foreground italic">
+                                                                    <UserX
+                                                                        className="h-3.5 w-3.5 inline mr-1 text-muted-foreground"/>
+                                                                    Non assigné
+                                                                </span>
+                                                                <Button size="sm" variant="outline"
+                                                                        className="h-6 text-xs px-2"
+                                                                        onClick={() => openAssignAccount(acc)}>
+                                                                    Assigner un abonné
+                                                                </Button>
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {acc.notes && (
                                             <p className="text-xs text-muted-foreground italic">{acc.notes}</p>
                                         )}
@@ -421,7 +687,7 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 </div>
             )}
 
-            {/* ── Account dialog ───────────────────────────────────────────────── */}
+            {/* ── Account dialog ─────────────────────────────────────────────── */}
             <Dialog open={accountDialog.open} onOpenChange={(o) => setAccountDialog({open: o})}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
@@ -429,74 +695,28 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                             {accountDialog.acc ? 'Modifier le compte' : 'Nouveau compte streaming'}
                         </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
-                        {!accountDialog.acc && (
-                            <div className="space-y-1.5">
-                                <Label>Service *</Label>
-                                <Select onValueChange={(v) => accountForm.setValue('serviceId', v)}>
-                                    <SelectTrigger error={accountForm.formState.errors.serviceId?.message}>
-                                        <SelectValue placeholder="Choisir un service"/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {services.map((s) => (
-                                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                        <div className="space-y-1.5">
-                            <Label>Libellé *</Label>
-                            <Input
-                                placeholder="ex: Netflix compte principal"
-                                {...accountForm.register('label')}
-                                error={accountForm.formState.errors.label?.message}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label>Email du compte</Label>
-                            <Input
-                                type="email"
-                                placeholder="email@exemple.com"
-                                {...accountForm.register('email')}
-                                error={accountForm.formState.errors.email?.message}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label>{accountDialog.acc ? 'Nouveau mot de passe (laisser vide pour conserver)' : 'Mot de passe'}</Label>
-                            <Input
-                                type="password"
-                                placeholder="••••••••"
-                                {...accountForm.register('password')}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label>Nombre de profils max *</Label>
-                            <Input
-                                type="number"
-                                min={1}
-                                max={20}
-                                {...accountForm.register('maxProfiles')}
-                                error={accountForm.formState.errors.maxProfiles?.message}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label>Notes</Label>
-                            <Textarea rows={2} placeholder="Notes internes…" {...accountForm.register('notes')} />
-                        </div>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setAccountDialog({open: false})}>
+                    <form onSubmit={accountForm.handleSubmit(onAccountSubmit)}>
+                        <AccountFormFields
+                            form={accountForm}
+                            isEdit={!!accountDialog.acc}
+                            services={services}
+                        />
+                        <DialogFooter className="mt-4">
+                            <Button type="button" variant="outline"
+                                    onClick={() => setAccountDialog({open: false})}>
                                 Annuler
                             </Button>
                             <Button type="submit" disabled={accountForm.formState.isSubmitting}>
-                                {accountForm.formState.isSubmitting ? 'Enregistrement…' : accountDialog.acc ? 'Enregistrer' : 'Créer'}
+                                {accountForm.formState.isSubmitting
+                                    ? 'Enregistrement…'
+                                    : accountDialog.acc ? 'Enregistrer' : 'Créer'}
                             </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
 
-            {/* ── Profile dialog ───────────────────────────────────────────────── */}
+            {/* ── Profile dialog ──────────────────────────────────────────────── */}
             <Dialog open={profileDialog.open} onOpenChange={(o) => setProfileDialog({open: o})}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
@@ -507,22 +727,31 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                     <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
                         <div className="space-y-1.5">
                             <Label>Nom du profil *</Label>
-                            <Input
-                                placeholder="ex: Profil 1"
-                                {...profileForm.register('name')}
-                                error={profileForm.formState.errors.name?.message}
-                            />
+                            <Input placeholder="ex: Profil 1"
+                                   {...profileForm.register('name')}
+                                   error={profileForm.formState.errors.name?.message}/>
                         </div>
                         <div className="space-y-1.5">
-                            <Label>Numéro de position</Label>
-                            <Input
-                                type="number"
-                                min={1}
-                                {...profileForm.register('profileIndex')}
-                            />
+                            <Label>Position dans le compte</Label>
+                            <Input type="number" min={1}
+                                   {...profileForm.register('profileIndex')}
+                                   error={profileForm.formState.errors.profileIndex?.message}/>
+                            <p className="text-xs text-muted-foreground">
+                                Numéro d&apos;ordre du profil sur la plateforme (1, 2, 3…)
+                            </p>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label>
+                                Code PIN{' '}
+                                <span className="text-muted-foreground font-normal text-xs">(chiffré en base)</span>
+                            </Label>
+                            <Input type="password" placeholder="ex: 1234"
+                                   autoComplete="new-password"
+                                   {...profileForm.register('pin')}/>
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setProfileDialog({open: false})}>
+                            <Button type="button" variant="outline"
+                                    onClick={() => setProfileDialog({open: false})}>
                                 Annuler
                             </Button>
                             <Button type="submit" disabled={profileForm.formState.isSubmitting}>
@@ -533,35 +762,40 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 </DialogContent>
             </Dialog>
 
-            {/* ── Assign dialog ─────────────────────────────────────────────────── */}
+            {/* ── Assign dialog (profile-level OR account-level) ──────────────── */}
             <Dialog open={assignDialog.open} onOpenChange={(o) => setAssignDialog({open: o})}>
                 <DialogContent className="max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>
-                            Assigner &ldquo;{assignDialog.profile?.name}&rdquo; à un abonné
-                        </DialogTitle>
+                        <DialogTitle>{assignDialog.title ?? 'Assigner à un abonné'}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={assignForm.handleSubmit(onAssignSubmit)} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label>Abonnement *</Label>
-                            <Select onValueChange={(v) => assignForm.setValue('subscriptionId', v)}
-                                    defaultValue={assignForm.getValues('subscriptionId')}>
+                            <Label>Abonnement actif *</Label>
+                            <Select
+                                onValueChange={(v) => assignForm.setValue('subscriptionId', v)}
+                                defaultValue={assignForm.getValues('subscriptionId')}
+                            >
                                 <SelectTrigger error={assignForm.formState.errors.subscriptionId?.message}>
-                                    <SelectValue placeholder="Choisir un abonnement actif"/>
+                                    <SelectValue placeholder="Choisir un abonnement"/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {subscriptions
-                                        .filter((s) => s.status === 'active')
-                                        .map((s) => (
-                                            <SelectItem key={s.id} value={s.id}>
-                                                {s.client?.name ?? s.clientId} — jusqu&apos;au {s.endDate}
-                                            </SelectItem>
-                                        ))}
+                                    {subscriptions.filter((s) => s.status === 'active').map((s) => (
+                                        <SelectItem key={s.id} value={s.id}>
+                                            {s.client?.name ?? s.clientId}
+                                            {' — '}jusqu&apos;au {s.endDate}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                            {subscriptions.filter((s) => s.status === 'active').length === 0 && (
+                                <p className="text-xs text-muted-foreground">
+                                    Aucun abonnement actif trouvé.
+                                </p>
+                            )}
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setAssignDialog({open: false})}>
+                            <Button type="button" variant="outline"
+                                    onClick={() => setAssignDialog({open: false})}>
                                 Annuler
                             </Button>
                             <Button type="submit" disabled={assignForm.formState.isSubmitting}>
@@ -572,15 +806,15 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                 </DialogContent>
             </Dialog>
 
-            {/* ── Confirm delete ───────────────────────────────────────────────── */}
+            {/* ── Confirm delete ──────────────────────────────────────────────── */}
             <ConfirmDialog
                 open={!!deleteTarget}
                 onOpenChange={(o) => !o && setDeleteTarget(null)}
                 title={deleteTarget?.type === 'account' ? 'Supprimer le compte' : 'Supprimer le profil'}
                 description={
                     deleteTarget?.type === 'account'
-                        ? 'Tous les profils associés seront également supprimés.'
-                        : 'L\'assignation associée sera également supprimée.'
+                        ? 'Tous les profils et assignations associés seront supprimés.'
+                        : "L'assignation associée sera également supprimée."
                 }
                 onConfirm={handleDelete}
                 loading={deleteAccount.isPending || deleteProfile.isPending}

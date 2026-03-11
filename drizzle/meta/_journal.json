@@ -22,6 +22,20 @@
       "when": 1773218096937,
       "tag": "0002_sour_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773221799190,
+      "tag": "0003_dizzy_tusk",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773222394358,
+      "tag": "0004_chubby_logan",
+      "breakpoints": true
     }
   ]
 }

@@ -5,11 +5,14 @@ export const accountsSchema = /* GraphQL */ `
         service: Service
         label: String!
         email: String
+        phone: String
+        supportsProfiles: Boolean!
         maxProfiles: Int!
         notes: String
         isActive: Boolean!
         usedProfiles: Int!
         profiles: [StreamingProfile!]!
+        accountAssignment: SubscriptionProfileAssignment
         createdAt: DateTime!
         updatedAt: DateTime!
     }
@@ -19,6 +22,7 @@ export const accountsSchema = /* GraphQL */ `
         accountId: ID!
         name: String!
         profileIndex: Int!
+        pin: String
         isActive: Boolean!
         assignment: SubscriptionProfileAssignment
         createdAt: DateTime!
@@ -38,7 +42,8 @@ export const accountsSchema = /* GraphQL */ `
         serviceId: ID!
         label: String!
         email: String
-        password: String
+        phone: String
+        supportsProfiles: Boolean
         maxProfiles: Int
         notes: String
     }
@@ -46,7 +51,8 @@ export const accountsSchema = /* GraphQL */ `
     input UpdateAccountInput {
         label: String
         email: String
-        password: String
+        phone: String
+        supportsProfiles: Boolean
         maxProfiles: Int
         notes: String
         isActive: Boolean
@@ -56,11 +62,13 @@ export const accountsSchema = /* GraphQL */ `
         accountId: ID!
         name: String!
         profileIndex: Int
+        pin: String
     }
 
     input UpdateProfileInput {
         name: String
         profileIndex: Int
+        pin: String
         isActive: Boolean
     }
 
