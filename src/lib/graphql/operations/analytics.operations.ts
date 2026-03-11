@@ -1,5 +1,4 @@
-// Analytics GraphQL operations
-export const GET_DASHBOARD_STATS = /* GraphQL */ `
+export const GET_DASHBOARD_STATS = /*graphql*/ `
   query GetDashboardStats {
     dashboardStats {
       activeSubscriptions
@@ -12,7 +11,7 @@ export const GET_DASHBOARD_STATS = /* GraphQL */ `
   }
 `;
 
-export const GET_ANALYTICS = /* GraphQL */ `
+export const GET_ANALYTICS = /*graphql*/ `
   query GetAnalytics($months: Int) {
     analytics(months: $months) {
       monthlyRevenue {

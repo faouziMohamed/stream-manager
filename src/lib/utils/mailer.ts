@@ -11,7 +11,7 @@ import {
 import {
   getSmtpPassword,
   getSmtpSettings,
-} from "@/lib/db/repositories/settings.repository";
+} from "@/lib/db/repositories/settings";
 import { createLogger } from "@/lib/logger";
 import { eq } from "drizzle-orm";
 
@@ -34,6 +34,7 @@ export async function sendViaSMTP(mail: MailOptions): Promise<string | null> {
   if (!smtp.host || !smtp.user) return "Configuration SMTP incomplète.";
   const password = await getSmtpPassword();
   if (!password) return "Mot de passe SMTP manquant.";
+
   try {
     const nodemailer = await import("nodemailer");
     const transportOptions = {

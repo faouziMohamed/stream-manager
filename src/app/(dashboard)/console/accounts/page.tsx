@@ -1,7 +1,7 @@
 import {
   getAllAccounts,
   getProfilesByAccount,
-} from "@/lib/db/repositories/accounts.repository";
+} from "@/lib/db/repositories/accounts";
 import { getAllServices } from "@/lib/db/repositories/services.repository";
 import { getAllSubscriptions } from "@/lib/db/repositories/subscriptions.repository";
 import { AccountsEditor } from "@/components/console/cms/accounts-editor";
@@ -63,6 +63,7 @@ export default async function AccountsPage() {
     description: s.description ?? null,
     logoUrl: s.logoUrl ?? null,
     isActive: s.isActive,
+    showOnHomepage: s.showOnHomepage,
     createdAt: s.createdAt.toISOString(),
     updatedAt: s.updatedAt.toISOString(),
   }));

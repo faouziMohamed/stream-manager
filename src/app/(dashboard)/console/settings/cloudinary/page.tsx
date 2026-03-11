@@ -1,4 +1,4 @@
-import { getCloudinarySettings } from "@/lib/db/repositories/settings.repository";
+import { getCloudinarySettings } from "@/lib/db/repositories/settings";
 import { CloudinaryEditor } from "@/components/console/cms/cloudinary-editor";
 
 export default async function CloudinarySettingsPage() {

@@ -25,6 +25,9 @@ import type {
   SmtpSettingsDto,
   TestResultDto,
 } from "@/lib/graphql/operations/settings.operations";
+import { clientLogger } from "@/lib/logger/client-logger";
+
+const logger = clientLogger("smtp-editor");
 
 const smtpSchema = z.object({
   host: z.string().min(1, "Hôte requis"),
@@ -77,8 +80,16 @@ export function SmtpEditor({ initialSmtp }: Props) {
 
   const onTest = async () => {
     setTestResult(null);
-    const result = await testSmtp.mutateAsync(testEmail);
-    setTestResult(result);
+    try {
+      const result = await testSmtp.mutateAsync(testEmail);
+      setTestResult(result);
+    } catch (err) {
+      logger.error("SMTP test failed", err);
+      setTestResult({
+        success: false,
+        message: "Erreur de connexion au serveur. Vérifiez votre session.",
+      });
+    }
   };
 
   return (
@@ -259,7 +270,13 @@ export function SmtpEditor({ initialSmtp }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-3 items-end">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void onTest();
+            }}
+            className="flex gap-3 items-end"
+          >
             <div className="space-y-1.5 flex-1">
               <Label htmlFor="testEmail">Adresse e-mail de test</Label>
               <Input
@@ -270,12 +287,10 @@ export function SmtpEditor({ initialSmtp }: Props) {
                 onChange={(e) => setTestEmail(e.target.value)}
               />
             </div>
-            <Button
-              type="button"
-              variant="outline"
+            <button
+              type="submit"
               disabled={!testEmail || testSmtp.isPending || !smtp?.hasPassword}
-              onClick={onTest}
-              className="cursor-pointer gap-2"
+              className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium shadow-xs transition-all hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
             >
               {testSmtp.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -283,8 +298,8 @@ export function SmtpEditor({ initialSmtp }: Props) {
                 <Send className="h-4 w-4" />
               )}
               Envoyer le test
-            </Button>
-          </div>
+            </button>
+          </form>
           {!smtp?.hasPassword && (
             <p className="text-xs text-muted-foreground">
               Enregistrez d&apos;abord la configuration avec un mot de passe

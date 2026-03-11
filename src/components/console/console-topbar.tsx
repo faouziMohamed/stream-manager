@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/auth-client";
 import { clientLogger } from "@/lib/logger/client-logger";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +14,9 @@ import {
 import { Check, LogOut, Menu, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSidebar } from "@/components/console/sidebar-context";
+import { useMounted } from "@/lib/hooks/use-mounted";
+import { ROUTES } from "@/lib/config/routes";
+import { signOut } from "better-auth/api";
 
 const logger = clientLogger("console-topbar");
 
@@ -35,17 +37,19 @@ export function ConsoleTopbar({ title }: ConsoleTopbarProps) {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { toggle } = useSidebar();
+  const mounted = useMounted();
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut();
-      router.push("/auth/login");
+      console.log("Signing out...");
+      await signOut();
+      router.push(ROUTES.auth.login);
     } catch (err) {
       logger.error("Sign out failed", err);
     }
   };
 
-  const ThemeIcon = resolvedTheme === "dark" ? Moon : Sun;
+  const ThemeIcon = mounted && resolvedTheme === "dark" ? Moon : Sun;
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-4 md:px-6 shrink-0 gap-2">

@@ -9,11 +9,11 @@ const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 const yoga = createYoga({
   schema,
-  context: ({ request }) => createGraphQLContext(request),
+  logging: "debug",
+  landingPage: true,
   graphqlEndpoint: "/api/graphql",
   graphiql: env.NODE_ENV === "development",
-  fetchAPI: { Request, Response },
+  context: ({ request }) => createGraphQLContext(request),
 });
 
-export const GET = yoga;
-export const POST = yoga;
+export const { fetch: GET, fetch: POST } = yoga;

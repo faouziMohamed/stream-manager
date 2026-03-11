@@ -1,5 +1,4 @@
-// Clients GraphQL operations
-export const GET_CLIENTS = /* GraphQL */ `
+export const GET_CLIENTS = /*graphql*/ `
   query GetClients {
     clients {
       id
@@ -15,7 +14,7 @@ export const GET_CLIENTS = /* GraphQL */ `
   }
 `;
 
-export const GET_CLIENT = /* GraphQL */ `
+export const GET_CLIENT = /*graphql*/ `
   query GetClient($id: ID!) {
     client(id: $id) {
       id
@@ -42,7 +41,7 @@ export const GET_CLIENT = /* GraphQL */ `
   }
 `;
 
-export const CREATE_CLIENT = /* GraphQL */ `
+export const CREATE_CLIENT = /*graphql*/ `
   mutation CreateClient($input: CreateClientInput!) {
     createClient(input: $input) {
       id
@@ -56,7 +55,7 @@ export const CREATE_CLIENT = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_CLIENT = /* GraphQL */ `
+export const UPDATE_CLIENT = /*graphql*/ `
   mutation UpdateClient($id: ID!, $input: UpdateClientInput!) {
     updateClient(id: $id, input: $input) {
       id
@@ -70,7 +69,7 @@ export const UPDATE_CLIENT = /* GraphQL */ `
   }
 `;
 
-export const DELETE_CLIENT = /* GraphQL */ `
+export const DELETE_CLIENT = /*graphql*/ `
   mutation DeleteClient($id: ID!) {
     deleteClient(id: $id)
   }

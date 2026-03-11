@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMounted } from "@/lib/hooks/use-mounted";
 
 type Theme = "light" | "dark" | "system";
 
@@ -24,7 +25,9 @@ const ThemeOptionIcon = {
 
 export function WebsiteHeader() {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const ThemeIcon = resolvedTheme === "dark" ? Moon : Sun;
+  const mounted = useMounted();
+
+  const ThemeIcon = mounted && resolvedTheme === "dark" ? Moon : Sun;
 
   return (
     <header className="border-b bg-card/80 backdrop-blur sticky top-0 z-10">

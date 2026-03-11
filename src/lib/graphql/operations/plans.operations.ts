@@ -1,5 +1,4 @@
-// Plans GraphQL operations — implemented in Phase 2
-export const GET_PLANS = /* GraphQL */ `
+export const GET_PLANS = /*graphql*/ `
   query GetPlans($serviceId: ID, $promotionId: ID) {
     plans(serviceId: $serviceId, promotionId: $promotionId) {
       id
@@ -15,7 +14,7 @@ export const GET_PLANS = /* GraphQL */ `
   }
 `;
 
-export const GET_PLAN = /* GraphQL */ `
+export const GET_PLAN = /*graphql*/ `
   query GetPlan($id: ID!) {
     plan(id: $id) {
       id
@@ -31,7 +30,7 @@ export const GET_PLAN = /* GraphQL */ `
   }
 `;
 
-export const CREATE_PLAN = /* GraphQL */ `
+export const CREATE_PLAN = /*graphql*/ `
   mutation CreatePlan($input: CreatePlanInput!) {
     createPlan(input: $input) {
       id
@@ -45,7 +44,7 @@ export const CREATE_PLAN = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_PLAN = /* GraphQL */ `
+export const UPDATE_PLAN = /*graphql*/ `
   mutation UpdatePlan($id: ID!, $input: UpdatePlanInput!) {
     updatePlan(id: $id, input: $input) {
       id
@@ -59,7 +58,7 @@ export const UPDATE_PLAN = /* GraphQL */ `
   }
 `;
 
-export const DELETE_PLAN = /* GraphQL */ `
+export const DELETE_PLAN = /*graphql*/ `
   mutation DeletePlan($id: ID!) {
     deletePlan(id: $id)
   }

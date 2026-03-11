@@ -1,5 +1,3 @@
-// Barrel re-export for all typed operations
-// Operations are added per domain in Phase 2
 export * from "./operations/services.operations";
 export * from "./operations/plans.operations";
 export * from "./operations/promotions.operations";

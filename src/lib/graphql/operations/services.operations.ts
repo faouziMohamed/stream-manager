@@ -1,5 +1,4 @@
-// Services GraphQL operations — implemented in Phase 2
-export const GET_SERVICES = /* GraphQL */ `
+export const GET_SERVICES = /*graphql*/ `
   query GetServices {
     services {
       id
@@ -15,7 +14,7 @@ export const GET_SERVICES = /* GraphQL */ `
   }
 `;
 
-export const GET_SERVICE = /* GraphQL */ `
+export const GET_SERVICE = /*graphql*/ `
   query GetService($id: ID!) {
     service(id: $id) {
       id
@@ -37,7 +36,7 @@ export const GET_SERVICE = /* GraphQL */ `
   }
 `;
 
-export const CREATE_SERVICE = /* GraphQL */ `
+export const CREATE_SERVICE = /*graphql*/ `
   mutation CreateService($input: CreateServiceInput!) {
     createService(input: $input) {
       id
@@ -52,7 +51,7 @@ export const CREATE_SERVICE = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_SERVICE = /* GraphQL */ `
+export const UPDATE_SERVICE = /*graphql*/ `
   mutation UpdateService($id: ID!, $input: UpdateServiceInput!) {
     updateService(id: $id, input: $input) {
       id
@@ -67,7 +66,7 @@ export const UPDATE_SERVICE = /* GraphQL */ `
   }
 `;
 
-export const DELETE_SERVICE = /* GraphQL */ `
+export const DELETE_SERVICE = /*graphql*/ `
   mutation DeleteService($id: ID!) {
     deleteService(id: $id)
   }

@@ -3,6 +3,7 @@
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useMounted } from "@/lib/hooks/use-mounted";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +33,9 @@ interface Props {
 
 export function SharedSummaryHeader({ label }: Props) {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const ThemeIcon = resolvedTheme === "dark" ? Moon : Sun;
+  const mounted = useMounted();
+
+  const ThemeIcon = mounted && resolvedTheme === "dark" ? Moon : Sun;
 
   return (
     <header className="border-b bg-card/80 backdrop-blur sticky top-0 z-10">

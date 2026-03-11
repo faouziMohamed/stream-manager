@@ -1,5 +1,4 @@
-// Payments GraphQL operations
-export const GET_PAYMENTS = /* GraphQL */ `
+export const GET_PAYMENTS = /*graphql*/ `
   query GetPayments(
     $subscriptionId: ID
     $status: PaymentStatus
@@ -38,7 +37,7 @@ export const GET_PAYMENTS = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_PAYMENT = /* GraphQL */ `
+export const UPDATE_PAYMENT = /*graphql*/ `
   mutation UpdatePayment($id: ID!, $input: UpdatePaymentInput!) {
     updatePayment(id: $id, input: $input) {
       id
@@ -50,7 +49,7 @@ export const UPDATE_PAYMENT = /* GraphQL */ `
   }
 `;
 
-export const MARK_PAYMENT_PAID = /* GraphQL */ `
+export const MARK_PAYMENT_PAID = /*graphql*/ `
   mutation MarkPaymentPaid($id: ID!, $paidDate: Date) {
     markPaymentPaid(id: $id, paidDate: $paidDate) {
       id

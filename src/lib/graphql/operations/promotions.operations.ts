@@ -1,5 +1,4 @@
-// Promotions GraphQL operations
-export const GET_PROMOTIONS = /* GraphQL */ `
+export const GET_PROMOTIONS = /*graphql*/ `
   query GetPromotions {
     promotions {
       id
@@ -26,7 +25,7 @@ export const GET_PROMOTIONS = /* GraphQL */ `
   }
 `;
 
-export const CREATE_PROMOTION = /* GraphQL */ `
+export const CREATE_PROMOTION = /*graphql*/ `
   mutation CreatePromotion($input: CreatePromotionInput!) {
     createPromotion(input: $input) {
       id
@@ -46,7 +45,7 @@ export const CREATE_PROMOTION = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_PROMOTION = /* GraphQL */ `
+export const UPDATE_PROMOTION = /*graphql*/ `
   mutation UpdatePromotion($id: ID!, $input: UpdatePromotionInput!) {
     updatePromotion(id: $id, input: $input) {
       id
@@ -66,7 +65,7 @@ export const UPDATE_PROMOTION = /* GraphQL */ `
   }
 `;
 
-export const DELETE_PROMOTION = /* GraphQL */ `
+export const DELETE_PROMOTION = /*graphql*/ `
   mutation DeletePromotion($id: ID!) {
     deletePromotion(id: $id)
   }

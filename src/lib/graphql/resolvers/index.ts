@@ -6,8 +6,8 @@ import { clientsResolvers } from "./clients.resolvers";
 import { subscriptionsResolvers } from "./subscriptions.resolvers";
 import { paymentsResolvers } from "./payments.resolvers";
 import { analyticsResolvers } from "./analytics.resolvers";
-import { settingsResolvers } from "./settings.resolvers";
-import { accountsResolvers } from "./accounts.resolvers";
+import { settingsResolvers } from "./settings";
+import { accountsResolvers } from "./accounts";
 
 export const resolvers = {
   // Custom scalars

@@ -1,5 +1,4 @@
-// Subscriptions GraphQL operations
-export const GET_SUBSCRIPTIONS = /* GraphQL */ `
+export const GET_SUBSCRIPTIONS = /*graphql*/ `
   query GetSubscriptions($clientId: ID, $status: SubscriptionStatus) {
     subscriptions(clientId: $clientId, status: $status) {
       id
@@ -39,7 +38,7 @@ export const GET_SUBSCRIPTIONS = /* GraphQL */ `
   }
 `;
 
-export const GET_SUBSCRIPTION = /* GraphQL */ `
+export const GET_SUBSCRIPTION = /*graphql*/ `
   query GetSubscription($id: ID!) {
     subscription(id: $id) {
       id
@@ -85,7 +84,7 @@ export const GET_SUBSCRIPTION = /* GraphQL */ `
   }
 `;
 
-export const CREATE_SUBSCRIPTION = /* GraphQL */ `
+export const CREATE_SUBSCRIPTION = /*graphql*/ `
   mutation CreateSubscription($input: CreateSubscriptionInput!) {
     createSubscription(input: $input) {
       id
@@ -99,7 +98,7 @@ export const CREATE_SUBSCRIPTION = /* GraphQL */ `
   }
 `;
 
-export const UPDATE_SUBSCRIPTION = /* GraphQL */ `
+export const UPDATE_SUBSCRIPTION = /*graphql*/ `
   mutation UpdateSubscription($id: ID!, $input: UpdateSubscriptionInput!) {
     updateSubscription(id: $id, input: $input) {
       id
@@ -113,13 +112,13 @@ export const UPDATE_SUBSCRIPTION = /* GraphQL */ `
   }
 `;
 
-export const DELETE_SUBSCRIPTION = /* GraphQL */ `
+export const DELETE_SUBSCRIPTION = /*graphql*/ `
   mutation DeleteSubscription($id: ID!) {
     deleteSubscription(id: $id)
   }
 `;
 
-export const RENEW_SUBSCRIPTION = /* GraphQL */ `
+export const RENEW_SUBSCRIPTION = /*graphql*/ `
   mutation RenewSubscription($input: RenewSubscriptionInput!) {
     renewSubscription(input: $input) {
       id
