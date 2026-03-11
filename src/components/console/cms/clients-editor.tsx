@@ -91,7 +91,7 @@ export function ClientsEditor({initialData}: Props) {
                 <Card><CardContent
                     className="py-12 text-center text-muted-foreground">{search ? 'Aucun résultat.' : 'Aucun client. Créez-en un pour commencer.'}</CardContent></Card>
             ) : (
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>

@@ -15,6 +15,13 @@
       "when": 1773210291887,
       "tag": "0001_unknown_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773218096937,
+      "tag": "0002_sour_lake",
+      "breakpoints": true
     }
   ]
 }

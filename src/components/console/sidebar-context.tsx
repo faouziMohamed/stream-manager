@@ -1,29 +1,32 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {createContext, useContext, useState} from "react";
 
-interface SidebarContextValue {
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  toggle: () => void;
+interface SidebarCtx {
+    open: boolean;
+    toggle: () => void;
+    close: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextValue>({
-  open: false,
-  setOpen: () => {},
-  toggle: () => {},
+const SidebarContext = createContext<SidebarCtx>({
+    open: false,
+    toggle: () => {
+    },
+    close: () => {
+    },
 });
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const toggle = () => setOpen((v) => !v);
-  return (
-    <SidebarContext.Provider value={{ open, setOpen, toggle }}>
-      {children}
-    </SidebarContext.Provider>
-  );
+export function SidebarProvider({children}: { children: React.ReactNode }) {
+    const [open, setOpen] = useState(false);
+    return (
+        <SidebarContext.Provider
+            value={{open, toggle: () => setOpen((v) => !v), close: () => setOpen(false)}}
+        >
+            {children}
+        </SidebarContext.Provider>
+    );
 }
 
 export function useSidebar() {
-  return useContext(SidebarContext);
+    return useContext(SidebarContext);
 }

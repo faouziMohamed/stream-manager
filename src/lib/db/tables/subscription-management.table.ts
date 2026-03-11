@@ -187,6 +187,61 @@ export const summaryLinks = pgTable('summary_links', {
     createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
 });
 
+// ─── Streaming Accounts ───────────────────────────────────────────────────────
+
+/**
+ * A real streaming account you own (credentials).
+ * e.g. a Netflix account with email/password, up to 5 profiles.
+ */
+export const streamingAccounts = pgTable('streaming_accounts', {
+    id: text('id').primaryKey(),
+    serviceId: text('service_id')
+        .notNull()
+        .references(() => services.id, {onDelete: 'cascade'}),
+    label: text('label').notNull(), // e.g. "Netflix compte principal"
+    email: text('email'),
+    password: text('password'), // stored as plaintext — internal use only
+    maxProfiles: integer('max_profiles').notNull().default(1),
+    notes: text('notes'),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
+});
+
+/**
+ * A named profile inside a streaming account.
+ * e.g. "Profil 1", "Profil Kids" within a Netflix account.
+ * profileIndex: position on the platform (1-based).
+ */
+export const streamingProfiles = pgTable('streaming_profiles', {
+    id: text('id').primaryKey(),
+    accountId: text('account_id')
+        .notNull()
+        .references(() => streamingAccounts.id, {onDelete: 'cascade'}),
+    name: text('name').notNull(), // e.g. "Profil 1"
+    profileIndex: integer('profile_index').notNull().default(1),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', {withTimezone: true}).notNull().defaultNow(),
+});
+
+/**
+ * Links a subscription to the streaming profile the client is using.
+ * For services without profiles, only accountId is set (profileId null).
+ */
+export const subscriptionProfiles = pgTable('subscription_profiles', {
+    id: text('id').primaryKey(),
+    subscriptionId: text('subscription_id')
+        .notNull()
+        .references(() => subscriptions.id, {onDelete: 'cascade'}),
+    accountId: text('account_id')
+        .notNull()
+        .references(() => streamingAccounts.id, {onDelete: 'cascade'}),
+    profileId: text('profile_id')
+        .references(() => streamingProfiles.id, {onDelete: 'set null'}),
+    createdAt: timestamp('created_at', {withTimezone: true}).notNull().defaultNow(),
+});
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const servicesRelations = relations(services, ({many}) => ({
@@ -251,6 +306,37 @@ export const paymentsRelations = relations(payments, ({one}) => ({
     }),
 }));
 
+export const streamingAccountsRelations = relations(streamingAccounts, ({many}) => ({
+    profiles: many(streamingProfiles),
+    subscriptionProfiles: many(subscriptionProfiles),
+}));
+
+export const streamingProfilesRelations = relations(streamingProfiles, ({one}) => ({
+    account: one(streamingAccounts, {
+        fields: [streamingProfiles.accountId],
+        references: [streamingAccounts.id],
+    }),
+    subscriptionProfile: one(subscriptionProfiles, {
+        fields: [streamingProfiles.id],
+        references: [subscriptionProfiles.profileId],
+    }),
+}));
+
+export const subscriptionProfilesRelations = relations(subscriptionProfiles, ({one}) => ({
+    subscription: one(subscriptions, {
+        fields: [subscriptionProfiles.subscriptionId],
+        references: [subscriptions.id],
+    }),
+    account: one(streamingAccounts, {
+        fields: [subscriptionProfiles.accountId],
+        references: [streamingAccounts.id],
+    }),
+    profile: one(streamingProfiles, {
+        fields: [subscriptionProfiles.profileId],
+        references: [streamingProfiles.id],
+    }),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Service = typeof services.$inferSelect;
@@ -268,3 +354,9 @@ export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
 export type ContactInquiry = typeof contactInquiries.$inferSelect;
 export type SummaryLink = typeof summaryLinks.$inferSelect;
+export type StreamingAccount = typeof streamingAccounts.$inferSelect;
+export type NewStreamingAccount = typeof streamingAccounts.$inferInsert;
+export type StreamingProfile = typeof streamingProfiles.$inferSelect;
+export type NewStreamingProfile = typeof streamingProfiles.$inferInsert;
+export type SubscriptionProfile = typeof subscriptionProfiles.$inferSelect;
+export type NewSubscriptionProfile = typeof subscriptionProfiles.$inferInsert;

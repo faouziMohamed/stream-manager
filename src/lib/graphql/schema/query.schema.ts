@@ -1,51 +1,57 @@
 export const querySchema = /* GraphQL */ `
-  type Query {
-    # Services
-    services: [Service!]!
-    service(id: ID!): Service
+    type Query {
+        # Services
+        services: [Service!]!
+        service(id: ID!): Service
 
-    # Plans
-    plans(serviceId: ID, promotionId: ID): [Plan!]!
-    plan(id: ID!): Plan
+        # Plans
+        plans(serviceId: ID, promotionId: ID): [Plan!]!
+        plan(id: ID!): Plan
 
-    # Promotions
-    promotions: [Promotion!]!
-    promotion(id: ID!): Promotion
+        # Promotions
+        promotions: [Promotion!]!
+        promotion(id: ID!): Promotion
 
-    # Clients
-    clients: [Client!]!
-    client(id: ID!): Client
+        # Clients
+        clients: [Client!]!
+        client(id: ID!): Client
 
-    # Subscriptions
-    subscriptions(clientId: ID, status: SubscriptionStatus): [Subscription!]!
-    subscription(id: ID!): Subscription
+        # Subscriptions
+        subscriptions(clientId: ID, status: SubscriptionStatus): [Subscription!]!
+        subscription(id: ID!): Subscription
 
-    # Payments
-    payments(
-      subscriptionId: ID
-      status: PaymentStatus
-      fromDate: Date
-      toDate: Date
-    ): [Payment!]!
-    payment(id: ID!): Payment
+        # Payments
+        payments(
+            subscriptionId: ID
+            status: PaymentStatus
+            fromDate: Date
+            toDate: Date
+        ): [Payment!]!
+        payment(id: ID!): Payment
 
-    # Dashboard
-    dashboardStats: DashboardStats!
+        # Dashboard
+        dashboardStats: DashboardStats!
 
-    # Analytics
-    analytics(months: Int): AnalyticsData!
+        # Analytics
+        analytics(months: Int): AnalyticsData!
 
-    # Settings
-    appSetting(key: String!): AppSetting
-    defaultCurrency: String!
+        # Settings
+        appSetting(key: String!): AppSetting
+        defaultCurrency: String!
 
-    # Summary links
-    summaryLinks: [SummaryLink!]!
-    summaryByToken(token: String!): SummaryData
-  }
+        # Summary links
+        summaryLinks: [SummaryLink!]!
+        summaryByToken(token: String!): SummaryData
 
-  type SummaryData {
-    stats: DashboardStats!
-    showSensitiveInfo: Boolean!
-  }
+        # Streaming accounts & profiles
+        streamingAccounts(serviceId: ID): [StreamingAccount!]!
+        streamingAccount(id: ID!): StreamingAccount
+        streamingProfiles(accountId: ID!): [StreamingProfile!]!
+        subscriptionAssignment(subscriptionId: ID!): SubscriptionProfileAssignment
+    }
+
+    type SummaryData {
+        stats: DashboardStats!
+        showSensitiveInfo: Boolean!
+    }
 `;

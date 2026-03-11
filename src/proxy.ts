@@ -10,18 +10,23 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
+    const sessionCookie = getSessionCookie(request);
+
+    // Redirect authenticated users away from auth pages
+    if (pathname.startsWith('/auth/')) {
+        if (sessionCookie) {
+            return NextResponse.redirect(new URL('/console', request.url));
+        }
+        return NextResponse.next();
+    }
+
     // Protect all /console routes
     if (pathname.startsWith('/console')) {
-        const sessionCookie = getSessionCookie(request);
-
         if (!sessionCookie) {
             const loginUrl = new URL('/auth/login', request.url);
             loginUrl.searchParams.set('callbackUrl', pathname);
             return NextResponse.redirect(loginUrl);
         }
-
-        // Role check is handled in individual pages/resolvers via server-side session
-        // Middleware only checks that a session exists (cookie present)
         return NextResponse.next();
     }
 
@@ -31,6 +36,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
     matcher: [
         '/console/:path*',
+        '/auth/:path*',
         '/s/:path*',
     ],
 };

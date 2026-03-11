@@ -101,7 +101,7 @@ export function PaymentsEditor({initialData}: Props) {
                 <Card><CardContent className="py-12 text-center text-muted-foreground">Aucun paiement
                     trouvé.</CardContent></Card>
             ) : (
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
