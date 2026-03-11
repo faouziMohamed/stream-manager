@@ -12,7 +12,7 @@ import {
     UPDATE_CLIENT,
     type UpdateClientInput,
 } from '@/lib/graphql/operations/clients.operations';
-import {toastError} from '@/lib/utils/toast';
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 
 export const clientKeys = {
@@ -67,6 +67,7 @@ export function useCreateClient() {
             toastError(err, 'Création du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Client créé'),
         onSettled: () => qc.invalidateQueries({queryKey: clientKeys.all}),
     });
 }
@@ -90,6 +91,7 @@ export function useUpdateClient() {
             toastError(err, 'Modification du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Client mis à jour'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: clientKeys.all});
         },
@@ -113,6 +115,7 @@ export function useDeleteClient() {
             toastError(err, 'Suppression du client');
             if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Client supprimé'),
         onSettled: () => qc.invalidateQueries({queryKey: clientKeys.all}),
     });
 }

@@ -3,15 +3,15 @@
 import {type QueryKey, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {gqlRequest} from '@/lib/graphql/client';
 import {
-  CREATE_PROMOTION,
-  type CreatePromotionInput,
-  DELETE_PROMOTION,
-  GET_PROMOTIONS,
-  type PromotionDto,
-  UPDATE_PROMOTION,
-  type UpdatePromotionInput,
+    CREATE_PROMOTION,
+    type CreatePromotionInput,
+    DELETE_PROMOTION,
+    GET_PROMOTIONS,
+    type PromotionDto,
+    UPDATE_PROMOTION,
+    type UpdatePromotionInput,
 } from '@/lib/graphql/operations/promotions.operations';
-import {toastError} from '@/lib/utils/toast';
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 
 export const promotionKeys = {
@@ -35,6 +35,7 @@ export function useCreatePromotion() {
             gqlRequest<{ createPromotion: PromotionDto }>(CREATE_PROMOTION, {input}).then(
                 (r) => r.createPromotion,
             ),
+        onSuccess: () => toastSuccess('Promotion créée'),
         onError: (err) => toastError(err, 'Création de la promotion'),
         onSettled: () => qc.invalidateQueries({queryKey: promotionKeys.all}),
     });
@@ -59,6 +60,7 @@ export function useUpdatePromotion() {
             toastError(err, 'Modification de la promotion');
             if (ctx?.prev) qc.setQueryData(promotionKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Promotion mise à jour'),
         onSettled: () => qc.invalidateQueries({queryKey: promotionKeys.all}),
     });
 }
@@ -82,6 +84,7 @@ export function useDeletePromotion() {
             toastError(err, 'Suppression de la promotion');
             if (ctx?.prev) qc.setQueryData(promotionKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Promotion supprimée'),
         onSettled: () => qc.invalidateQueries({queryKey: promotionKeys.all}),
     });
 }

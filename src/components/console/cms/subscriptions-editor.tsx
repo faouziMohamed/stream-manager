@@ -38,6 +38,7 @@ import type {ServiceDto} from "@/lib/graphql/operations/services.operations";
 import type {ClientDto} from "@/lib/graphql/operations/clients.operations";
 import type {PromotionDto} from "@/lib/graphql/operations/promotions.operations";
 import {Label} from "@/components/ui/label";
+import {formatCurrency} from "@/lib/utils/helpers";
 
 const statusLabels: Record<string, string> = {
     active: "Actif",
@@ -139,7 +140,7 @@ export function SubscriptionsEditor({
         const parent = plan.serviceId
             ? services.find((s) => s.id === plan.serviceId)?.name
             : promotions.find((p) => p.id === plan.promotionId)?.name;
-        return `${parent ?? "?"} — ${plan.durationMonths} mois — ${plan.price} ${plan.currencyCode}`;
+        return `${parent ?? "?"} — ${plan.durationMonths} mois — ${formatCurrency(plan.price, plan.currencyCode)}`;
     };
 
     const filtered = statusFilter === 'all'
@@ -352,7 +353,8 @@ export function SubscriptionsEditor({
                                                 <SelectLabel>{svc.name}</SelectLabel>
                                                 {svcPlans.map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>
-                                                        {p.durationMonths} mois — {p.price}{" "}{p.currencyCode}
+                                                        {p.durationMonths} mois
+                                                        — {formatCurrency(p.price, p.currencyCode)}
                                                     </SelectItem>
                                                 ))}
                                             </SelectGroup>
@@ -368,7 +370,8 @@ export function SubscriptionsEditor({
                                                 <SelectLabel>[Promo] {promo.name}</SelectLabel>
                                                 {promoPlans.map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>
-                                                        {p.durationMonths} mois — {p.price}{" "}{p.currencyCode}
+                                                        {p.durationMonths} mois
+                                                        — {formatCurrency(p.price, p.currencyCode)}
                                                     </SelectItem>
                                                 ))}
                                             </SelectGroup>

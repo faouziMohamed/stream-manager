@@ -11,6 +11,7 @@ import {useMarkPaymentPaid, usePayments, useUpdatePayment} from '@/lib/hooks/que
 import {useClients} from '@/lib/hooks/queries/use-clients.queries';
 import {useSubscriptions} from '@/lib/hooks/queries/use-subscriptions.queries';
 import type {PaymentDto} from '@/lib/graphql/operations/payments.operations';
+import {formatCurrency} from '@/lib/utils/helpers';
 
 const statusConfig: Record<string, {
     label: string;
@@ -123,7 +124,7 @@ export function PaymentsEditor({initialData}: Props) {
                                             className="font-medium">{payment.subscription?.client?.name ?? getClientName(payment.subscriptionId)}</TableCell>
                                         <TableCell>{payment.dueDate}</TableCell>
                                         <TableCell
-                                            className="font-medium">{payment.amount} {payment.currencyCode}</TableCell>
+                                            className="font-medium">{formatCurrency(payment.amount, payment.currencyCode)}</TableCell>
                                         <TableCell>
                                             <Badge variant={cfg.variant} className="gap-1">
                                                 <StatusIcon className="h-3 w-3"/>
@@ -158,7 +159,7 @@ export function PaymentsEditor({initialData}: Props) {
                 open={!!confirmPayment}
                 onOpenChange={(o) => !o && setConfirmPayment(null)}
                 title="Confirmer le paiement"
-                description={`Marquer le paiement de ${confirmPayment?.amount} ${confirmPayment?.currencyCode} comme payé ?`}
+                description={`Marquer le paiement de ${confirmPayment ? formatCurrency(confirmPayment.amount, confirmPayment.currencyCode) : ''} comme payé ?`}
                 confirmLabel="Confirmer le paiement"
                 onConfirm={handleMarkPaid}
                 loading={markPaid.isPending}

@@ -17,7 +17,7 @@ import {Github} from 'lucide-react';
 const logger = clientLogger('login-page');
 
 const loginSchema = z.object({
-    email: z.string().email('Email invalide'),
+    email: z.email('Email invalide'),
     password: z.string().min(8, 'Mot de passe requis (min. 8 caractères)'),
 });
 

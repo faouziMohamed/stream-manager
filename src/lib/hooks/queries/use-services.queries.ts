@@ -21,7 +21,7 @@ import {
   UPDATE_PLAN,
   type UpdatePlanInput,
 } from '@/lib/graphql/operations/plans.operations';
-import {toastError} from '@/lib/utils/toast';
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 
 export const serviceKeys = {
@@ -80,6 +80,7 @@ export function useCreateService() {
             toastError(err, 'Création du service');
             if (ctx?.prev) qc.setQueryData(serviceKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Service créé'),
         onSettled: () => qc.invalidateQueries({queryKey: serviceKeys.all}),
     });
 }
@@ -103,6 +104,7 @@ export function useUpdateService() {
             toastError(err, 'Modification du service');
             if (ctx?.prev) qc.setQueryData(serviceKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Service mis à jour'),
         onSettled: () => qc.invalidateQueries({queryKey: serviceKeys.all}),
     });
 }
@@ -126,6 +128,7 @@ export function useDeleteService() {
             toastError(err, 'Suppression du service');
             if (ctx?.prev) qc.setQueryData(serviceKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Service supprimé'),
         onSettled: () => qc.invalidateQueries({queryKey: serviceKeys.all}),
     });
 }
@@ -146,6 +149,8 @@ export function useCreatePlan() {
     return useMutation({
         mutationFn: (input: CreatePlanInput) =>
             gqlRequest<{ createPlan: PlanDto }>(CREATE_PLAN, {input}).then((r) => r.createPlan),
+        onSuccess: () => toastSuccess('Formule créée'),
+        onError: (err) => toastError(err, 'Création de la formule'),
         onSettled: () => qc.invalidateQueries({queryKey: ['plans']}),
     });
 }
@@ -155,6 +160,8 @@ export function useUpdatePlan() {
     return useMutation({
         mutationFn: ({id, input}: { id: string; input: UpdatePlanInput }) =>
             gqlRequest<{ updatePlan: PlanDto }>(UPDATE_PLAN, {id, input}).then((r) => r.updatePlan),
+        onSuccess: () => toastSuccess('Formule mise à jour'),
+        onError: (err) => toastError(err, 'Modification de la formule'),
         onSettled: () => qc.invalidateQueries({queryKey: ['plans']}),
     });
 }
@@ -164,6 +171,8 @@ export function useDeletePlan() {
     return useMutation({
         mutationFn: (id: string) =>
             gqlRequest<{ deletePlan: boolean }>(DELETE_PLAN, {id}).then((r) => r.deletePlan),
+        onSuccess: () => toastSuccess('Formule supprimée'),
+        onError: (err) => toastError(err, 'Suppression de la formule'),
         onSettled: () => qc.invalidateQueries({queryKey: ['plans']}),
     });
 }

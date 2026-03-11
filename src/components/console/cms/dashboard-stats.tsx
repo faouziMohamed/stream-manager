@@ -1,9 +1,10 @@
 'use client';
 
-import {Users, Monitor, CreditCard, AlertCircle, Clock, TrendingUp} from 'lucide-react';
+import {AlertCircle, Clock, Monitor, TrendingUp, Users} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {useDashboardStats} from '@/lib/hooks/queries/use-analytics.queries';
 import type {DashboardStatsDto} from '@/lib/graphql/operations/analytics.operations';
+import {formatCurrency} from '@/lib/utils/helpers';
 
 interface Props {
     initialData?: DashboardStatsDto;
@@ -11,12 +12,6 @@ interface Props {
 
 export function DashboardStats({initialData}: Props) {
     const {data: stats} = useDashboardStats(initialData);
-
-    const fmt = (n: number) =>
-        `${n.toLocaleString('fr-MA', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2
-        })} ${stats?.currencyCode ?? 'MAD'}`;
 
     const cards = [
         {
@@ -26,7 +21,12 @@ export function DashboardStats({initialData}: Props) {
             color: 'text-primary'
         },
         {title: 'Total clients', value: String(stats?.totalClients ?? '—'), icon: Users, color: 'text-blue-500'},
-        {title: 'MRR', value: stats ? fmt(stats.mrr) : '—', icon: TrendingUp, color: 'text-green-500'},
+        {
+            title: 'MRR',
+            value: stats ? formatCurrency(stats.mrr, stats.currencyCode ?? 'MAD') : '—',
+            icon: TrendingUp,
+            color: 'text-green-500'
+        },
         {title: 'En retard', value: String(stats?.overdueCount ?? '—'), icon: AlertCircle, color: 'text-destructive'},
         {title: 'Échéances (7j)', value: String(stats?.upcomingDueCount ?? '—'), icon: Clock, color: 'text-orange-500'},
     ];

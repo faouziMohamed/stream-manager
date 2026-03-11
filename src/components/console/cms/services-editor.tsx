@@ -15,6 +15,7 @@ import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {ConfirmDialog} from '@/components/console/confirm-dialog';
+import {formatCurrency} from '@/lib/utils/helpers';
 import {
     useCreatePlan,
     useCreateService,
@@ -134,7 +135,7 @@ function PlansTable({serviceId, currency}: { serviceId: string; currency: string
                             <TableRow key={plan.id}>
                                 <TableCell className="font-medium">{plan.name}</TableCell>
                                 <TableCell>{plan.durationMonths} mois</TableCell>
-                                <TableCell>{plan.price} {plan.currencyCode}</TableCell>
+                                <TableCell>{formatCurrency(plan.price, plan.currencyCode)}</TableCell>
                                 <TableCell>
                                     <Badge variant="secondary">{planTypeLabels[plan.planType] ?? plan.planType}</Badge>
                                 </TableCell>

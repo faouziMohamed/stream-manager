@@ -32,6 +32,7 @@ export const mutationSchema = /* GraphQL */ `
 
         # Settings
         setAppSetting(key: String!, value: String!): AppSetting!
+        setSmtpSettings(input: SmtpSettingsInput!): SmtpSettings!
 
         # Contact inquiries (public — no auth)
         createInquiry(input: CreateInquiryInput!): Boolean!

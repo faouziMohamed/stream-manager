@@ -2,21 +2,22 @@
 
 import {useState} from 'react';
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from 'recharts';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {useAnalytics} from '@/lib/hooks/queries/use-analytics.queries';
 import type {AnalyticsDto} from '@/lib/graphql/operations/analytics.operations';
+import {formatCurrency} from '@/lib/utils/helpers';
 
 interface Props {
     initialData?: AnalyticsDto;
@@ -63,7 +64,7 @@ export function AnalyticsDashboard({initialData}: Props) {
     const totalUnpaid = (data?.paymentBreakdown ?? []).reduce((s, d) => s + d.unpaid, 0);
     const totalOverdue = (data?.paymentBreakdown ?? []).reduce((s, d) => s + d.overdue, 0);
 
-    const fmt = (n: number) => `${n.toLocaleString('fr-MA', {maximumFractionDigits: 0})} ${currency}`;
+    const fmt = (n: number) => formatCurrency(n, currency);
 
     return (
         <div className="space-y-6">
@@ -117,8 +118,8 @@ export function AnalyticsDashboard({initialData}: Props) {
                         <LineChart data={revenueData} margin={{top: 5, right: 20, left: 0, bottom: 5}}>
                             <CartesianGrid strokeDasharray="3 3" className="stroke-border"/>
                             <XAxis dataKey="mois" tick={{fontSize: 12}}/>
-                            <YAxis tick={{fontSize: 12}} tickFormatter={(v) => `${v}`}/>
-                            <Tooltip formatter={(v) => [`${v ?? 0} ${currency}`, 'Revenus']}/>
+                            <YAxis tick={{fontSize: 12}} tickFormatter={(v: number) => String(v)}/>
+                            <Tooltip formatter={(v: number) => [formatCurrency(v, currency), 'Revenus']}/>
                             <Line type="monotone" dataKey="Revenus" stroke="hsl(var(--primary))" strokeWidth={2}
                                   dot={{r: 3}} activeDot={{r: 5}}/>
                         </LineChart>
@@ -137,7 +138,7 @@ export function AnalyticsDashboard({initialData}: Props) {
                             <CartesianGrid strokeDasharray="3 3" className="stroke-border"/>
                             <XAxis dataKey="mois" tick={{fontSize: 12}}/>
                             <YAxis tick={{fontSize: 12}}/>
-                            <Tooltip formatter={(v, name) => [`${v ?? 0} ${currency}`, name]}/>
+                            <Tooltip formatter={(v: number, name: string) => [formatCurrency(v, currency), name]}/>
                             <Legend/>
                             <Bar dataKey="Payé" stackId="a" fill="hsl(var(--primary))" radius={[0, 0, 0, 0]}/>
                             <Bar dataKey="En attente" stackId="a" fill="hsl(var(--muted-foreground))" opacity={0.5}/>

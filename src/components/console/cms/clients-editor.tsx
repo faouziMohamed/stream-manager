@@ -19,7 +19,7 @@ import type {ClientDto} from '@/lib/graphql/operations/clients.operations';
 
 const clientSchema = z.object({
     name: z.string().min(1, 'Nom requis'),
-    email: z.string().email('Email invalide').optional().or(z.literal('')),
+    email: z.email('Email invalide').optional().or(z.literal('')),
     phone: z.string().optional(),
     notes: z.string().optional(),
 });

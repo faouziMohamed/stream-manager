@@ -10,7 +10,7 @@ import {
     UPDATE_PAYMENT,
     type UpdatePaymentInput,
 } from '@/lib/graphql/operations/payments.operations';
-import {toastError} from '@/lib/utils/toast';
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 
 export const paymentKeys = {
@@ -51,6 +51,7 @@ export function useUpdatePayment() {
             toastError(err, 'Modification du paiement');
             if (ctx?.prev) qc.setQueryData(paymentKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Paiement mis à jour'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: paymentKeys.all});
             qc.invalidateQueries({queryKey: ['dashboardStats']});
@@ -81,6 +82,7 @@ export function useMarkPaymentPaid() {
             toastError(err, 'Marquage du paiement');
             if (ctx?.prev) qc.setQueryData(paymentKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Paiement marqué comme payé'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: paymentKeys.all});
             qc.invalidateQueries({queryKey: ['dashboardStats']});

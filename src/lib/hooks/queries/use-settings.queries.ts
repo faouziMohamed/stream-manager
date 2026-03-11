@@ -7,17 +7,21 @@ import {
   CREATE_SUMMARY_LINK,
   DELETE_SUMMARY_LINK,
   GET_DEFAULT_CURRENCY,
+  GET_SMTP_SETTINGS,
   GET_SUMMARY_LINKS,
   SET_APP_SETTING,
+  SET_SMTP_SETTINGS,
+  type SmtpSettingsDto,
+  type SmtpSettingsInput,
   type SummaryLinkDto,
   TOGGLE_SUMMARY_LINK,
 } from '@/lib/graphql/operations/settings.operations';
-import {toastError} from '@/lib/utils/toast';
-
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 export const settingsKeys = {
     currency: ['settings', 'defaultCurrency'] as QueryKey,
     summaryLinks: ['settings', 'summaryLinks'] as QueryKey,
+    smtp: ['settings', 'smtp'] as QueryKey,
 };
 
 export function useDefaultCurrency(initialData?: string) {
@@ -50,6 +54,7 @@ export function useSetDefaultCurrency() {
             toastError(err, 'Changement de devise');
             if (ctx?.prev) qc.setQueryData(settingsKeys.currency, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Devise mise à jour'),
         onSettled: () => qc.invalidateQueries({queryKey: settingsKeys.currency}),
     });
 }
@@ -72,6 +77,7 @@ export function useCreateSummaryLink() {
             gqlRequest<{ createSummaryLink: SummaryLinkDto }>(CREATE_SUMMARY_LINK, input).then(
                 (r) => r.createSummaryLink,
             ),
+        onSuccess: () => toastSuccess('Lien de partage créé'),
         onError: (err) => toastError(err, 'Création du lien de partage'),
         onSettled: () => qc.invalidateQueries({queryKey: settingsKeys.summaryLinks}),
     });
@@ -96,6 +102,7 @@ export function useDeleteSummaryLink() {
             toastError(err, 'Suppression du lien de partage');
             if (ctx?.prev) qc.setQueryData(settingsKeys.summaryLinks, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Lien de partage supprimé'),
         onSettled: () => qc.invalidateQueries({queryKey: settingsKeys.summaryLinks}),
     });
 }
@@ -119,6 +126,32 @@ export function useToggleSummaryLink() {
             toastError(err, 'Activation du lien de partage');
             if (ctx?.prev) qc.setQueryData(settingsKeys.summaryLinks, ctx.prev);
         },
+        onSuccess: (_data: SummaryLinkDto, vars: { id: string; isActive: boolean }) =>
+            toastSuccess(vars.isActive ? 'Lien activé' : 'Lien désactivé'),
         onSettled: () => qc.invalidateQueries({queryKey: settingsKeys.summaryLinks}),
+    });
+}
+
+export function useSmtpSettings(initialData?: SmtpSettingsDto) {
+    return useQuery({
+        queryKey: settingsKeys.smtp,
+        queryFn: () =>
+            gqlRequest<{ smtpSettings: SmtpSettingsDto }>(GET_SMTP_SETTINGS).then(
+                (r) => r.smtpSettings,
+            ),
+        initialData,
+    });
+}
+
+export function useSetSmtpSettings() {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (input: SmtpSettingsInput) =>
+            gqlRequest<{ setSmtpSettings: SmtpSettingsDto }>(SET_SMTP_SETTINGS, {input}).then(
+                (r) => r.setSmtpSettings,
+            ),
+        onSuccess: () => toastSuccess('Configuration SMTP enregistrée'),
+        onError: (err) => toastError(err, 'Enregistrement SMTP'),
+        onSettled: () => qc.invalidateQueries({queryKey: settingsKeys.smtp}),
     });
 }

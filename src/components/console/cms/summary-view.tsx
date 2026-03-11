@@ -16,6 +16,7 @@ import {
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import type {AnalyticsDto, DashboardStatsDto} from '@/lib/graphql/operations/analytics.operations';
+import {formatCurrency} from '@/lib/utils/helpers';
 
 interface Props {
     stats: DashboardStatsDto;
@@ -35,9 +36,7 @@ function formatMonth(m: string) {
 export function SummaryView({stats, analytics, showSensitiveInfo, label}: Props) {
     const currency = stats.currencyCode;
     const fmt = (n: number) =>
-        showSensitiveInfo
-            ? `${n.toLocaleString('fr-MA', {maximumFractionDigits: 0})} ${currency}`
-            : '••••';
+        showSensitiveInfo ? formatCurrency(n, currency) : '••••';
 
     const revenueData = analytics.monthlyRevenue.map((d) => ({
         mois: formatMonth(d.month),
@@ -115,7 +114,7 @@ export function SummaryView({stats, analytics, showSensitiveInfo, label}: Props)
                             <CartesianGrid strokeDasharray="3 3" className="stroke-border"/>
                             <XAxis dataKey="mois" tick={{fontSize: 11}}/>
                             <YAxis tick={{fontSize: 11}}/>
-                            <Tooltip formatter={(v) => [`${v ?? 0} ${currency}`, 'Revenus']}/>
+                            <Tooltip formatter={(v: number) => [fmt(v), 'Revenus']}/>
                             <Line type="monotone" dataKey="Revenus" stroke="hsl(var(--primary))" strokeWidth={2}
                                   dot={{r: 3}}/>
                         </LineChart>
@@ -134,7 +133,7 @@ export function SummaryView({stats, analytics, showSensitiveInfo, label}: Props)
                             <CartesianGrid strokeDasharray="3 3" className="stroke-border"/>
                             <XAxis dataKey="mois" tick={{fontSize: 11}}/>
                             <YAxis tick={{fontSize: 11}}/>
-                            <Tooltip formatter={(v, name) => [`${v ?? 0} ${currency}`, name]}/>
+                            <Tooltip formatter={(v: number, name: string) => [fmt(v), name]}/>
                             <Legend/>
                             <Bar dataKey="Payé" stackId="a" fill="hsl(var(--primary))"/>
                             <Bar dataKey="En attente" stackId="a" fill="hsl(var(--muted-foreground))" opacity={0.5}/>

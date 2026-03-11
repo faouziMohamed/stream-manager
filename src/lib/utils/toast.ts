@@ -1,13 +1,5 @@
 'use client';
 
-/**
- * Toast error utility — extracts a human-readable message from GraphQL errors
- * and fires a sonner toast. Always call this from mutation onError handlers.
- *
- * graphql-request throws a ClientError whose response.errors array contains
- * the GraphQL error objects. We surface the first message directly when it is
- * a VALIDATION_ERROR (user-actionable), otherwise show a generic fallback.
- */
 import {toast} from 'sonner';
 import {clientLogger} from '@/lib/logger/client-logger';
 

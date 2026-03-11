@@ -15,6 +15,7 @@ import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@/
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 import {DateTimePicker} from '@/components/ui/date-time-picker';
 import {ConfirmDialog} from '@/components/console/confirm-dialog';
+import {formatCurrency} from '@/lib/utils/helpers';
 import {
     useCreatePromotion,
     useDeletePromotion,
@@ -143,7 +144,7 @@ function PromotionPlansTable({promotionId, currency}: { promotionId: string; cur
                             <TableRow key={plan.id}>
                                 <TableCell className="font-medium">{plan.name}</TableCell>
                                 <TableCell>{plan.durationMonths} mois</TableCell>
-                                <TableCell>{plan.price} {plan.currencyCode}</TableCell>
+                                <TableCell>{formatCurrency(plan.price, plan.currencyCode)}</TableCell>
                                 <TableCell>
                                     <div className="flex gap-1">
                                         <Button size="icon" variant="ghost" className="h-7 w-7"

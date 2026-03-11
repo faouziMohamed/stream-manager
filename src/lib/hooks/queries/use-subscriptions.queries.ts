@@ -15,7 +15,7 @@ import {
     UPDATE_SUBSCRIPTION,
     type UpdateSubscriptionInput,
 } from '@/lib/graphql/operations/subscriptions.operations';
-import {toastError} from '@/lib/utils/toast';
+import {toastError, toastSuccess} from '@/lib/utils/toast';
 
 
 export const subscriptionKeys = {
@@ -57,6 +57,7 @@ export function useCreateSubscription() {
             gqlRequest<{ createSubscription: SubscriptionDto }>(CREATE_SUBSCRIPTION, {input}).then(
                 (r) => r.createSubscription,
             ),
+        onSuccess: () => toastSuccess('Abonnement créé'),
         onError: (err) => toastError(err, 'Création de l\'abonnement'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});
@@ -85,6 +86,7 @@ export function useUpdateSubscription() {
             toastError(err, 'Modification de l\'abonnement');
             if (ctx?.prev) qc.setQueryData(subscriptionKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Abonnement mis à jour'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});
             qc.invalidateQueries({queryKey: ['dashboardStats']});
@@ -111,6 +113,7 @@ export function useDeleteSubscription() {
             toastError(err, 'Suppression de l\'abonnement');
             if (ctx?.prev) qc.setQueryData(subscriptionKeys.all, ctx.prev);
         },
+        onSuccess: () => toastSuccess('Abonnement supprimé'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});
             qc.invalidateQueries({queryKey: ['dashboardStats']});
@@ -125,6 +128,7 @@ export function useRenewSubscription() {
             gqlRequest<{ renewSubscription: SubscriptionDto }>(RENEW_SUBSCRIPTION, {input}).then(
                 (r) => r.renewSubscription,
             ),
+        onSuccess: () => toastSuccess('Abonnement renouvelé'),
         onError: (err) => toastError(err, 'Renouvellement de l\'abonnement'),
         onSettled: () => {
             qc.invalidateQueries({queryKey: subscriptionKeys.all});

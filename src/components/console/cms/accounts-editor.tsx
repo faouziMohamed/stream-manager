@@ -49,7 +49,7 @@ import type {SubscriptionDto} from '@/lib/graphql/operations/subscriptions.opera
 const accountSchema = z.object({
     serviceId: z.string().min(1, 'Service requis'),
     label: z.string().min(1, 'Libellé requis'),
-    email: z.string().email('Email invalide').optional().or(z.literal('')),
+    email: z.email('Email invalide').optional().or(z.literal('')),
     phone: z.string().optional().or(z.literal('')),
     supportsProfiles: z.boolean().default(true),
     maxProfiles: z.union([z.number(), z.string().transform(Number)])

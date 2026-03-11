@@ -18,7 +18,7 @@ const logger = clientLogger('signup-page');
 
 const signupSchema = z.object({
     name: z.string().min(2, 'Nom requis (min. 2 caractères)'),
-    email: z.string().email('Email invalide'),
+    email: z.email('Email invalide'),
     password: z.string().min(8, 'Mot de passe requis (min. 8 caractères)'),
 });
 

@@ -1,15 +1,15 @@
 import {db} from '@/lib/db';
 import {
-  appSettings,
-  clients,
-  payments,
-  plans,
-  promotions,
-  services,
-  subscriptions,
+    appSettings,
+    clients,
+    payments,
+    plans,
+    promotions,
+    services,
+    subscriptions,
 } from '@/lib/db/tables/subscription-management.table';
-import {and, count, eq, gte, lt, lte} from 'drizzle-orm';
-import { syncOverduePayments } from './payments.repository';
+import {and, count, eq, gte, lt, lte, sql} from 'drizzle-orm';
+import {syncOverduePayments} from './payments.repository';
 
 export async function getDefaultCurrency(): Promise<string> {
     const [setting] = await db
@@ -68,8 +68,8 @@ export async function getDashboardStats() {
         .where(
             and(
                 eq(payments.status, 'unpaid'),
-                gte(payments.dueDate, today),
-                lte(payments.dueDate, in7Days),
+                gte(payments.dueDate, sql`${today}::date`),
+                lte(payments.dueDate, sql`${in7Days}::date`),
             ),
         );
 
@@ -105,8 +105,8 @@ export async function getMonthlyRevenue(months: number = 12) {
             .where(
                 and(
                     eq(payments.status, 'paid'),
-                    gte(payments.paidDate, monthStart),
-                    lt(payments.paidDate, monthEnd),
+                    gte(payments.paidDate, sql`${monthStart}::date`),
+                    lt(payments.paidDate, sql`${monthEnd}::date`),
                 ),
             );
 
@@ -146,8 +146,8 @@ export async function getPaymentBreakdown(months: number = 6) {
             .from(payments)
             .where(
                 and(
-                    gte(payments.dueDate, monthStart),
-                    lt(payments.dueDate, monthEnd),
+                    gte(payments.dueDate, sql`${monthStart}::date`),
+                    lt(payments.dueDate, sql`${monthEnd}::date`),
                 ),
             );
 

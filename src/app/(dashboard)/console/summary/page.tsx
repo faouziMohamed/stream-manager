@@ -4,20 +4,16 @@ import {
     getPaymentBreakdown,
     getSubscriptionsByService
 } from '@/lib/db/repositories/analytics.repository';
-import {db} from '@/lib/db';
-import {summaryLinks} from '@/lib/db/tables/subscription-management.table';
 import {SummaryView} from '@/components/console/cms/summary-view';
-import {SettingsEditor} from '@/components/console/cms/settings-editor';
-import {getDefaultCurrency} from '@/lib/db/repositories/analytics.repository';
+import {SummaryLinksManager} from '@/components/console/cms/summary-links-manager';
 import type {AnalyticsDto} from '@/lib/graphql/operations/analytics.operations';
 
 export default async function SummaryPage() {
-    const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService, currency] = await Promise.all([
+    const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] = await Promise.all([
         getDashboardStats(),
         getMonthlyRevenue(6),
         getPaymentBreakdown(6),
         getSubscriptionsByService(),
-        getDefaultCurrency(),
     ]);
 
     const analytics: AnalyticsDto = {monthlyRevenue, paymentBreakdown, subscriptionsByService};
@@ -33,7 +29,7 @@ export default async function SummaryPage() {
             </div>
 
             {/* Summary link manager */}
-            <SettingsEditor defaultCurrency={currency}/>
+            <SummaryLinksManager/>
 
             {/* Live preview */}
             <div className="border rounded-xl overflow-hidden">

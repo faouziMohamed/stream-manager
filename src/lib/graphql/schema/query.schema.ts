@@ -38,6 +38,7 @@ export const querySchema = /* GraphQL */ `
         # Settings
         appSetting(key: String!): AppSetting
         defaultCurrency: String!
+        smtpSettings: SmtpSettings!
 
         # Summary links
         summaryLinks: [SummaryLink!]!
