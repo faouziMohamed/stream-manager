@@ -1,15 +1,16 @@
 import { requireAdmin, requireAuth } from "./guards";
 import {
+  createSubscription,
+  deleteSubscription,
   getAllSubscriptions,
   getSubscriptionById,
-  createSubscription,
-  updateSubscription,
-  deleteSubscription,
   renewSubscription,
+  updateSubscription,
 } from "@/lib/db/repositories/subscriptions.repository";
 import { getClientById } from "@/lib/db/repositories/clients.repository";
 import { getPlanById } from "@/lib/db/repositories/services.repository";
 import { getPaymentsBySubscription } from "@/lib/db/repositories/payments.repository";
+import { getAdminEmail, sendNotification } from "@/lib/utils/mailer";
 import type { GraphQLContext } from "../context";
 
 export const subscriptionsResolvers = {
@@ -48,7 +49,22 @@ export const subscriptionsResolvers = {
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
-      return createSubscription(input);
+      const sub = await createSubscription(input);
+
+      // Notify admin — non-blocking
+      const adminEmail = await getAdminEmail();
+      if (adminEmail) {
+        const client = await getClientById(sub.clientId);
+        const plan = await getPlanById(sub.planId);
+        await sendNotification("subscription_created", {
+          to: adminEmail,
+          subject: `🆕 Nouvel abonnement — ${client?.name ?? "Client inconnu"}`,
+          text: `Un nouvel abonnement a été créé pour ${client?.name ?? "un client"} — formule : ${plan?.name ?? sub.planId}. Du ${sub.startDate} au ${sub.endDate}.`,
+          html: `<p>Nouvel abonnement créé pour <strong>${client?.name ?? "un client"}</strong>.</p><p>Formule : <strong>${plan?.name ?? sub.planId}</strong><br/>Du ${sub.startDate} au ${sub.endDate}</p>`,
+        });
+      }
+
+      return sub;
     },
     updateSubscription: async (
       _: unknown,
@@ -94,7 +110,22 @@ export const subscriptionsResolvers = {
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
-      return renewSubscription(input);
+      const sub = await renewSubscription(input);
+
+      // Notify admin — non-blocking
+      const adminEmail = await getAdminEmail();
+      if (adminEmail) {
+        const client = await getClientById(sub.clientId);
+        const plan = await getPlanById(sub.planId);
+        await sendNotification("subscription_renewed", {
+          to: adminEmail,
+          subject: `🔄 Abonnement renouvelé — ${client?.name ?? "Client inconnu"}`,
+          text: `L'abonnement de ${client?.name ?? "un client"} a été renouvelé — formule : ${plan?.name ?? sub.planId}. Du ${sub.startDate} au ${sub.endDate}.`,
+          html: `<p>Abonnement renouvelé pour <strong>${client?.name ?? "un client"}</strong>.</p><p>Formule : <strong>${plan?.name ?? sub.planId}</strong><br/>Du ${sub.startDate} au ${sub.endDate}</p>`,
+        });
+      }
+
+      return sub;
     },
   },
   Subscription: {

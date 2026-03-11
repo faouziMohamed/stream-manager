@@ -48,6 +48,7 @@ export const ROUTES = {
       root: "/console/settings",
       smtp: "/console/settings/smtp",
       cloudinary: "/console/settings/cloudinary",
+      notifications: "/console/settings/notifications",
     },
   },
 } as const;

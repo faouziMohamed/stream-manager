@@ -51,6 +51,12 @@ export const mutationSchema = /* GraphQL */ `
     replyToInquiry(id: ID!, body: String!): InquiryReply!
     deleteInquiry(id: ID!): Boolean!
 
+    # Notification settings
+    setNotificationSetting(
+      event: String!
+      enabled: Boolean!
+    ): NotificationSetting!
+
     # Summary links
     createSummaryLink(
       label: String

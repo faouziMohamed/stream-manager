@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BarChart3,
+  Bell,
   Calendar,
   ChevronDown,
   Cloud,
@@ -87,6 +88,11 @@ const navItems: NavItem[] = [
         label: "Cloudinary",
         href: ROUTES.console.settings.cloudinary,
         icon: Cloud,
+      },
+      {
+        label: "Notifications",
+        href: ROUTES.console.settings.notifications,
+        icon: Bell,
       },
     ],
   },

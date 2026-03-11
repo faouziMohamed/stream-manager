@@ -4,6 +4,8 @@ import {
   appSettings,
   contactInquiries,
   inquiryReplies,
+  notificationEvents,
+  notificationSettings,
   summaryLinks,
 } from "@/lib/db/tables/subscription-management.table";
 import { desc, eq } from "drizzle-orm";
@@ -14,61 +16,20 @@ import { getDashboardStats } from "@/lib/db/repositories/analytics.repository";
 import {
   getCloudinaryApiSecret,
   getCloudinarySettings,
-  getSmtpPassword,
   getSmtpSettings,
   saveCloudinarySettings,
   saveSmtpSettings,
 } from "@/lib/db/repositories/settings.repository";
+import {
+  getAdminEmail,
+  NOTIFICATION_LABELS,
+  type NotificationEventType,
+  sendNotification,
+  sendViaSMTP,
+} from "@/lib/utils/mailer";
 import type { GraphQLContext } from "../context";
 
 const logger = createLogger("settings-resolvers");
-
-// ─── Shared SMTP helper ───────────────────────────────────────────────────────
-
-interface MailOptions {
-  to: string;
-  subject: string;
-  text: string;
-  html: string;
-}
-
-/**
- * Send an email using the SMTP settings stored in the DB.
- * Always closes the transporter to avoid hanging connections in serverless.
- * Returns null on success, or an error message string on failure.
- */
-async function sendViaSMTP(mail: MailOptions): Promise<string | null> {
-  const smtp = await getSmtpSettings();
-  if (!smtp.host || !smtp.user) return "Configuration SMTP incomplète.";
-  const password = await getSmtpPassword();
-  if (!password) return "Mot de passe SMTP manquant.";
-  try {
-    const nodemailer = await import("nodemailer");
-    const transportOptions = {
-      host: smtp.host,
-      port: smtp.port ?? 587,
-      secure: smtp.secure ?? false,
-      auth: { user: smtp.user, pass: password },
-      pool: false,
-      connectionTimeout: 10_000,
-      greetingTimeout: 10_000,
-      socketTimeout: 15_000,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
-    const transporter = nodemailer.createTransport(transportOptions);
-    try {
-      await transporter.sendMail({
-        from: `"${smtp.senderName ?? "StreamManager"}" <${smtp.senderEmail ?? smtp.user}>`,
-        ...mail,
-      });
-    } finally {
-      transporter.close();
-    }
-    return null; // success
-  } catch (err) {
-    return err instanceof Error ? err.message : "Erreur inconnue";
-  }
-}
 
 export const settingsResolvers = {
   Query: {
@@ -199,6 +160,33 @@ export const settingsResolvers = {
         .where(eq(inquiryReplies.inquiryId, id))
         .orderBy(inquiryReplies.sentAt);
       return { ...inquiry, replies };
+    },
+    notificationSettings: async (
+      _: unknown,
+      __: unknown,
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      const rows = await db.select().from(notificationSettings);
+      // Ensure all event types have a row, using defaults for missing ones
+      const map = new Map(rows.map((r) => [r.event, r]));
+      return Object.entries(NOTIFICATION_LABELS).map(([event, label]) => ({
+        event,
+        label,
+        enabled: map.get(event)?.enabled ?? true,
+      }));
+    },
+    notificationHistory: async (
+      _: unknown,
+      { limit }: { limit?: number },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      return db
+        .select()
+        .from(notificationEvents)
+        .orderBy(desc(notificationEvents.createdAt))
+        .limit(limit ?? 50);
     },
   },
   Mutation: {
@@ -528,9 +516,8 @@ export const settingsResolvers = {
           message: input.message,
         });
 
-        // Notify admin via email — non-blocking, failure does not affect the response
-        const smtp = await getSmtpSettings();
-        const adminEmail = smtp.senderEmail ?? smtp.user;
+        // Notify admin — respects the new_inquiry notification toggle
+        const adminEmail = await getAdminEmail();
         if (adminEmail) {
           const contactInfo = [
             input.email ? `E-mail : ${input.email}` : null,
@@ -539,7 +526,7 @@ export const settingsResolvers = {
             .filter(Boolean)
             .join("\n");
 
-          const error = await sendViaSMTP({
+          await sendNotification("new_inquiry", {
             to: adminEmail,
             subject: `📩 Nouveau message de ${input.name} — StreamManager`,
             text: [
@@ -564,18 +551,6 @@ export const settingsResolvers = {
               <p style="white-space:pre-wrap;margin:0">${input.message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
             `,
           });
-
-          if (error) {
-            logger.warn(
-              { error },
-              "Notification e-mail du formulaire de contact échouée",
-            );
-          } else {
-            logger.info(
-              { adminEmail },
-              "Notification e-mail du formulaire de contact envoyée",
-            );
-          }
         }
 
         return true;
@@ -709,6 +684,25 @@ export const settingsResolvers = {
         .where(eq(summaryLinks.id, id))
         .returning();
       return { ...link, shareUrl: `${env.BETTER_AUTH_URL}/s/${link.token}` };
+    },
+    setNotificationSetting: async (
+      _: unknown,
+      { event, enabled }: { event: string; enabled: boolean },
+      ctx: GraphQLContext,
+    ) => {
+      requireAdmin(ctx);
+      await db
+        .insert(notificationSettings)
+        .values({ event, enabled })
+        .onConflictDoUpdate({
+          target: notificationSettings.event,
+          set: { enabled, updatedAt: new Date() },
+        });
+      return {
+        event,
+        label: NOTIFICATION_LABELS[event as NotificationEventType] ?? event,
+        enabled,
+      };
     },
   },
   SummaryLink: {

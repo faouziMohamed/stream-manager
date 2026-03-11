@@ -234,6 +234,35 @@ export const payments = pgTable("subscriptions_payments", {
     .defaultNow(),
 });
 
+// ─── Notification Settings & Log ─────────────────────────────────────────────
+
+/**
+ * One row per notification event type.
+ * Controls whether a given event triggers an email to the admin.
+ */
+export const notificationSettings = pgTable("notification_settings", {
+  event: text("event").primaryKey(), // e.g. 'new_inquiry', 'payment_overdue', ...
+  enabled: boolean("enabled").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * Append-only audit log of every notification email attempted.
+ */
+export const notificationEvents = pgTable("notification_events", {
+  id: text("id").primaryKey(),
+  event: text("event").notNull(),
+  subject: text("subject").notNull(),
+  toEmail: text("to_email").notNull(),
+  success: boolean("success").notNull(),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 // ─── Contact Inquiries ────────────────────────────────────────────────────────
 
 export const contactInquiries = pgTable("contact_inquiries", {
@@ -482,6 +511,8 @@ export type Payment = typeof payments.$inferSelect;
 export type NewPayment = typeof payments.$inferInsert;
 export type ContactInquiry = typeof contactInquiries.$inferSelect;
 export type InquiryReply = typeof inquiryReplies.$inferSelect;
+export type NotificationSetting = typeof notificationSettings.$inferSelect;
+export type NotificationEvent = typeof notificationEvents.$inferSelect;
 export type SummaryLink = typeof summaryLinks.$inferSelect;
 export type StreamingAccount = typeof streamingAccounts.$inferSelect;
 export type NewStreamingAccount = typeof streamingAccounts.$inferInsert;

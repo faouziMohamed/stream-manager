@@ -19,14 +19,19 @@ import {
   GET_CLOUDINARY_SETTINGS,
   GET_DEFAULT_CURRENCY,
   GET_INQUIRIES,
+  GET_NOTIFICATION_HISTORY,
+  GET_NOTIFICATION_SETTINGS,
   GET_SMTP_SETTINGS,
   GET_SUMMARY_LINKS,
   type InquiryDto,
   MARK_INQUIRY_READ,
+  type NotificationEventDto,
+  type NotificationSettingDto,
   REPLACE_CLOUDINARY_IMAGE,
   REPLY_TO_INQUIRY,
   SET_APP_SETTING,
   SET_CLOUDINARY_SETTINGS,
+  SET_NOTIFICATION_SETTING,
   SET_SMTP_SETTINGS,
   type SmtpSettingsDto,
   type SmtpSettingsInput,
@@ -48,6 +53,9 @@ export const settingsKeys = {
     ["settings", "cloudinaryMedia", folder ?? "all"] as QueryKey,
   inquiries: (unreadOnly?: boolean) =>
     ["settings", "inquiries", unreadOnly ?? false] as QueryKey,
+  notificationSettings: ["settings", "notificationSettings"] as QueryKey,
+  notificationHistory: (limit?: number) =>
+    ["settings", "notificationHistory", limit ?? 50] as QueryKey,
 };
 
 // ─── Currency settings hooks ─────────────────────────────────────────────────
@@ -361,5 +369,60 @@ export function useDeleteInquiry() {
     onSuccess: () => toastSuccess("Message supprimé"),
     onSettled: () =>
       qc.invalidateQueries({ queryKey: settingsKeys.inquiries() }),
+  });
+}
+
+// ─── Notification settings hooks ─────────────────────────────────────────────
+
+export function useNotificationSettings(
+  initialData?: NotificationSettingDto[],
+) {
+  return useQuery({
+    queryKey: settingsKeys.notificationSettings,
+    queryFn: () =>
+      gqlRequest<{ notificationSettings: NotificationSettingDto[] }>(
+        GET_NOTIFICATION_SETTINGS,
+      ).then((r) => r.notificationSettings),
+    initialData,
+  });
+}
+
+export function useNotificationHistory(limit?: number) {
+  return useQuery({
+    queryKey: settingsKeys.notificationHistory(limit),
+    queryFn: () =>
+      gqlRequest<{ notificationHistory: NotificationEventDto[] }>(
+        GET_NOTIFICATION_HISTORY,
+        { limit },
+      ).then((r) => r.notificationHistory),
+  });
+}
+
+export function useSetNotificationSetting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ event, enabled }: { event: string; enabled: boolean }) =>
+      gqlRequest<{ setNotificationSetting: NotificationSettingDto }>(
+        SET_NOTIFICATION_SETTING,
+        { event, enabled },
+      ).then((r) => r.setNotificationSetting),
+    onMutate: async ({ event, enabled }) => {
+      await qc.cancelQueries({ queryKey: settingsKeys.notificationSettings });
+      const prev = qc.getQueryData<NotificationSettingDto[]>(
+        settingsKeys.notificationSettings,
+      );
+      qc.setQueryData<NotificationSettingDto[]>(
+        settingsKeys.notificationSettings,
+        (old) =>
+          old?.map((s) => (s.event === event ? { ...s, enabled } : s)) ?? [],
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev)
+        qc.setQueryData(settingsKeys.notificationSettings, ctx.prev);
+    },
+    onSettled: () =>
+      qc.invalidateQueries({ queryKey: settingsKeys.notificationSettings }),
   });
 }

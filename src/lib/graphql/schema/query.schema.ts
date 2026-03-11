@@ -50,6 +50,10 @@ export const querySchema = /* GraphQL */ `
     inquiries(unreadOnly: Boolean): [Inquiry!]!
     inquiry(id: ID!): Inquiry
 
+    # Notification settings
+    notificationSettings: [NotificationSetting!]!
+    notificationHistory(limit: Int): [NotificationEvent!]!
+
     # Streaming accounts & profiles
     streamingAccounts(serviceId: ID): [StreamingAccount!]!
     streamingAccount(id: ID!): StreamingAccount
