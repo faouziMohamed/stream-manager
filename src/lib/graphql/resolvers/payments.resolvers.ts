@@ -1,18 +1,23 @@
-import { requireAdmin, requireAuth } from './guards';
+import { requireAdmin, requireAuth } from "./guards";
 import {
   getAllPayments,
   getPaymentById,
   updatePayment,
   markPaymentPaid,
-} from '@/lib/db/repositories/payments.repository';
-import { getSubscriptionById } from '@/lib/db/repositories/subscriptions.repository';
-import type { GraphQLContext } from '../context';
+} from "@/lib/db/repositories/payments.repository";
+import { getSubscriptionById } from "@/lib/db/repositories/subscriptions.repository";
+import type { GraphQLContext } from "../context";
 
 export const paymentsResolvers = {
   Query: {
     payments: async (
       _: unknown,
-      { subscriptionId, status, fromDate, toDate }: {
+      {
+        subscriptionId,
+        status,
+        fromDate,
+        toDate,
+      }: {
         subscriptionId?: string;
         status?: string;
         fromDate?: string;
@@ -35,9 +40,16 @@ export const paymentsResolvers = {
   Mutation: {
     updatePayment: async (
       _: unknown,
-      { id, input }: {
+      {
+        id,
+        input,
+      }: {
         id: string;
-        input: { status?: 'paid' | 'unpaid' | 'overdue'; paidDate?: string; notes?: string };
+        input: {
+          status?: "paid" | "unpaid" | "overdue";
+          paidDate?: string;
+          notes?: string;
+        };
       },
       ctx: GraphQLContext,
     ) => {

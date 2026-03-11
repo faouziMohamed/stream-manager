@@ -51,3 +51,20 @@ export function formatDateISO(date: Date): string {
 export function parseDateISO(dateStr: string): Date {
   return new Date(`${dateStr}T00:00:00.000Z`);
 }
+
+/**
+ * Ensure a date string is a full ISO 8601 datetime string (with time + Z suffix)
+ * so it satisfies the GraphQL DateTime scalar.
+ * e.g. "2026-03-12"          → "2026-03-12T00:00:00.000Z"
+ *      "2026-03-12T14:30"    → "2026-03-12T14:30:00.000Z"
+ *      "2026-03-12T14:30:00.000Z" → unchanged
+ */
+export function toDateTimeString(value: string): string {
+  // Already a full datetime with timezone info — return as-is
+  if (/T.*[Z+\-]/.test(value)) return value;
+  // Has time part but no timezone — append Z
+  if (value.includes("T"))
+    return `${value}:00.000Z`.replace(/(:00)+\.000Z$/, ":00.000Z");
+  // Date-only — add midnight UTC time
+  return `${value}T00:00:00.000Z`;
+}

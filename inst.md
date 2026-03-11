@@ -14,7 +14,7 @@ User Roles & Authentication
     Accountant: Read-only access to dashboard summary and analytics — access /console/summary (guest-accessible)
     Auth Methods: GitHub OAuth + password-based (via Better Auth)
 
-Console Features (at /console/*)
+Console Features (at /console/\*)
 
     Authentication & Authorization
         Better Auth: GitHub OAuth + password sign-up/login
@@ -53,19 +53,19 @@ Console Features (at /console/*)
         No edit buttons or links
 
 Technical Stack
-Aspect	Choice
-Framework	Next.js 16 (App Router)
-Language	TypeScript (strict mode)
-Database	PostgreSQL (external, Aiven)
-ORM	Drizzle ORM
-Authentication	Better Auth (GitHub OAuth + password)
-Data Transport	GraphQL (only REST: /api/auth/[...all])
-Data Fetching	TanStack React Query v5
-Charts	Recharts
-UI/Styling	Shadcn/ui + Tailwind CSS v4
-Forms	react-hook-form + zod v4
-Logging	Pino (server) + clientLogger (client)
-File Naming	Domain-suffixed: .table.ts, .repository.ts, .schema.ts, .resolvers.ts, .operations.ts, .queries.ts
+Aspect Choice
+Framework Next.js 16 (App Router)
+Language TypeScript (strict mode)
+Database PostgreSQL (external, Aiven)
+ORM Drizzle ORM
+Authentication Better Auth (GitHub OAuth + password)
+Data Transport GraphQL (only REST: /api/auth/[...all])
+Data Fetching TanStack React Query v5
+Charts Recharts
+UI/Styling Shadcn/ui + Tailwind CSS v4
+Forms react-hook-form + zod v4
+Logging Pino (server) + clientLogger (client)
+File Naming Domain-suffixed: .table.ts, .repository.ts, .schema.ts, .resolvers.ts, .operations.ts, .queries.ts
 Database Schema
 Drizzle Table Definitions
 
@@ -93,138 +93,136 @@ subscriptions (id, clientId FK, planId FK, startDate DATE, endDate DATE NULL, fr
 payments (id, subscriptionId FK, dueDate DATE, paidDate DATE NULL, amount DECIMAL, status ENUM('paid', 'unpaid', 'overdue'), createdAt, updatedAt)
 Directory Structure (Following claude.md Pattern)
 
-
 here also a plan for the directory structure of the project, following the conventions outlined in the requirements, but feel free to adjust as needed based on your implementation approach:
 src/
 ├── app/
-│   ├── (website)/                    # Public pages (future)
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── (dashboard)/console/          # Admin console (protected by middleware)
-│   │   ├── layout.tsx                # Console shell (sidebar + topbar)
-│   │   ├── page.tsx                  # Dashboard overview
-│   │   ├── services/                 # Service management
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
-│   │   ├── clients/                  # Client management
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
-│   │   ├── subscriptions/            # Subscription management
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
-│   │   ├── payments/                 # Payment tracking
-│   │   │   └── page.tsx
-│   │   ├── timeline/                 # Timeline visualization
-│   │   │   └── page.tsx
-│   │   ├── analytics/                # Analytics dashboard
-│   │   │   └── page.tsx
-│   │   ├── summary/                  # Read-only accountant summary (optional auth)
-│   │   │   └── page.tsx
-│   │   └── settings/                 # Admin settings
-│   │       └── page.tsx
-│   ├── auth/
-│   │   ├── layout.tsx
-│   │   ├── login/page.tsx
-│   │   └── signup/page.tsx
-│   ├── api/
-│   │   ├── graphql/route.ts          # graphql-yoga handler (GET + POST)
-│   │   └── auth/[...all]/route.ts    # BetterAuth — do NOT add routes here
-│   ├── layout.tsx                    # Root layout + Providers
-│   ├── globals.css
-│   └── error.tsx / not-found.tsx / robots.ts / sitemap.ts
+│ ├── (website)/ # Public pages (future)
+│ │ ├── layout.tsx
+│ │ └── page.tsx
+│ ├── (dashboard)/console/ # Admin console (protected by middleware)
+│ │ ├── layout.tsx # Console shell (sidebar + topbar)
+│ │ ├── page.tsx # Dashboard overview
+│ │ ├── services/ # Service management
+│ │ │ ├── page.tsx
+│ │ │ └── [id]/page.tsx
+│ │ ├── clients/ # Client management
+│ │ │ ├── page.tsx
+│ │ │ └── [id]/page.tsx
+│ │ ├── subscriptions/ # Subscription management
+│ │ │ ├── page.tsx
+│ │ │ └── [id]/page.tsx
+│ │ ├── payments/ # Payment tracking
+│ │ │ └── page.tsx
+│ │ ├── timeline/ # Timeline visualization
+│ │ │ └── page.tsx
+│ │ ├── analytics/ # Analytics dashboard
+│ │ │ └── page.tsx
+│ │ ├── summary/ # Read-only accountant summary (optional auth)
+│ │ │ └── page.tsx
+│ │ └── settings/ # Admin settings
+│ │ └── page.tsx
+│ ├── auth/
+│ │ ├── layout.tsx
+│ │ ├── login/page.tsx
+│ │ └── signup/page.tsx
+│ ├── api/
+│ │ ├── graphql/route.ts # graphql-yoga handler (GET + POST)
+│ │ └── auth/[...all]/route.ts # BetterAuth — do NOT add routes here
+│ ├── layout.tsx # Root layout + Providers
+│ ├── globals.css
+│ └── error.tsx / not-found.tsx / robots.ts / sitemap.ts
 ├── components/
-│   ├── ui/                           # shadcn/ui primitives — DO NOT edit
-│   ├── shared/                       # Shared across console
-│   │   ├── providers.tsx             # React Query + session providers
-│   │   ├── theme-provider.tsx        # next-themes wrapper
-│   │   └── auth-context.tsx          # Session context (Better Auth)
-│   └── console/                      # Console-specific components
-│       ├── console-sidebar.tsx
-│       ├── console-topbar.tsx
-│       ├── management/               # Management editors & stats
-│       │   ├── services-editor.tsx   / services-stats.tsx
-│       │   ├── clients-editor.tsx    / clients-stats.tsx
-│       │   ├── subscriptions-editor.tsx / subscriptions-stats.tsx
-│       │   └── payments-editor.tsx   / payments-stats.tsx
-│       └── timeline/                 # Timeline view components
-│           ├── gantt-chart.tsx
-│           ├── table-grid.tsx
-│           ├── calendar-view.tsx
-│           └── view-selector.tsx
+│ ├── ui/ # shadcn/ui primitives — DO NOT edit
+│ ├── shared/ # Shared across console
+│ │ ├── providers.tsx # React Query + session providers
+│ │ ├── theme-provider.tsx # next-themes wrapper
+│ │ └── auth-context.tsx # Session context (Better Auth)
+│ └── console/ # Console-specific components
+│ ├── console-sidebar.tsx
+│ ├── console-topbar.tsx
+│ ├── management/ # Management editors & stats
+│ │ ├── services-editor.tsx / services-stats.tsx
+│ │ ├── clients-editor.tsx / clients-stats.tsx
+│ │ ├── subscriptions-editor.tsx / subscriptions-stats.tsx
+│ │ └── payments-editor.tsx / payments-stats.tsx
+│ └── timeline/ # Timeline view components
+│ ├── gantt-chart.tsx
+│ ├── table-grid.tsx
+│ ├── calendar-view.tsx
+│ └── view-selector.tsx
 ├── lib/
-│   ├── auth/                         # Better Auth config + helpers
-│   │   ├── config.ts                 # Better Auth setup (GitHub + password)
-│   │   └── helpers.ts                # isAdmin, isAccountant checks
-│   ├── db/
-│   │   ├── schema.ts                 # Barrel re-export
-│   │   ├── tables/
-│   │   │   ├── auth.table.ts         # BetterAuth tables
-│   │   │   └── subscription-management.table.ts # services, plans, clients, subscriptions, payments
-│   │   └── repositories/
-│   │       ├── services.repository.ts
-│   │       ├── clients.repository.ts
-│   │       ├── subscriptions.repository.ts
-│   │       ├── payments.repository.ts
-│   │       └── analytics.repository.ts
-│   ├── graphql/
-│   │   ├── schema.ts                 # Merges SDL slices
-│   │   ├── schema/
-│   │   │   ├── scalars.schema.ts
-│   │   │   ├── services.schema.ts
-│   │   │   ├── clients.schema.ts
-│   │   │   ├── subscriptions.schema.ts
-│   │   │   ├── payments.schema.ts
-│   │   │   ├── analytics.schema.ts
-│   │   │   ├── query.schema.ts
-│   │   │   └── mutation.schema.ts
-│   │   ├── resolvers/
-│   │   │   ├── index.ts              # Merges all slices
-│   │   │   ├── services.resolvers.ts
-│   │   │   ├── clients.resolvers.ts
-│   │   │   ├── subscriptions.resolvers.ts
-│   │   │   ├── payments.resolvers.ts
-│   │   │   └── analytics.resolvers.ts
-│   │   ├── context.ts                # Per-request auth context
-│   │   ├── client.ts                 # graphql-request client
-│   │   ├── operations.ts             # Barrel re-export
-│   │   └── operations/
-│   │       ├── services.operations.ts
-│   │       ├── clients.operations.ts
-│   │       ├── subscriptions.operations.ts
-│   │       ├── payments.operations.ts
-│   │       └── analytics.operations.ts
-│   ├── hooks/queries/
-│   │   ├── use-services.queries.ts
-│   │   ├── use-clients.queries.ts
-│   │   ├── use-subscriptions.queries.ts
-│   │   ├── use-payments.queries.ts
-│   │   └── use-analytics.queries.ts
-│   ├── settings/
-│   │   ├── env.ts                    # @t3-oss/env-nextjs validation
-│   │   └── config.ts                 # App config
-│   ├── types.ts                      # Shared types
-│   ├── logger/
-│   │   ├── logger.ts                 # Pino logger (server)
-│   │   ├── client-logger.ts          # Client logger
-│   │   └── client-log.action.ts      # Server Action for client logs
-│   └── utils/                        # Helpers, cn(), calculations
-├── proxy.ts                     # Auth + role-based route protection
+│ ├── auth/ # Better Auth config + helpers
+│ │ ├── config.ts # Better Auth setup (GitHub + password)
+│ │ └── helpers.ts # isAdmin, isAccountant checks
+│ ├── db/
+│ │ ├── schema.ts # Barrel re-export
+│ │ ├── tables/
+│ │ │ ├── auth.table.ts # BetterAuth tables
+│ │ │ └── subscription-management.table.ts # services, plans, clients, subscriptions, payments
+│ │ └── repositories/
+│ │ ├── services.repository.ts
+│ │ ├── clients.repository.ts
+│ │ ├── subscriptions.repository.ts
+│ │ ├── payments.repository.ts
+│ │ └── analytics.repository.ts
+│ ├── graphql/
+│ │ ├── schema.ts # Merges SDL slices
+│ │ ├── schema/
+│ │ │ ├── scalars.schema.ts
+│ │ │ ├── services.schema.ts
+│ │ │ ├── clients.schema.ts
+│ │ │ ├── subscriptions.schema.ts
+│ │ │ ├── payments.schema.ts
+│ │ │ ├── analytics.schema.ts
+│ │ │ ├── query.schema.ts
+│ │ │ └── mutation.schema.ts
+│ │ ├── resolvers/
+│ │ │ ├── index.ts # Merges all slices
+│ │ │ ├── services.resolvers.ts
+│ │ │ ├── clients.resolvers.ts
+│ │ │ ├── subscriptions.resolvers.ts
+│ │ │ ├── payments.resolvers.ts
+│ │ │ └── analytics.resolvers.ts
+│ │ ├── context.ts # Per-request auth context
+│ │ ├── client.ts # graphql-request client
+│ │ ├── operations.ts # Barrel re-export
+│ │ └── operations/
+│ │ ├── services.operations.ts
+│ │ ├── clients.operations.ts
+│ │ ├── subscriptions.operations.ts
+│ │ ├── payments.operations.ts
+│ │ └── analytics.operations.ts
+│ ├── hooks/queries/
+│ │ ├── use-services.queries.ts
+│ │ ├── use-clients.queries.ts
+│ │ ├── use-subscriptions.queries.ts
+│ │ ├── use-payments.queries.ts
+│ │ └── use-analytics.queries.ts
+│ ├── settings/
+│ │ ├── env.ts # @t3-oss/env-nextjs validation
+│ │ └── config.ts # App config
+│ ├── types.ts # Shared types
+│ ├── logger/
+│ │ ├── logger.ts # Pino logger (server)
+│ │ ├── client-logger.ts # Client logger
+│ │ └── client-log.action.ts # Server Action for client logs
+│ └── utils/ # Helpers, cn(), calculations
+├── proxy.ts # Auth + role-based route protection
 ├── drizzle.config.ts
-└── env.example                       # Example env vars
+└── env.example # Example env vars
 
 scripts/
-├── seed.ts                           # Database seeding
-└── migrate.ts                        # Drizzle migrations
+├── seed.ts # Database seeding
+└── migrate.ts # Drizzle migrations
 
 the claude.md file passed on the context is a file you must be inspired for the arch and guidline but after you finish the work edit it to reflect this project
 
-
 GraphQL-Only Architecture
 API Routes
-Route	Method	Purpose
-/api/graphql	GET	GraphQL playground (dev mode only)
-/api/graphql	POST	GraphQL query/mutation
-/api/auth/[...all]	*	Better Auth (do not touch)
+Route Method Purpose
+/api/graphql GET GraphQL playground (dev mode only)
+/api/graphql POST GraphQL query/mutation
+/api/auth/[...all] \* Better Auth (do not touch)
 Data Flow
 
     Server Page → fetches initialData directly from repositories → passes to client
@@ -327,13 +325,13 @@ Key Technical Decisions
 File Naming Convention
 
 Following the claude.md pattern for subscription management domain:
-Domain type	Suffix	Example
-DB table definitions	.table.ts	subscription-management.table.ts
-DB repositories	.repository.ts	services.repository.ts
-GraphQL resolvers	.resolvers.ts	services.resolvers.ts
-GraphQL SDL slices	.schema.ts	services.schema.ts
-GraphQL operations	.operations.ts	services.operations.ts
-React Query hooks	.queries.ts	use-services.queries.ts
+Domain type Suffix Example
+DB table definitions .table.ts subscription-management.table.ts
+DB repositories .repository.ts services.repository.ts
+GraphQL resolvers .resolvers.ts services.resolvers.ts
+GraphQL SDL slices .schema.ts services.schema.ts
+GraphQL operations .operations.ts services.operations.ts
+React Query hooks .queries.ts use-services.queries.ts
 Constraints & Considerations
 
     Single admin user with optional accountant role for read-only access
@@ -348,10 +346,9 @@ Constraints & Considerations
     Never use raw fetch() from client components — always use typed React Query hooks
     No new REST routes — GraphQL is the sole data transport (except auth)
 
-
 BEFORE YOU TYPE
-- Turn on Extended Thinking
 
+- Turn on Extended Thinking
 
 Some example of subscription my clients might have:
 
@@ -399,11 +396,9 @@ Some example of subscription my clients might have:
 3 mois = 149 dh
 6 mois = 279 dh
 
-
 You can get inspired by these examples to create the services, plans, clients, subscriptions, and payments in the database. Each service can have multiple plans with different pricing and durations. Clients can subscribe to these plans, and payments can be tracked based on the subscription details.
 
 Make sure to have non dashboard page to display some offers and promotions to the clients, and also a contact page for them to reach out to you if they have any questions or need support.
-
 
 This project i'm using has just been generate you can edit it however you want, just make sure it works.
 After you make your plan make sure to wait for me to give you any clarification or approval before you start coding, and also after you finish the code make sure to edit the claude.md file to reflect the new architecture and guidelines of this project.

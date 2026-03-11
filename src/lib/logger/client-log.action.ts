@@ -1,15 +1,15 @@
-'use server';
+"use server";
 
-import { createLogger } from './logger';
+import { createLogger } from "./logger";
 
-const serverLogger = createLogger('client-forwarded');
+const serverLogger = createLogger("client-forwarded");
 
 export async function forwardClientLog(
-  level: 'warn' | 'error' | 'fatal',
+  level: "warn" | "error" | "fatal",
   module: string,
   message: string,
   data?: unknown,
 ) {
-  const log = serverLogger.child({ module, source: 'client' });
+  const log = serverLogger.child({ module, source: "client" });
   log[level]({ data }, message);
 }

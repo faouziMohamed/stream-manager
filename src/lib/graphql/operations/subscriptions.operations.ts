@@ -2,14 +2,39 @@
 export const GET_SUBSCRIPTIONS = /* GraphQL */ `
   query GetSubscriptions($clientId: ID, $status: SubscriptionStatus) {
     subscriptions(clientId: $clientId, status: $status) {
-      id clientId planId startDate endDate isRecurring status notes renewedFromId
-      client { id name email phone }
-      plan {
-        id name durationMonths price currencyCode planType
-        service { id name }
-        promotion { id name }
+      id
+      clientId
+      planId
+      startDate
+      endDate
+      isRecurring
+      status
+      notes
+      renewedFromId
+      client {
+        id
+        name
+        email
+        phone
       }
-      createdAt updatedAt
+      plan {
+        id
+        name
+        durationMonths
+        price
+        currencyCode
+        planType
+        service {
+          id
+          name
+        }
+        promotion {
+          id
+          name
+        }
+      }
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -17,14 +42,45 @@ export const GET_SUBSCRIPTIONS = /* GraphQL */ `
 export const GET_SUBSCRIPTION = /* GraphQL */ `
   query GetSubscription($id: ID!) {
     subscription(id: $id) {
-      id clientId planId startDate endDate isRecurring status notes renewedFromId
-      client { id name email phone }
-      plan {
-        id name durationMonths price currencyCode planType
-        service { id name }
-        promotion { id name }
+      id
+      clientId
+      planId
+      startDate
+      endDate
+      isRecurring
+      status
+      notes
+      renewedFromId
+      client {
+        id
+        name
+        email
+        phone
       }
-      payments { id dueDate paidDate amount currencyCode status }
+      plan {
+        id
+        name
+        durationMonths
+        price
+        currencyCode
+        planType
+        service {
+          id
+          name
+        }
+        promotion {
+          id
+          name
+        }
+      }
+      payments {
+        id
+        dueDate
+        paidDate
+        amount
+        currencyCode
+        status
+      }
     }
   }
 `;
@@ -32,7 +88,13 @@ export const GET_SUBSCRIPTION = /* GraphQL */ `
 export const CREATE_SUBSCRIPTION = /* GraphQL */ `
   mutation CreateSubscription($input: CreateSubscriptionInput!) {
     createSubscription(input: $input) {
-      id clientId planId startDate endDate isRecurring status
+      id
+      clientId
+      planId
+      startDate
+      endDate
+      isRecurring
+      status
     }
   }
 `;
@@ -40,7 +102,13 @@ export const CREATE_SUBSCRIPTION = /* GraphQL */ `
 export const UPDATE_SUBSCRIPTION = /* GraphQL */ `
   mutation UpdateSubscription($id: ID!, $input: UpdateSubscriptionInput!) {
     updateSubscription(id: $id, input: $input) {
-      id status startDate endDate isRecurring notes updatedAt
+      id
+      status
+      startDate
+      endDate
+      isRecurring
+      notes
+      updatedAt
     }
   }
 `;
@@ -54,12 +122,19 @@ export const DELETE_SUBSCRIPTION = /* GraphQL */ `
 export const RENEW_SUBSCRIPTION = /* GraphQL */ `
   mutation RenewSubscription($input: RenewSubscriptionInput!) {
     renewSubscription(input: $input) {
-      id clientId planId startDate endDate isRecurring status renewedFromId
+      id
+      clientId
+      planId
+      startDate
+      endDate
+      isRecurring
+      status
+      renewedFromId
     }
   }
 `;
 
-export type SubscriptionStatus = 'active' | 'expired' | 'paused' | 'cancelled';
+export type SubscriptionStatus = "active" | "expired" | "paused" | "cancelled";
 
 export interface SubscriptionDto {
   id: string;
@@ -71,7 +146,12 @@ export interface SubscriptionDto {
   status: SubscriptionStatus;
   notes: string | null;
   renewedFromId: string | null;
-  client?: { id: string; name: string; email?: string | null; phone?: string | null };
+  client?: {
+    id: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+  };
   plan?: {
     id: string;
     name: string;
@@ -82,7 +162,14 @@ export interface SubscriptionDto {
     service?: { id: string; name: string } | null;
     promotion?: { id: string; name: string } | null;
   };
-  payments?: Array<{ id: string; dueDate: string; paidDate: string | null; amount: number; currencyCode: string; status: string }>;
+  payments?: Array<{
+    id: string;
+    dueDate: string;
+    paidDate: string | null;
+    amount: number;
+    currencyCode: string;
+    status: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

@@ -7,7 +7,7 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 ## Project Overview
 
 | Attribute        | Value                                                        |
-|------------------|--------------------------------------------------------------|
+| ---------------- | ------------------------------------------------------------ |
 | App name         | StreamManager                                                |
 | Framework        | Next.js 16 (App Router)                                      |
 | Language         | TypeScript (strict mode)                                     |
@@ -51,7 +51,7 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 ## Stack & Path Aliases
 
 | Alias | Resolves to |
-|-------|-------------|
+| ----- | ----------- |
 | `@/*` | `src/*`     |
 
 - Styling: Tailwind v4 utilities + `cn()` from `@/lib/utils/helpers`
@@ -68,7 +68,7 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 ## Domain Model
 
 | Table                 | Key fields                                                                    |
-|-----------------------|-------------------------------------------------------------------------------|
+| --------------------- | ----------------------------------------------------------------------------- |
 | `users`               | BetterAuth user table + `role` enum (`admin`/`accountant`/`user`)             |
 | `services`            | name, category, description, logoUrl, isActive                                |
 | `promotions`          | name, description, isActive (bundle of services)                              |
@@ -176,7 +176,7 @@ src/
 ## File Naming Convention
 
 | Domain type        | Suffix           | Examples                                             |
-|--------------------|------------------|------------------------------------------------------|
+| ------------------ | ---------------- | ---------------------------------------------------- |
 | DB table defs      | `.table.ts`      | `auth.table.ts`, `subscription-management.table.ts`  |
 | DB repositories    | `.repository.ts` | `services.repository.ts`, `payments.repository.ts`   |
 | GraphQL resolvers  | `.resolvers.ts`  | `services.resolvers.ts`, `analytics.resolvers.ts`    |
@@ -189,7 +189,7 @@ src/
 ## User Roles & Authentication
 
 | Role         | Access                                                  |
-|--------------|---------------------------------------------------------|
+| ------------ | ------------------------------------------------------- |
 | `admin`      | Full CRUD on all entities, all console routes           |
 | `accountant` | Read-only: dashboard stats, analytics, summary          |
 | `user`       | Default after signup — no console access until promoted |
@@ -247,7 +247,7 @@ src/
 ## Console Routes
 
 | Path                           | Description                                      |
-|--------------------------------|--------------------------------------------------|
+| ------------------------------ | ------------------------------------------------ |
 | `/console`                     | Dashboard overview (stats cards)                 |
 | `/console/services`            | Service CRUD                                     |
 | `/console/promotions`          | Promotion/bundle CRUD                            |
@@ -270,8 +270,8 @@ src/
 
 ## Implementation Status
 
-| Phase | Status     | Description                                                                             |
-|-------|------------|-----------------------------------------------------------------------------------------|
+| Phase | Status      | Description                                                                             |
+| ----- | ----------- | --------------------------------------------------------------------------------------- |
 | 1     | ✅ Complete | Foundation: DB schema, BetterAuth, GraphQL server, middleware, auth pages, public pages |
 | 2     | ✅ Complete | Repositories + full GraphQL resolvers + React Query hooks for all domains               |
 | 3     | ✅ Complete | Management pages + Timeline + Analytics + Summary + Shared link — all in French         |

@@ -1,14 +1,39 @@
 // Payments GraphQL operations
 export const GET_PAYMENTS = /* GraphQL */ `
-  query GetPayments($subscriptionId: ID, $status: PaymentStatus, $fromDate: Date, $toDate: Date) {
-    payments(subscriptionId: $subscriptionId, status: $status, fromDate: $fromDate, toDate: $toDate) {
-      id subscriptionId dueDate paidDate amount currencyCode status notes
+  query GetPayments(
+    $subscriptionId: ID
+    $status: PaymentStatus
+    $fromDate: Date
+    $toDate: Date
+  ) {
+    payments(
+      subscriptionId: $subscriptionId
+      status: $status
+      fromDate: $fromDate
+      toDate: $toDate
+    ) {
+      id
+      subscriptionId
+      dueDate
+      paidDate
+      amount
+      currencyCode
+      status
+      notes
       subscription {
         id
-        client { id name }
-        plan { id name durationMonths }
+        client {
+          id
+          name
+        }
+        plan {
+          id
+          name
+          durationMonths
+        }
       }
-      createdAt updatedAt
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -16,7 +41,11 @@ export const GET_PAYMENTS = /* GraphQL */ `
 export const UPDATE_PAYMENT = /* GraphQL */ `
   mutation UpdatePayment($id: ID!, $input: UpdatePaymentInput!) {
     updatePayment(id: $id, input: $input) {
-      id status paidDate notes updatedAt
+      id
+      status
+      paidDate
+      notes
+      updatedAt
     }
   }
 `;
@@ -24,12 +53,15 @@ export const UPDATE_PAYMENT = /* GraphQL */ `
 export const MARK_PAYMENT_PAID = /* GraphQL */ `
   mutation MarkPaymentPaid($id: ID!, $paidDate: Date) {
     markPaymentPaid(id: $id, paidDate: $paidDate) {
-      id status paidDate updatedAt
+      id
+      status
+      paidDate
+      updatedAt
     }
   }
 `;
 
-export type PaymentStatus = 'paid' | 'unpaid' | 'overdue';
+export type PaymentStatus = "paid" | "unpaid" | "overdue";
 
 export interface PaymentDto {
   id: string;

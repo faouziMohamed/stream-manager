@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useQuery, type QueryKey } from '@tanstack/react-query';
-import { gqlRequest } from '@/lib/graphql/client';
+import { useQuery, type QueryKey } from "@tanstack/react-query";
+import { gqlRequest } from "@/lib/graphql/client";
 import {
   GET_DASHBOARD_STATS,
   GET_ANALYTICS,
   type DashboardStatsDto,
   type AnalyticsDto,
-} from '@/lib/graphql/operations/analytics.operations';
+} from "@/lib/graphql/operations/analytics.operations";
 
 export const analyticsKeys = {
-  stats: ['dashboardStats'] as QueryKey,
-  analytics: (months?: number) => ['analytics', months] as QueryKey,
+  stats: ["dashboardStats"] as QueryKey,
+  analytics: (months?: number) => ["analytics", months] as QueryKey,
 };
 
 export function useDashboardStats(initialData?: DashboardStatsDto) {
   return useQuery({
     queryKey: analyticsKeys.stats,
     queryFn: () =>
-      gqlRequest<{ dashboardStats: DashboardStatsDto }>(GET_DASHBOARD_STATS).then(
-        (r) => r.dashboardStats,
-      ),
+      gqlRequest<{ dashboardStats: DashboardStatsDto }>(
+        GET_DASHBOARD_STATS,
+      ).then((r) => r.dashboardStats),
     initialData,
     staleTime: 30_000, // 30s — stats can be slightly stale
   });

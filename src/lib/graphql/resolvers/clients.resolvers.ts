@@ -1,16 +1,16 @@
-import { requireAdmin, requireAuth } from './guards';
+import { requireAdmin, requireAuth } from "./guards";
 import {
   getAllClients,
   getClientById,
   createClient,
   updateClient,
   deleteClient,
-} from '@/lib/db/repositories/clients.repository';
+} from "@/lib/db/repositories/clients.repository";
 import {
   getSubscriptionsByClient,
   countActiveSubscriptionsByClient,
-} from '@/lib/db/repositories/subscriptions.repository';
-import type { GraphQLContext } from '../context';
+} from "@/lib/db/repositories/subscriptions.repository";
+import type { GraphQLContext } from "../context";
 
 export const clientsResolvers = {
   Query: {
@@ -26,7 +26,11 @@ export const clientsResolvers = {
   Mutation: {
     createClient: async (
       _: unknown,
-      { input }: { input: { name: string; email?: string; phone?: string; notes?: string } },
+      {
+        input,
+      }: {
+        input: { name: string; email?: string; phone?: string; notes?: string };
+      },
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
@@ -34,7 +38,19 @@ export const clientsResolvers = {
     },
     updateClient: async (
       _: unknown,
-      { id, input }: { id: string; input: { name?: string; email?: string; phone?: string; notes?: string; isActive?: boolean } },
+      {
+        id,
+        input,
+      }: {
+        id: string;
+        input: {
+          name?: string;
+          email?: string;
+          phone?: string;
+          notes?: string;
+          isActive?: boolean;
+        };
+      },
       ctx: GraphQLContext,
     ) => {
       requireAdmin(ctx);
@@ -52,7 +68,8 @@ export const clientsResolvers = {
     },
   },
   Client: {
-    subscriptions: (parent: { id: string }) => getSubscriptionsByClient(parent.id),
+    subscriptions: (parent: { id: string }) =>
+      getSubscriptionsByClient(parent.id),
     activeSubscriptionsCount: (parent: { id: string }) =>
       countActiveSubscriptionsByClient(parent.id),
   },

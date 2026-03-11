@@ -1,6 +1,6 @@
-import { auth } from '@/lib/auth/auth';
-import { isAdmin, isAccountant } from '@/lib/auth/helpers';
-import type { User } from '@/lib/db/tables/auth.table';
+import { auth } from "@/lib/auth/auth";
+import { isAdmin, isAccountant } from "@/lib/auth/helpers";
+import type { User } from "@/lib/db/tables/auth.table";
 
 export interface GraphQLContext {
   user: User | null;

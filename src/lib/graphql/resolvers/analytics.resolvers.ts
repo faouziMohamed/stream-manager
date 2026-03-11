@@ -1,11 +1,11 @@
-import { requireAuth } from './guards';
+import { requireAuth } from "./guards";
 import {
   getDashboardStats,
   getMonthlyRevenue,
   getPaymentBreakdown,
   getSubscriptionsByService,
-} from '@/lib/db/repositories/analytics.repository';
-import type { GraphQLContext } from '../context';
+} from "@/lib/db/repositories/analytics.repository";
+import type { GraphQLContext } from "../context";
 
 export const analyticsResolvers = {
   Query: {

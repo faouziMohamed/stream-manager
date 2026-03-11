@@ -1,4 +1,4 @@
-import { requireAdmin, requireAuth } from './guards';
+import { requireAdmin, requireAuth } from "./guards";
 import {
   getAllSubscriptions,
   getSubscriptionById,
@@ -6,11 +6,11 @@ import {
   updateSubscription,
   deleteSubscription,
   renewSubscription,
-} from '@/lib/db/repositories/subscriptions.repository';
-import { getClientById } from '@/lib/db/repositories/clients.repository';
-import { getPlanById } from '@/lib/db/repositories/services.repository';
-import { getPaymentsBySubscription } from '@/lib/db/repositories/payments.repository';
-import type { GraphQLContext } from '../context';
+} from "@/lib/db/repositories/subscriptions.repository";
+import { getClientById } from "@/lib/db/repositories/clients.repository";
+import { getPlanById } from "@/lib/db/repositories/services.repository";
+import { getPaymentsBySubscription } from "@/lib/db/repositories/payments.repository";
+import type { GraphQLContext } from "../context";
 
 export const subscriptionsResolvers = {
   Query: {
@@ -34,7 +34,9 @@ export const subscriptionsResolvers = {
   Mutation: {
     createSubscription: async (
       _: unknown,
-      { input }: {
+      {
+        input,
+      }: {
         input: {
           clientId: string;
           planId: string;
@@ -50,12 +52,15 @@ export const subscriptionsResolvers = {
     },
     updateSubscription: async (
       _: unknown,
-      { id, input }: {
+      {
+        id,
+        input,
+      }: {
         id: string;
         input: {
           startDate?: string;
           isRecurring?: boolean;
-          status?: 'active' | 'expired' | 'paused' | 'cancelled';
+          status?: "active" | "expired" | "paused" | "cancelled";
           notes?: string;
         };
       },
@@ -76,7 +81,9 @@ export const subscriptionsResolvers = {
     },
     renewSubscription: async (
       _: unknown,
-      { input }: {
+      {
+        input,
+      }: {
         input: {
           subscriptionId: string;
           startDate: string;

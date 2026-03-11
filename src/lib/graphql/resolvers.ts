@@ -1,1 +1,1 @@
-export { resolvers } from './resolvers/index';
+export { resolvers } from "./resolvers/index";

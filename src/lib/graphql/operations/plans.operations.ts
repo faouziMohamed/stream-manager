@@ -65,7 +65,7 @@ export const DELETE_PLAN = /* GraphQL */ `
   }
 `;
 
-export type PlanType = 'full' | 'partial' | 'custom' | 'bundle';
+export type PlanType = "full" | "partial" | "custom" | "bundle";
 
 export interface PlanDto {
   id: string;

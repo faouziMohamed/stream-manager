@@ -95,12 +95,8 @@
           "name": "auth_account_user_id_auth_user_id_fk",
           "tableFrom": "auth_account",
           "tableTo": "auth_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -172,12 +168,8 @@
           "name": "auth_session_user_id_auth_user_id_fk",
           "tableFrom": "auth_session",
           "tableTo": "auth_user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -187,9 +179,7 @@
         "auth_session_token_unique": {
           "name": "auth_session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -261,9 +251,7 @@
         "auth_user_email_unique": {
           "name": "auth_user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -550,12 +538,8 @@
           "name": "subscriptions_payments_subscription_id_subscriptions_subscriptions_id_fk",
           "tableFrom": "subscriptions_payments",
           "tableTo": "subscriptions_subscriptions",
-          "columnsFrom": [
-            "subscription_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subscription_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -655,12 +639,8 @@
           "name": "services_plans_service_id_services_services_id_fk",
           "tableFrom": "services_plans",
           "tableTo": "services_services",
-          "columnsFrom": [
-            "service_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["service_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -668,12 +648,8 @@
           "name": "services_plans_promotion_id_promotions_promotions_id_fk",
           "tableFrom": "services_plans",
           "tableTo": "promotions_promotions",
-          "columnsFrom": [
-            "promotion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["promotion_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -713,12 +689,8 @@
           "name": "promotion_services_promotion_id_promotions_promotions_id_fk",
           "tableFrom": "promotion_services",
           "tableTo": "promotions_promotions",
-          "columnsFrom": [
-            "promotion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["promotion_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -726,12 +698,8 @@
           "name": "promotion_services_service_id_services_services_id_fk",
           "tableFrom": "promotion_services",
           "tableTo": "services_services",
-          "columnsFrom": [
-            "service_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["service_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -946,12 +914,8 @@
           "name": "streaming_accounts_service_id_services_services_id_fk",
           "tableFrom": "streaming_accounts",
           "tableTo": "services_services",
-          "columnsFrom": [
-            "service_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["service_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1019,12 +983,8 @@
           "name": "streaming_profiles_account_id_streaming_accounts_id_fk",
           "tableFrom": "streaming_profiles",
           "tableTo": "streaming_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1077,12 +1037,8 @@
           "name": "subscription_profiles_subscription_id_subscriptions_subscriptions_id_fk",
           "tableFrom": "subscription_profiles",
           "tableTo": "subscriptions_subscriptions",
-          "columnsFrom": [
-            "subscription_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subscription_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1090,12 +1046,8 @@
           "name": "subscription_profiles_account_id_streaming_accounts_id_fk",
           "tableFrom": "subscription_profiles",
           "tableTo": "streaming_accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1103,12 +1055,8 @@
           "name": "subscription_profiles_profile_id_streaming_profiles_id_fk",
           "tableFrom": "subscription_profiles",
           "tableTo": "streaming_profiles",
-          "columnsFrom": [
-            "profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1201,12 +1149,8 @@
           "name": "subscriptions_subscriptions_client_id_subscriptions_clients_id_fk",
           "tableFrom": "subscriptions_subscriptions",
           "tableTo": "subscriptions_clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1214,12 +1158,8 @@
           "name": "subscriptions_subscriptions_plan_id_services_plans_id_fk",
           "tableFrom": "subscriptions_subscriptions",
           "tableTo": "services_plans",
-          "columnsFrom": [
-            "plan_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["plan_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1287,9 +1227,7 @@
         "summary_links_token_unique": {
           "name": "summary_links_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -1301,40 +1239,22 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "accountant",
-        "user"
-      ]
+      "values": ["admin", "accountant", "user"]
     },
     "public.payment_status": {
       "name": "payment_status",
       "schema": "public",
-      "values": [
-        "paid",
-        "unpaid",
-        "overdue"
-      ]
+      "values": ["paid", "unpaid", "overdue"]
     },
     "public.plan_type": {
       "name": "plan_type",
       "schema": "public",
-      "values": [
-        "full",
-        "partial",
-        "custom",
-        "bundle"
-      ]
+      "values": ["full", "partial", "custom", "bundle"]
     },
     "public.subscription_status": {
       "name": "subscription_status",
       "schema": "public",
-      "values": [
-        "active",
-        "expired",
-        "paused",
-        "cancelled"
-      ]
+      "values": ["active", "expired", "paused", "cancelled"]
     }
   },
   "schemas": {},

@@ -1,10 +1,10 @@
-import { db } from '@/lib/db';
-import { clients } from '@/lib/db/tables/subscription-management.table';
-import { eq, sql } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
-import { createLogger } from '@/lib/logger';
+import { db } from "@/lib/db";
+import { clients } from "@/lib/db/tables/subscription-management.table";
+import { eq, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { createLogger } from "@/lib/logger";
 
-const logger = createLogger('clients-repository');
+const logger = createLogger("clients-repository");
 
 export type CreateClientInput = {
   name: string;
@@ -13,7 +13,9 @@ export type CreateClientInput = {
   notes?: string | null;
 };
 
-export type UpdateClientInput = Partial<CreateClientInput & { isActive: boolean }>;
+export type UpdateClientInput = Partial<
+  CreateClientInput & { isActive: boolean }
+>;
 
 export async function getAllClients() {
   return db.select().from(clients).orderBy(clients.name);
@@ -26,8 +28,11 @@ export async function getClientById(id: string) {
 
 export async function createClient(input: CreateClientInput) {
   const id = nanoid();
-  const [client] = await db.insert(clients).values({ id, ...input }).returning();
-  logger.info({ id }, 'Created client');
+  const [client] = await db
+    .insert(clients)
+    .values({ id, ...input })
+    .returning();
+  logger.info({ id }, "Created client");
   return client;
 }
 
@@ -42,6 +47,6 @@ export async function updateClient(id: string, input: UpdateClientInput) {
 
 export async function deleteClient(id: string) {
   await db.delete(clients).where(eq(clients.id, id));
-  logger.info({ id }, 'Deleted client');
+  logger.info({ id }, "Deleted client");
   return true;
 }

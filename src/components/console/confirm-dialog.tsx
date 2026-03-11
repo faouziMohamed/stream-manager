@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Dialog,
@@ -7,8 +7,8 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -25,7 +25,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Supprimer',
+  confirmLabel = "Supprimer",
   onConfirm,
   loading,
 }: ConfirmDialogProps) {
@@ -37,11 +37,15 @@ export function ConfirmDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
             Annuler
           </Button>
           <Button variant="destructive" onClick={onConfirm} disabled={loading}>
-            {loading ? 'En cours…' : confirmLabel}
+            {loading ? "En cours…" : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,10 @@
-import { WebsiteHeader } from '@/components/website/website-header';
+import { WebsiteHeader } from "@/components/website/website-header";
 
-export default function WebsiteLayout({ children }: { children: React.ReactNode }) {
+export default function WebsiteLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen flex flex-col">
       <WebsiteHeader />

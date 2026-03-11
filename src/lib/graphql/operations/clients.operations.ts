@@ -2,9 +2,15 @@
 export const GET_CLIENTS = /* GraphQL */ `
   query GetClients {
     clients {
-      id name email phone notes isActive
+      id
+      name
+      email
+      phone
+      notes
+      isActive
       activeSubscriptionsCount
-      createdAt updatedAt
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -12,10 +18,25 @@ export const GET_CLIENTS = /* GraphQL */ `
 export const GET_CLIENT = /* GraphQL */ `
   query GetClient($id: ID!) {
     client(id: $id) {
-      id name email phone notes isActive
+      id
+      name
+      email
+      phone
+      notes
+      isActive
       subscriptions {
-        id status startDate endDate isRecurring
-        plan { id name durationMonths price currencyCode }
+        id
+        status
+        startDate
+        endDate
+        isRecurring
+        plan {
+          id
+          name
+          durationMonths
+          price
+          currencyCode
+        }
       }
     }
   }
@@ -24,7 +45,13 @@ export const GET_CLIENT = /* GraphQL */ `
 export const CREATE_CLIENT = /* GraphQL */ `
   mutation CreateClient($input: CreateClientInput!) {
     createClient(input: $input) {
-      id name email phone notes isActive createdAt
+      id
+      name
+      email
+      phone
+      notes
+      isActive
+      createdAt
     }
   }
 `;
@@ -32,7 +59,13 @@ export const CREATE_CLIENT = /* GraphQL */ `
 export const UPDATE_CLIENT = /* GraphQL */ `
   mutation UpdateClient($id: ID!, $input: UpdateClientInput!) {
     updateClient(id: $id, input: $input) {
-      id name email phone notes isActive updatedAt
+      id
+      name
+      email
+      phone
+      notes
+      isActive
+      updatedAt
     }
   }
 `;

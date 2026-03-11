@@ -1,6 +1,12 @@
-import { db } from '@/lib/db';
-import { subscriptions, plans, clients, services, promotions } from '@/lib/db/tables/subscription-management.table';
-import { eq, and, gte, lte, or } from 'drizzle-orm';
+import { db } from "@/lib/db";
+import {
+  subscriptions,
+  plans,
+  clients,
+  services,
+  promotions,
+} from "@/lib/db/tables/subscription-management.table";
+import { eq, and, gte, lte, or } from "drizzle-orm";
 
 export interface TimelineSubscription {
   id: string;
@@ -55,19 +61,19 @@ export async function getTimelineSubscriptions(
   // Resolve service/promotion name per row
   const result: TimelineSubscription[] = [];
   for (const row of rows) {
-    let serviceName = '—';
+    let serviceName = "—";
     if (row.serviceId) {
       const [svc] = await db
         .select({ name: services.name })
         .from(services)
         .where(eq(services.id, row.serviceId));
-      serviceName = svc?.name ?? '—';
+      serviceName = svc?.name ?? "—";
     } else if (row.promotionId) {
       const [promo] = await db
         .select({ name: promotions.name })
         .from(promotions)
         .where(eq(promotions.id, row.promotionId));
-      serviceName = promo ? `[Promo] ${promo.name}` : '—';
+      serviceName = promo ? `[Promo] ${promo.name}` : "—";
     }
 
     result.push({

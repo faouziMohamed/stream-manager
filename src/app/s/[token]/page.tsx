@@ -9,6 +9,7 @@ import {
   getSubscriptionsByService,
 } from "@/lib/db/repositories/analytics.repository";
 import { SummaryView } from "@/components/console/cms/summary-view";
+import { SharedSummaryHeader } from "@/components/shared/shared-summary-header";
 import type { AnalyticsDto } from "@/lib/graphql/operations/analytics.operations";
 
 interface Props {
@@ -28,17 +29,23 @@ export default async function SharedSummaryPage({ params }: Props) {
   if (link.expiresAt && link.expiresAt < new Date()) notFound();
 
   // Fetch stats + analytics
-  const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] = await Promise.all([
-    getDashboardStats(),
-    getMonthlyRevenue(6),
-    getPaymentBreakdown(6),
-    getSubscriptionsByService(),
-  ]);
+  const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] =
+    await Promise.all([
+      getDashboardStats(),
+      getMonthlyRevenue(6),
+      getPaymentBreakdown(6),
+      getSubscriptionsByService(),
+    ]);
 
-  const analytics: AnalyticsDto = { monthlyRevenue, paymentBreakdown, subscriptionsByService };
+  const analytics: AnalyticsDto = {
+    monthlyRevenue,
+    paymentBreakdown,
+    subscriptionsByService,
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <SharedSummaryHeader label={link.label} />
       <SummaryView
         stats={stats}
         analytics={analytics}

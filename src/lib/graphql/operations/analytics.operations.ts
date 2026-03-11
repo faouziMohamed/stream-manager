@@ -15,9 +15,24 @@ export const GET_DASHBOARD_STATS = /* GraphQL */ `
 export const GET_ANALYTICS = /* GraphQL */ `
   query GetAnalytics($months: Int) {
     analytics(months: $months) {
-      monthlyRevenue { month revenue currencyCode }
-      paymentBreakdown { month paid unpaid overdue currencyCode }
-      subscriptionsByService { serviceName count revenue currencyCode }
+      monthlyRevenue {
+        month
+        revenue
+        currencyCode
+      }
+      paymentBreakdown {
+        month
+        paid
+        unpaid
+        overdue
+        currencyCode
+      }
+      subscriptionsByService {
+        serviceName
+        count
+        revenue
+        currencyCode
+      }
     }
   }
 `;
