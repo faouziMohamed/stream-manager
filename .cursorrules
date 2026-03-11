@@ -1,0 +1,118 @@
+# Cursor Rules — dev.mfaouzi.com
+
+> Authoritative rules live in `CLAUDE.md` at the repository root.
+> This file is a condensed reference — always defer to `CLAUDE.md` for the full context.
+
+---
+
+## Project
+
+Personal portfolio site for **Faouzi Mohamed** — Next.js 16 (App Router), React 19, TypeScript (strict),
+Tailwind CSS v4, shadcn/ui, Node ≥ 24.
+
+---
+
+## Workflow Rules (non-negotiable)
+
+1. **Plan before coding** — describe your approach and wait for approval before writing any code.
+2. **Clarify ambiguity** — ask questions before writing code when requirements are unclear.
+3. **Post-code review** — after writing code, list edge cases and suggest test cases.
+4. **Limit scope** — if a task touches more than 3 files, break it into smaller tasks first.
+5. **Bug-fix workflow** — write a reproducing test first, then fix until the test passes.
+6. **Never use `cat`/shell redirection to write files** — always use IDE file-edit tools so changes are tracked.
+7. **Prefer file tools over CLI for reading** — `read_file`, `list_dir`, `file_search`, `grep_search` are
+   reliable. Shell commands can silently return empty output. Use CLI only when file tools cannot do the task
+   (e.g. `npm install`, migrations). If CLI returns empty output, fall back to file tools.
+8. **No new REST routes** — every new server operation must be a GraphQL query or mutation. The only REST routes
+   are BetterAuth. Do not create `route.ts` files outside `api/auth/`.
+9. **Never call `router.refresh()` after mutations** — optimistic updates + `invalidateQueries` handle UI sync.
+
+---
+
+## Stack
+
+- Path aliases: `@/*` → `src/*`, `~/*` → `public/*`
+- Styling: Tailwind v4 + `cn()` from `@/lib/utils/helpers`
+- Components: RSC by default; `'use client'` only when state/effects needed
+- Types: strict TypeScript, `import type` for type-only imports, no `any`
+- Data: static fallback `src/lib/data/data.ts`; DB overrides at runtime
+- Env vars: `@t3-oss/env-nextjs` in `src/lib/settings/env.ts` — add to both schema and `runtimeEnv`
+- Feature flags: DB-driven only via `cms_feature_flags`; `getEffectiveFeatureFlags()` reads from DB
+- UI primitives: `src/components/ui/` (shadcn/ui) — avoid editing unless necessary
+- Scripts: `npm run lint:check` (lint + types), `npm run format` (prettier)
+
+---
+
+## Data Transport
+
+- **GraphQL only** (`POST /api/graphql`) for all client → server operations
+- **No new REST routes** — only BetterAuth at `/api/auth/[...all]` is REST
+- Client via `graphql-request` in `src/lib/graphql/client.ts`
+- Typed operations in `src/lib/graphql/operations.ts`
+- React Query hooks in `src/lib/hooks/queries/` with optimistic updates
+
+---
+
+## Resolvers Structure
+
+Split by domain under `src/lib/graphql/resolvers/`:
+
+| File               | Domain                                                   |
+|--------------------|----------------------------------------------------------|
+| `index.ts`         | Merges all slices — the only file `route.ts` imports     |
+| `availability.ts`  | Availability query + mutation                            |
+| `feature-flags.ts` | Feature flag queries + mutations                         |
+| `portfolio.ts`     | Focus areas, experiences, projects, skills, testimonials |
+| `guestbook.ts`     | Comments, replies, votes, stats                          |
+| `settings.ts`      | SMTP/media settings + `uploadImage` (Cloudinary SDK)     |
+| `contact.ts`       | `sendContactMessage`                                     |
+| `users.ts`         | User management (admin only)                             |
+
+`src/lib/graphql/resolvers.ts` is a 1-line re-export shim — do not add logic to it.
+
+---
+
+## Forms
+
+- `react-hook-form` + `zod` + `zodResolver` always — never `useState` for fields
+- Inline error display: `error?: string` on field wrapper, red border (`iErrCls`) on input, `text-destructive` message
+- Pass `onInvalid` to `handleSubmit` — auto-opens first card with errors
+- **Never spread DTO objects into `defaultValues`** — map fields explicitly to avoid silent zodResolver failures
+
+---
+
+## React Query
+
+- Every mutation: `onMutate` (optimistic) → `onError` (rollback) → `onSettled` (invalidate)
+- `initialData` from server page — no loading flash on first render
+- Stats + editors share the same query key — mutations update both instantly
+- Never `router.refresh()` after mutations
+
+---
+
+## Image Uploads (Cloudinary)
+
+- **Server-side only** — client sends base64 via `uploadImage` GraphQL mutation; server uses Cloudinary SDK.
+- **No credentials reach the browser** — no API key, no secret, no signed URL.
+- Component: `src/components/console/image-uploader.tsx` → hook `useUploadImage()`.
+- Resolver: `src/lib/graphql/resolvers/settings.ts`.
+
+---
+
+## CMS Studio Routes
+
+| Group     | Path                                   | Description                      |
+|-----------|----------------------------------------|----------------------------------|
+| Overview  | `/console`                              | Live stats + shortcuts           |
+| Guestbook | `/console/guestbook/moderation`         | Comment moderation               |
+| Guestbook | `/console/guestbook/spotlight`          | Home spotlight (pinned comments) |
+| Portfolio | `/console/portfolio/availability`       | Availability editor              |
+| Portfolio | `/console/portfolio/feature-flags`      | Feature flag toggles (admin)     |
+| Portfolio | `/console/portfolio/focus-areas`        | Focus areas editor               |
+| Portfolio | `/console/portfolio/experiences`        | Work experience editor           |
+| Portfolio | `/console/portfolio/projects`           | Projects editor                  |
+| Portfolio | `/console/portfolio/skills`             | Skills editor                    |
+| Portfolio | `/console/portfolio/testimonials`       | Testimonials editor              |
+| Settings  | `/console/settings/smtp`                | SMTP / mail server config (admin)|
+| Settings  | `/console/settings/media`               | Cloudinary media config (admin)  |
+| Users     | `/console/users`                        | User management (admin)          |

@@ -1,0 +1,63 @@
+// Promotions GraphQL operations
+export const GET_PROMOTIONS = /* GraphQL */ `
+  query GetPromotions {
+    promotions {
+      id
+      name
+      description
+      isActive
+      services { id name }
+      plans { id name durationMonths price currencyCode }
+    }
+  }
+`;
+
+export const CREATE_PROMOTION = /* GraphQL */ `
+  mutation CreatePromotion($input: CreatePromotionInput!) {
+    createPromotion(input: $input) {
+      id name description isActive
+    }
+  }
+`;
+
+export const UPDATE_PROMOTION = /* GraphQL */ `
+  mutation UpdatePromotion($id: ID!, $input: UpdatePromotionInput!) {
+    updatePromotion(id: $id, input: $input) {
+      id name description isActive
+    }
+  }
+`;
+
+export const DELETE_PROMOTION = /* GraphQL */ `
+  mutation DeletePromotion($id: ID!) {
+    deletePromotion(id: $id)
+  }
+`;
+
+export interface PromotionDto {
+  id: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  services: Array<{ id: string; name: string }>;
+  plans: Array<{
+    id: string;
+    name: string;
+    durationMonths: number;
+    price: number;
+    currencyCode: string;
+  }>;
+}
+
+export interface CreatePromotionInput {
+  name: string;
+  description?: string;
+  serviceIds: string[];
+}
+
+export interface UpdatePromotionInput {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+  serviceIds?: string[];
+}
