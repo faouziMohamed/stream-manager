@@ -147,3 +147,268 @@ body {
     @apply font-sans;
   }
 }
+
+/* ─── Site design tokens — LIGHT (default) ───────────────────────────────── */
+:root {
+  --sm-void: oklch(0.94 0.007 258); /* page bg */
+  --sm-surface: oklch(0.99 0.002 252); /* card / panel bg */
+  --sm-surface2: oklch(0.91 0.009 256); /* secondary surface */
+  --sm-border: oklch(0 0 0 / 0.09);
+  --sm-border2: oklch(0 0 0 / 0.16);
+  --sm-fg: oklch(0.13 0.015 258); /* primary text */
+  --sm-muted: oklch(0.44 0.012 258); /* secondary text */
+
+  /* Accents — slightly deeper on light for contrast */
+  --sm-coral: oklch(0.58 0.22 28);
+  --sm-coral-fg: oklch(0.97 0.005 90);
+  --sm-coral-s: oklch(0.62 0.22 28 / 0.1);
+  --sm-coral-b: oklch(0.62 0.22 28 / 0.3);
+  --sm-gold: oklch(0.66 0.16 62);
+  --sm-gold-s: oklch(0.76 0.16 62 / 0.12);
+  --sm-gold-b: oklch(0.76 0.16 62 / 0.3);
+  --sm-indigo: oklch(0.5 0.18 255);
+  --sm-indigo-s: oklch(0.58 0.18 255 / 0.1);
+
+  /* Component-level tokens */
+  --sm-hero-grid: oklch(0 0 0 / 0.05); /* grid lines */
+  --sm-header-bg: oklch(0.94 0.007 258 / 0.92);
+  --sm-ghost-hover: oklch(0 0 0 / 0.055);
+  --sm-ghost-border-hover: oklch(0 0 0 / 0.22);
+  --sm-cta-glow: oklch(0.94 0.025 28); /* CTA section warm stop */
+}
+
+/* ─── Site design tokens — DARK ───────────────────────────────────────────── */
+.dark {
+  --sm-void: oklch(0.07 0.012 262);
+  --sm-surface: oklch(0.11 0.012 262);
+  --sm-surface2: oklch(0.14 0.01 262);
+  --sm-border: oklch(1 0 0 / 0.08);
+  --sm-border2: oklch(1 0 0 / 0.14);
+  --sm-fg: oklch(0.96 0.004 80);
+  --sm-muted: oklch(0.48 0.01 260);
+
+  --sm-coral: oklch(0.62 0.22 28);
+  --sm-coral-fg: oklch(0.97 0.005 90);
+  --sm-coral-s: oklch(0.62 0.22 28 / 0.12);
+  --sm-coral-b: oklch(0.62 0.22 28 / 0.28);
+  --sm-gold: oklch(0.76 0.16 62);
+  --sm-gold-s: oklch(0.76 0.16 62 / 0.12);
+  --sm-gold-b: oklch(0.76 0.16 62 / 0.28);
+  --sm-indigo: oklch(0.58 0.18 255);
+  --sm-indigo-s: oklch(0.58 0.18 255 / 0.12);
+
+  --sm-hero-grid: oklch(1 0 0 / 0.022);
+  --sm-header-bg: oklch(0.07 0.012 262 / 0.9);
+  --sm-ghost-hover: oklch(1 0 0 / 0.06);
+  --sm-ghost-border-hover: oklch(1 0 0 / 0.22);
+  --sm-cta-glow: oklch(0.14 0.03 28);
+}
+
+/* ─── Font display ────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes sm-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sm-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sm-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sm-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes sm-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes sm-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sm-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sm-reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes sm-draw-line {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes sm-trust-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.sm-fade-up {
+  animation: sm-fade-up 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.sm-fade-in {
+  animation: sm-fade-in 0.45s ease both;
+}
+.sm-scale-in {
+  animation: sm-scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.sm-marquee {
+  animation: sm-marquee 32s linear infinite;
+}
+.sm-marquee-r {
+  animation: sm-marquee 40s linear infinite reverse;
+}
+.sm-float {
+  animation: sm-float 3.5s ease-in-out infinite;
+}
+
+/* Scroll reveal — add class via IntersectionObserver */
+.sm-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sm-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sm-reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sm-reveal-left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Grain overlay ───────────────────────────────────────────────────────── */
+.sm-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-size: 180px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Card catalog glow ───────────────────────────────────────────────────── */
+.sm-card {
+  position: relative;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.sm-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--sm-coral-b) !important;
+  box-shadow: 0 12px 40px oklch(0.62 0.22 28 / 0.1);
+}
+
+/* ─── Coral button ────────────────────────────────────────────────────────── */
+.sm-btn-coral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.875rem;
+  background: var(--sm-coral);
+  color: var(--sm-coral-fg);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  box-shadow: 0 8px 28px oklch(0.62 0.22 28 / 0.32);
+}
+.sm-btn-coral:hover {
+  opacity: 0.88;
+  transform: scale(1.015);
+}
+.sm-btn-coral:active {
+  transform: scale(0.98);
+}
+
+.sm-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--sm-border2);
+  color: var(--sm-fg);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.sm-btn-ghost:hover {
+  background: var(--sm-ghost-hover);
+  border-color: var(--sm-ghost-border-hover);
+}
