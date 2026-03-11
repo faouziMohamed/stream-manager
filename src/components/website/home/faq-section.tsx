@@ -209,17 +209,16 @@ export function FaqSection() {
                 <AccordionItem
                   key={`l-${i}`}
                   value={`l-${i}`}
-                  className="px-5"
                   style={{ borderColor: "var(--sm-border)" }}
                 >
                   <AccordionTrigger
-                    className="no-underline hover:no-underline py-4 text-sm font-semibold text-left gap-3"
+                    className="no-underline hover:no-underline px-5 rounded-l-none py-4 text-sm font-semibold text-left gap-3"
                     style={{ color: "var(--sm-fg)" }}
                   >
                     <span className="flex-1 text-left">{faq.q}</span>
                   </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pb-4">
+                  <AccordionContent className={"px-5 py-5"}>
+                    <div>
                       <span
                         className="inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mb-2"
                         style={{
@@ -247,17 +246,16 @@ export function FaqSection() {
                 <AccordionItem
                   key={`r-${i}`}
                   value={`r-${i}`}
-                  className="px-5"
                   style={{ borderColor: "var(--sm-border)" }}
                 >
                   <AccordionTrigger
-                    className="no-underline hover:no-underline py-4 text-sm font-semibold text-left gap-3"
+                    className="no-underline hover:no-underline py-4 text-sm font-semibold rounded-r-none text-left gap-3 px-5"
                     style={{ color: "var(--sm-fg)" }}
                   >
                     <span className="flex-1 text-left">{faq.q}</span>
                   </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="pb-4">
+                  <AccordionContent className={"px-5 py-5"}>
+                    <div>
                       <span
                         className="inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mb-2"
                         style={{

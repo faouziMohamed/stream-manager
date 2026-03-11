@@ -100,6 +100,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-geist-mono);
   --radius: var(--radius);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -207,6 +208,8 @@ body {
 /* ─── Font display ────────────────────────────────────────────────────────── */
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.035em;
+  font-synthesis: none;
 }
 
 /* ─── Keyframes ───────────────────────────────────────────────────────────── */
