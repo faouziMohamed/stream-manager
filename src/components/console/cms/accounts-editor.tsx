@@ -37,13 +37,13 @@ const accountSchema = z.object({
     label: z.string().min(1, 'Libellé requis'),
     email: z.string().email('Email invalide').optional().or(z.literal('')),
     password: z.string().optional(),
-    maxProfiles: z.number({ coerce: true }).int().min(1).max(20),
+    maxProfiles: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().int().min(1).max(20)),
     notes: z.string().optional(),
 });
 
 const profileSchema = z.object({
     name: z.string().min(1, 'Nom requis'),
-    profileIndex: z.number({ coerce: true }).int().min(1),
+    profileIndex: z.union([z.number(), z.string().transform(Number)]).pipe(z.number().int().min(1)),
 });
 
 const assignSchema = z.object({
@@ -51,8 +51,10 @@ const assignSchema = z.object({
     profileId: z.string().optional(),
 });
 
-type AccountForm = z.infer<typeof accountSchema>;
-type ProfileForm = z.infer<typeof profileSchema>;
+type AccountFormInput = z.input<typeof accountSchema>;
+type AccountForm = z.output<typeof accountSchema>;
+type ProfileFormInput = z.input<typeof profileSchema>;
+type ProfileForm = z.output<typeof profileSchema>;
 type AssignForm = z.infer<typeof assignSchema>;
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -102,8 +104,8 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
     const [deleteTarget, setDeleteTarget] = useState<{ type: 'account' | 'profile'; id: string } | null>(null);
 
     // Forms
-    const accountForm = useForm<AccountForm>({resolver: zodResolver(accountSchema)});
-    const profileForm = useForm<ProfileForm>({resolver: zodResolver(profileSchema)});
+    const accountForm = useForm<AccountFormInput>({resolver: zodResolver(accountSchema)});
+    const profileForm = useForm<ProfileFormInput>({resolver: zodResolver(profileSchema)});
     const assignForm = useForm<AssignForm>({resolver: zodResolver(assignSchema)});
 
     // ── Account handlers ──────────────────────────────────────────────────────
@@ -125,7 +127,8 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
         setAccountDialog({open: true, acc});
     };
 
-    const onAccountSubmit = async (data: AccountForm) => {
+    const onAccountSubmit = async (raw: AccountFormInput) => {
+        const data = raw as AccountForm;
         if (accountDialog.acc) {
             await updateAccount.mutateAsync({
                 id: accountDialog.acc.id,
@@ -162,7 +165,8 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
         setProfileDialog({open: true, accountId, profile});
     };
 
-    const onProfileSubmit = async (data: ProfileForm) => {
+    const onProfileSubmit = async (raw: ProfileFormInput) => {
+        const data = raw as ProfileForm;
         if (profileDialog.profile) {
             await updateProfile.mutateAsync({id: profileDialog.profile.id, input: data});
         } else if (profileDialog.accountId) {
@@ -369,7 +373,7 @@ export function AccountsEditor({initialData, services = [], subscriptions = []}:
                                                                             {sub.client?.name ?? '—'}
                                                                         </Badge>
                                                                         <span
-                                                        <span className="text-xs text-muted-foreground">jusqu&apos;au {sub.endDate}</span>
+                                                                            className="text-xs text-muted-foreground">jusqu&apos;au {sub.endDate}</span>
                                                                         <Button size="sm" variant="ghost"
                                                                                 className="h-6 text-xs px-1.5 text-destructive"
                                                                                 onClick={() => handleRemoveAssignment(assignment!.subscriptionId)}>
