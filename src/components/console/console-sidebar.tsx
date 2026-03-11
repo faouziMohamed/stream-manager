@@ -25,38 +25,47 @@ import {
 } from 'lucide-react';
 import {cn} from '@/lib/utils/helpers';
 import {useSidebar} from '@/components/console/sidebar-context';
+import {ROUTES} from '@/lib/config/routes';
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
 
 type NavSeparator = { type: 'separator'; label: string };
 type NavLink = { label: string; href: string; icon: React.ElementType; exact?: boolean };
-type NavGroup = { type: 'group'; label: string; icon: React.ElementType; children: NavLink[] };
+type NavGroup = { type: 'group'; label: string; icon: React.ElementType; children: NavLink[]; defaultOpen?: boolean };
 type NavItem = NavSeparator | NavLink | NavGroup;
 
 const navItems: NavItem[] = [
-    {label: 'Tableau de bord', href: '/console', icon: LayoutDashboard, exact: true},
+    {label: 'Tableau de bord', href: ROUTES.console.root, icon: LayoutDashboard, exact: true},
     {type: 'separator', label: 'Gestion'},
-    {label: 'Abonnements', href: '/console/subscriptions', icon: Tag},
-    {label: 'Paiements', href: '/console/payments', icon: CreditCard},
-    {label: 'Services', href: '/console/services', icon: Monitor},
-    {label: 'Promotions', href: '/console/promotions', icon: Star},
-    {label: 'Clients', href: '/console/clients', icon: Users},
-    {label: 'Comptes streaming', href: '/console/accounts', icon: Tv2},
+    {label: 'Paiements', href: ROUTES.console.payments, icon: CreditCard},
+    {
+        type: 'group',
+        label: 'Catalogue',
+        icon: Monitor,
+        defaultOpen: true,
+        children: [
+            {label: 'Services', href: ROUTES.console.services, icon: Monitor},
+            {label: 'Promotions', href: ROUTES.console.promotions, icon: Star},
+            {label: 'Abonnements', href: ROUTES.console.subscriptions, icon: Tag},
+        ],
+    },
+    {label: 'Comptes streaming', href: ROUTES.console.accounts, icon: Tv2},
+    {label: 'Clients', href: ROUTES.console.clients, icon: Users},
     {type: 'separator', label: 'Visualisation'},
-    {label: 'Chronologie', href: '/console/timeline', icon: Calendar},
-    {label: 'Analytiques', href: '/console/analytics', icon: BarChart3},
+    {label: 'Chronologie', href: ROUTES.console.timeline, icon: Calendar},
+    {label: 'Analytiques', href: ROUTES.console.analytics, icon: BarChart3},
     {type: 'separator', label: 'Compte'},
-    {label: 'Résumé partagé', href: '/console/summary', icon: Link2},
+    {label: 'Résumé partagé', href: ROUTES.console.summary, icon: Link2},
     {type: 'separator', label: 'Outils'},
-    {label: 'Médiathèque', href: '/console/media', icon: Images},
+    {label: 'Médiathèque', href: ROUTES.console.media, icon: Images},
     {
         type: 'group',
         label: 'Paramètres',
         icon: Settings,
         children: [
-            {label: 'Général', href: '/console/settings', icon: Settings2},
-            {label: 'SMTP', href: '/console/settings/smtp', icon: Mail},
-            {label: 'Cloudinary', href: '/console/settings/cloudinary', icon: Cloud},
+            {label: 'Général', href: ROUTES.console.settings.root, icon: Settings2},
+            {label: 'SMTP', href: ROUTES.console.settings.smtp, icon: Mail},
+            {label: 'Cloudinary', href: ROUTES.console.settings.cloudinary, icon: Cloud},
         ],
     },
 ];
@@ -66,7 +75,7 @@ const navItems: NavItem[] = [
 function NavGroupItem({item, onNav}: { item: NavGroup; onNav?: () => void }) {
     const pathname = usePathname();
     const isChildActive = item.children.some((c) => pathname.startsWith(c.href));
-    const [open, setOpen] = useState(isChildActive);
+    const [open, setOpen] = useState(isChildActive || item.defaultOpen === true);
     const Icon = item.icon;
 
     return (
@@ -123,7 +132,7 @@ function SidebarContent({onNav}: { onNav?: () => void }) {
         <div className="flex flex-col h-full bg-[hsl(var(--sidebar-bg))] text-[hsl(var(--sidebar-fg))]">
             {/* Logo */}
             <div className="px-4 py-4 border-b border-white/10">
-                <Link href="/console" onClick={onNav} className="flex items-center gap-2 mb-2">
+                <Link href={ROUTES.console.root} onClick={onNav} className="flex items-center gap-2 mb-2">
                     <Monitor className="h-6 w-6 text-white shrink-0"/>
                     <span className="font-bold text-lg">StreamManager</span>
                 </Link>
@@ -172,7 +181,7 @@ function SidebarContent({onNav}: { onNav?: () => void }) {
             {/* Footer */}
             <div className="px-3 py-3 border-t border-white/10">
                 <Link
-                    href="/"
+                    href={ROUTES.home}
                     onClick={onNav}
                     className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-white/50 hover:bg-white/10 hover:text-white transition-colors"
                 >
