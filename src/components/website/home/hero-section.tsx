@@ -59,7 +59,7 @@ function StatPill({
   const count = useCountUp(value, active, 1400);
   return (
     <div
-      className="sm-reveal flex items-center gap-3 rounded-2xl px-4 py-3 border"
+      className="sm-reveal flex items-center gap-2 xs:gap-3 rounded-xl xs:rounded-2xl px-2.5 xs:px-4 py-2 xs:py-3 border"
       style={{
         background: bg,
         borderColor: border,
@@ -67,21 +67,24 @@ function StatPill({
       }}
     >
       <div
-        className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+        className="h-6 xs:h-8 w-6 xs:w-8 rounded-lg xs:rounded-xl flex items-center justify-center shrink-0"
         style={{ background: bg, border: `1px solid ${border}` }}
       >
-        <Icon className="h-4 w-4" style={{ color }} />
+        <Icon className="h-3 xs:h-4 w-3 xs:w-4" style={{ color }} />
       </div>
       <div>
         <p
-          className="font-display font-extrabold text-xl leading-none tabular-nums"
+          className="font-display font-extrabold text-xs xs:text-xl leading-none tabular-nums"
           style={{ color }}
         >
           {prefix}
           {count}
           {suffix}
         </p>
-        <p className="text-[11px] mt-0.5" style={{ color: "var(--sm-muted)" }}>
+        <p
+          className="text-[9px] xs:text-[11px] mt-0.5"
+          style={{ color: "var(--sm-muted)" }}
+        >
           {label}
         </p>
       </div>
@@ -202,31 +205,35 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
 
       {/* Coral ambient — top right */}
       <div
-        className="absolute top-0 right-0 w-[700px] h-[500px] pointer-events-none blur-[120px]"
+        className="absolute top-0 right-0 pointer-events-none blur-[120px]"
         aria-hidden="true"
         style={{
+          width: "clamp(300px, 100vw, 700px)",
+          height: "clamp(250px, 80vw, 500px)",
           background: "oklch(0.62 0.22 28 / 0.07)",
           transform: "translate(20%, -20%)",
         }}
       />
       {/* Indigo ambient — bottom left */}
       <div
-        className="absolute bottom-0 left-0 w-[500px] h-[400px] pointer-events-none blur-[120px]"
+        className="absolute bottom-0 left-0 pointer-events-none blur-[120px]"
         aria-hidden="true"
         style={{
+          width: "clamp(250px, 90vw, 500px)",
+          height: "clamp(200px, 70vw, 400px)",
           background: "oklch(0.58 0.18 255 / 0.07)",
           transform: "translate(-20%, 20%)",
         }}
       />
 
       {/* Main content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 min-h-[100svh] flex flex-col justify-center py-28 lg:py-36">
+      <div className="relative z-10 max-w-6xl mx-auto px-3 xs:px-4 sm:px-6 min-h-[100svh] flex flex-col justify-center py-16 xs:py-20 sm:py-28 lg:py-36">
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-6 items-center">
           {/* ── Left: copy ──────────────────────────────────────────── */}
           <div className="lg:col-span-3 space-y-8">
             {/* Eyebrow */}
             <div
-              className="sm-fade-in inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest"
+              className="sm-fade-in inline-flex items-center gap-2 rounded-full px-3 xs:px-4 py-1 xs:py-1.5 text-[10px] xs:text-xs font-semibold uppercase tracking-widest"
               style={{
                 background: "var(--sm-coral-s)",
                 border: "1px solid var(--sm-coral-b)",
@@ -234,7 +241,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 animationDelay: "0ms",
               }}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+              <span className="h-1 xs:h-1.5 w-1 xs:w-1.5 rounded-full bg-current animate-pulse" />
               {serviceCountLabel}
             </div>
 
@@ -244,7 +251,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(3rem,7vw,5.5rem)",
+                    fontSize: "clamp(1.75rem,5vw,5.5rem)",
                     color: "var(--sm-fg)",
                     animationDelay: "80ms",
                   }}
@@ -254,7 +261,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(3rem,7vw,5.5rem)",
+                    fontSize: "clamp(1.75rem,5vw,5.5rem)",
                     color: "var(--sm-fg)",
                     animationDelay: "160ms",
                   }}
@@ -264,7 +271,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(2rem,5vw,4rem)",
+                    fontSize: "clamp(1.25rem,4vw,4rem)",
                     color: "var(--sm-coral)",
                     animationDelay: "240ms",
                   }}
@@ -276,7 +283,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
 
             {/* Subtitle */}
             <p
-              className="sm-fade-up text-base sm:text-lg max-w-md leading-relaxed"
+              className="sm-fade-up text-xs xs:text-base sm:text-lg max-w-md leading-relaxed"
               style={{ color: "var(--sm-muted)", animationDelay: "320ms" }}
             >
               Netflix, Shahid, Disney+ et vos plateformes préférées — sans
@@ -284,7 +291,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
             </p>
 
             {/* Trust stats */}
-            <div ref={statsRef} className="flex flex-wrap gap-3">
+            <div ref={statsRef} className="flex flex-wrap gap-2 xs:gap-3">
               <StatPill
                 icon={Zap}
                 value={services.length > 0 ? services.length : 20}
@@ -322,15 +329,19 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
 
             {/* CTAs */}
             <div
-              className="sm-fade-up flex flex-col sm:flex-row gap-3"
+              className="sm-fade-up flex flex-col xs:flex-row gap-2 xs:gap-3"
               style={{ animationDelay: "480ms" }}
             >
-              <Link href={ROUTES.contact} className="sm-btn-coral">
-                <MessageCircle className="h-4 w-4" />
-                Commander maintenant
-                <ArrowRight className="h-4 w-4" />
+              <Link
+                href={ROUTES.contact}
+                className="sm-btn-coral text-xs xs:text-sm"
+              >
+                <MessageCircle className="h-3 xs:h-4 w-3 xs:w-4" />
+                <span className="hidden xs:inline">Commander maintenant</span>
+                <span className="inline xs:hidden">Commander</span>
+                <ArrowRight className="h-3 xs:h-4 w-3 xs:w-4" />
               </Link>
-              <a href="#catalogue" className="sm-btn-ghost">
+              <a href="#catalogue" className="sm-btn-ghost text-xs xs:text-sm">
                 Voir le catalogue
               </a>
             </div>
