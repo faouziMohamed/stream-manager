@@ -6,7 +6,6 @@ function createClientLogger(module: string) {
   const log = (level: LogLevel, message: string, data?: unknown) => {
     const prefix = `[${module}]`;
     if (level === "debug" || level === "info") {
-      // eslint-disable-next-line no-console
       console[level === "debug" ? "debug" : "log"](prefix, message, data);
     } else {
       // Forward warn/error/fatal to server

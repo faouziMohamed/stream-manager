@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Info } from "lucide-react";
@@ -124,7 +124,7 @@ export function UpdateSubscriptionDialog({
               </p>
             </div>
             <Switch
-              checked={form.watch("isRecurring")}
+              checked={useWatch({ control: form.control, name: "isRecurring" })}
               onCheckedChange={(v) => form.setValue("isRecurring", v)}
             />
           </div>
@@ -202,7 +202,10 @@ export function RenewSubscriptionDialog({
             error={form.formState.errors.startDate?.message}
           >
             <DatePicker
-              value={form.watch("startDate") || undefined}
+              value={
+                useWatch({ control: form.control, name: "startDate" }) ||
+                undefined
+              }
               onChange={(v) => form.setValue("startDate", v ?? "")}
             />
           </FormGroup>
@@ -227,7 +230,7 @@ export function RenewSubscriptionDialog({
               </p>
             </div>
             <Switch
-              checked={form.watch("isRecurring")}
+              checked={useWatch({ control: form.control, name: "isRecurring" })}
               onCheckedChange={(v) => form.setValue("isRecurring", v)}
             />
           </div>

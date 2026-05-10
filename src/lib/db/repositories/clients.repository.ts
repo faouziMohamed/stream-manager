@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { clients } from "@/lib/db/tables/subscription-management.table";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { createLogger } from "@/lib/logger";
 

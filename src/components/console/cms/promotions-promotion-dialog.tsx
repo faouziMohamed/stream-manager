@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Controller, type Resolver, useForm } from "react-hook-form";
+import { Controller, type Resolver, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye } from "lucide-react";
@@ -103,7 +103,6 @@ export function PromotionDialog({
     register,
     handleSubmit,
     reset,
-    watch,
     setValue,
     control,
     formState: { errors, isSubmitting },
@@ -121,8 +120,8 @@ export function PromotionDialog({
   }, [open, promotion, reset]);
 
   const isEditing = !!promotion;
-  const serviceMode = watch("serviceMode");
-  const selectedIds = watch("serviceIds") ?? [];
+  const serviceMode = useWatch({ control, name: "serviceMode" });
+  const selectedIds = useWatch({ control, name: "serviceIds" }) ?? [];
 
   const toggleService = (id: string) => {
     setValue(
@@ -253,14 +252,14 @@ export function PromotionDialog({
             <div className="space-y-2">
               <FormGroup label="Date de début" hint="Optionnel">
                 <DateTimePicker
-                  value={watch("startsAt")}
+                  value={useWatch({ control, name: "startsAt" })}
                   onChange={(v) => setValue("startsAt", v)}
                   placeholder="Début de la promotion…"
                 />
               </FormGroup>
               <FormGroup label="Date d'expiration" hint="Optionnel">
                 <DateTimePicker
-                  value={watch("expiresAt")}
+                  value={useWatch({ control, name: "expiresAt" })}
                   onChange={(v) => setValue("expiresAt", v)}
                   placeholder="Expiration de la promotion…"
                 />

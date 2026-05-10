@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -230,7 +230,10 @@ export function SummaryLinksManager() {
             </FormGroup>
             <FormGroup label="Expiration (optionnel)">
               <DateTimePicker
-                value={linkForm.watch("expiresAt") || undefined}
+                value={
+                  useWatch({ control: linkForm.control, name: "expiresAt" }) ||
+                  undefined
+                }
                 onChange={(v) => linkForm.setValue("expiresAt", v ?? "")}
                 placeholder="Pas d'expiration"
               />
@@ -256,7 +259,10 @@ export function SummaryLinksManager() {
                 </p>
               </div>
               <Switch
-                checked={linkForm.watch("showSensitiveInfo")}
+                checked={useWatch({
+                  control: linkForm.control,
+                  name: "showSensitiveInfo",
+                })}
                 onCheckedChange={(v) =>
                   linkForm.setValue("showSensitiveInfo", v)
                 }

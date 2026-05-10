@@ -5,7 +5,7 @@ import {
   getAllServices,
 } from "@/lib/db/repositories/services.repository";
 import { getAllClients } from "@/lib/db/repositories/clients.repository";
-import { getDefaultCurrency } from "@/lib/db/repositories/analytics.repository";
+
 import { SubscriptionsEditor } from "@/components/console/cms/subscriptions-editor";
 import type { SubscriptionDto } from "@/lib/graphql/operations/subscriptions.operations";
 import type { PlanDto } from "@/lib/graphql/operations/plans.operations";
@@ -14,14 +14,13 @@ import type { ClientDto } from "@/lib/graphql/operations/clients.operations";
 import type { PromotionDto } from "@/lib/graphql/operations/promotions.operations";
 
 export default async function SubscriptionsPage() {
-  const [rows, planRows, serviceRows, clientRows, promotionRows, currency] =
+  const [rows, planRows, serviceRows, clientRows, promotionRows] =
     await Promise.all([
       getAllSubscriptions(),
       getAllPlans(),
       getAllServices(),
       getAllClients(),
       getAllPromotions(),
-      getDefaultCurrency(),
     ]);
 
   const subscriptions: SubscriptionDto[] = rows.map((s) => ({
@@ -86,7 +85,6 @@ export default async function SubscriptionsPage() {
       initialServices={services}
       initialClients={clients}
       initialPromotions={promotions}
-      defaultCurrency={currency}
     />
   );
 }

@@ -11,7 +11,6 @@ import {
 } from "@/lib/hooks/queries/use-settings.queries";
 import type { CloudinaryResourceDto } from "@/lib/graphql/operations/settings.operations";
 import {
-  formatBytes,
   sectionLabel,
   groupBySubFolder,
   MediaSection,

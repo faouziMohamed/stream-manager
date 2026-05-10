@@ -5,7 +5,7 @@ import { WorkflowHint } from "@/components/console/workflow-hint";
 import { InfoCallout } from "@/components/console/info-callout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+
 import {
   Table,
   TableBody,
@@ -65,7 +65,6 @@ interface Props {
   initialServices?: ServiceDto[];
   initialClients?: ClientDto[];
   initialPromotions?: PromotionDto[];
-  defaultCurrency?: string;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -75,7 +74,6 @@ export function SubscriptionsEditor({
   initialServices,
   initialClients,
   initialPromotions,
-  defaultCurrency = "MAD",
 }: Props) {
   const { data: subscriptions = [] } = useSubscriptions(undefined, initialData);
   const { data: clients = [] } = useClients(initialClients);

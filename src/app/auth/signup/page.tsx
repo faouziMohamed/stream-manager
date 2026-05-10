@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Github } from "lucide-react";
+import { GitBranch as Github } from "lucide-react";
 
 const logger = clientLogger("signup-page");
 

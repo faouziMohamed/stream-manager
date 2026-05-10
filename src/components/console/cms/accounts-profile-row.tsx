@@ -18,7 +18,6 @@ interface ProfileRowProps {
 }
 
 export function ProfileRow({
-  accountId,
   profile,
   onAssign,
   onEdit,
@@ -27,7 +26,6 @@ export function ProfileRow({
 }: ProfileRowProps) {
   const assignment = profile.assignment;
   const sub = assignment?.subscription;
-  const pinKey = `${accountId}:${profile.id}`;
   const [showPin, setShowPin] = useState(false);
 
   return (

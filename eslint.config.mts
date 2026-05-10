@@ -1,4 +1,3 @@
-import css from "@eslint/css";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import globals from "globals";
@@ -7,7 +6,6 @@ import importPlugin from "eslint-plugin-import";
 import { defineConfig, globalIgnores } from "eslint/config";
 import prettier from "eslint-plugin-prettier";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
-import { tailwind4 } from "tailwind-csstree";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
@@ -27,6 +25,8 @@ export default defineConfig([
     "postcss.config.*",
     "tailwind.config.*",
     "**/*.css",
+    "node_modules/**",
+    ".lintstagedrc.js",
   ]),
   ...compat.config({
     extends: ["prettier"],
@@ -131,37 +131,5 @@ export default defineConfig([
         },
       ],
     },
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-    ],
-  },
-
-  {
-    files: ["**/*.css"],
-    plugins: { css },
-    language: "css/css",
-    // extends: ['css/recommended'],
-    languageOptions: {
-      customSyntax: tailwind4,
-      tolerant: true,
-    },
-    rules: {
-      "css/no-empty-blocks": "error",
-    },
-  },
-
-  {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      ".lintstagedrc.js",
-    ],
   },
 ]);

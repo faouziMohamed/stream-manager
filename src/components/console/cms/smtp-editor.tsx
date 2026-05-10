@@ -1,6 +1,6 @@
 "use client";
 
-import { type Resolver, useForm } from "react-hook-form";
+import { type Resolver, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
@@ -128,7 +128,7 @@ export function SmtpEditor({ initialSmtp }: Props) {
                 Connexion sécurisée TLS (port 465)
               </Label>
               <Switch
-                checked={form.watch("secure")}
+                checked={useWatch({ control: form.control, name: "secure" })}
                 onCheckedChange={(v) => form.setValue("secure", v)}
               />
             </div>

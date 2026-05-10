@@ -6,7 +6,7 @@ import {
   services,
   promotions,
 } from "@/lib/db/tables/subscription-management.table";
-import { eq, and, gte, lte, or } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 
 export interface TimelineSubscription {
   id: string;

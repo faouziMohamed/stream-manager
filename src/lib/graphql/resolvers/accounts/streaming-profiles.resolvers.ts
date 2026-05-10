@@ -18,11 +18,10 @@ const logger = createLogger("streaming-profiles-resolvers");
 export const streamingProfilesQueryResolvers = {
   streamingProfiles: async (
     _: unknown,
-    { accountId }: { accountId: string },
+    _args: { accountId: string },
     ctx: GraphQLContext,
   ) => {
     requireAuth(ctx);
-    // No direct query in the original, but provided for completeness
     return [];
   },
 };

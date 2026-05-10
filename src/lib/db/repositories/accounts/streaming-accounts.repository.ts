@@ -4,9 +4,6 @@ import { db } from "@/lib/db";
 import {
   type StreamingAccount,
   streamingAccounts,
-  type StreamingProfile,
-  streamingProfiles,
-  type SubscriptionProfile,
   subscriptionProfiles,
 } from "@/lib/db/tables/subscription-management.table";
 import { createLogger } from "@/lib/logger";

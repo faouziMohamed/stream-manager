@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Controller, type Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -70,7 +70,6 @@ export function ServiceDialog({
   const {
     register,
     handleSubmit,
-    reset,
     control,
     formState: { errors, isSubmitting },
   } = useForm<ServiceForm>({
