@@ -6,13 +6,13 @@
 // ── Public website ────────────────────────────────────────────────────────────
 export const ROUTES = {
   // Public
-  home: "/",
-  contact: "/contact",
+  home: '/',
+  contact: '/contact',
 
   // Auth
   auth: {
-    login: "/auth/login",
-    signup: "/auth/signup",
+    login: '/auth/login',
+    signup: '/auth/signup',
   },
 
   // Shared summary (public token link)
@@ -20,42 +20,42 @@ export const ROUTES = {
 
   // Console — root
   console: {
-    root: "/console",
+    root: '/console',
 
     // Management
-    services: "/console/services",
-    promotions: "/console/promotions",
-    clients: "/console/clients",
-    subscriptions: "/console/subscriptions",
-    payments: "/console/payments",
-    accounts: "/console/accounts",
+    services: '/console/services',
+    promotions: '/console/promotions',
+    clients: '/console/clients',
+    subscriptions: '/console/subscriptions',
+    payments: '/console/payments',
+    accounts: '/console/accounts',
 
     // Visualisation
-    timeline: "/console/timeline",
-    analytics: "/console/analytics",
+    timeline: '/console/timeline',
+    analytics: '/console/analytics',
 
     // Account
-    summary: "/console/summary",
+    summary: '/console/summary',
 
     // Inquiries / contact messages
-    inquiries: "/console/inquiries",
+    inquiries: '/console/inquiries',
 
     // Outils
-    media: "/console/media",
+    media: '/console/media',
 
     // Settings
     settings: {
-      root: "/console/settings",
-      smtp: "/console/settings/smtp",
-      cloudinary: "/console/settings/cloudinary",
-      notifications: "/console/settings/notifications",
+      root: '/console/settings',
+      smtp: '/console/settings/smtp',
+      cloudinary: '/console/settings/cloudinary',
+      notifications: '/console/settings/notifications',
     },
   },
 } as const;
 
 // ── Route prefix segments (used in proxy.ts for startsWith checks) ────────────
 export const ROUTE_PREFIXES = {
-  console: "/console",
-  auth: "/auth/",
-  sharedSummary: "/s/",
+  console: '/console',
+  auth: '/auth/',
+  sharedSummary: '/s/',
 } as const;

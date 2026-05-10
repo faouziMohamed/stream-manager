@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface ConfirmDialogProps {
   title: string;
   description: ReactNode;
   confirmLabel?: string;
-  confirmVariant?: "destructive" | "default";
+  confirmVariant?: 'destructive' | 'default';
   onConfirm: () => void;
   loading?: boolean;
 }
@@ -27,8 +27,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Supprimer",
-  confirmVariant = "destructive",
+  confirmLabel = 'Supprimer',
+  confirmVariant = 'destructive',
   onConfirm,
   loading,
 }: ConfirmDialogProps) {
@@ -42,19 +42,11 @@ export function ConfirmDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Annuler
           </Button>
-          <Button
-            variant={confirmVariant}
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? "En cours…" : confirmLabel}
+          <Button variant={confirmVariant} onClick={onConfirm} disabled={loading}>
+            {loading ? 'En cours…' : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -4,11 +4,13 @@
  *
  * Run with:  npx tsx scripts/seed.ts
  */
-import "dotenv/config";
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { nanoid } from "nanoid";
-import * as schema from "../src/lib/db/schema";
+/* eslint-disable unicorn/no-process-exit, no-console */
+
+import 'dotenv/config';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { nanoid } from 'nanoid';
+import * as schema from '../src/lib/db/schema';
 
 // ── DB connection ─────────────────────────────────────────────────────────────
 const DATABASE_URL = process.env.DATABASE_URL!;
@@ -33,7 +35,7 @@ const {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const id = () => nanoid();
-const MAD = "MAD";
+const MAD = 'MAD';
 
 function addMonths(date: string, months: number): string {
   const d = new Date(date);
@@ -60,12 +62,12 @@ const client2Id = id();
 const client3Id = id();
 
 async function seed() {
-  console.log("🌱 Starting seed...");
+  console.log('🌱 Starting seed...');
 
   // ── Default currency ───────────────────────────────────────────────────────
   await db
     .insert(appSettings)
-    .values({ key: "defaultCurrency", value: "MAD" })
+    .values({ key: 'defaultCurrency', value: 'MAD' })
     .onConflictDoNothing();
 
   // ── Services ───────────────────────────────────────────────────────────────
@@ -74,33 +76,33 @@ async function seed() {
     .values([
       {
         id: netflixId,
-        name: "Netflix",
-        category: "Streaming vidéo",
-        description: "Films et séries en streaming.",
+        name: 'Netflix',
+        category: 'Streaming vidéo',
+        description: 'Films et séries en streaming.',
       },
       {
         id: shahidId,
-        name: "Shahid VIP",
-        category: "Streaming vidéo",
-        description: "Contenu arabe et séries du Moyen-Orient.",
+        name: 'Shahid VIP',
+        category: 'Streaming vidéo',
+        description: 'Contenu arabe et séries du Moyen-Orient.',
       },
       {
         id: disneyId,
-        name: "Disney+",
-        category: "Streaming vidéo",
-        description: "Disney, Marvel, Star Wars et plus.",
+        name: 'Disney+',
+        category: 'Streaming vidéo',
+        description: 'Disney, Marvel, Star Wars et plus.',
       },
       {
         id: primeId,
-        name: "Prime Video",
-        category: "Streaming vidéo",
-        description: "Films et séries Amazon Originals.",
+        name: 'Prime Video',
+        category: 'Streaming vidéo',
+        description: 'Films et séries Amazon Originals.',
       },
       {
         id: spotifyId,
-        name: "Spotify",
-        category: "Musique",
-        description: "Streaming musical sans publicité.",
+        name: 'Spotify',
+        category: 'Musique',
+        description: 'Streaming musical sans publicité.',
       },
     ])
     .onConflictDoNothing();
@@ -111,204 +113,204 @@ async function seed() {
     {
       id: id(),
       serviceId: netflixId,
-      name: "Netflix 1 mois",
+      name: 'Netflix 1 mois',
       durationMonths: 1,
-      price: "39",
+      price: '39',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: netflixId,
-      name: "Netflix 2 mois",
+      name: 'Netflix 2 mois',
       durationMonths: 2,
-      price: "79",
+      price: '79',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: netflixId,
-      name: "Netflix 3 mois",
+      name: 'Netflix 3 mois',
       durationMonths: 3,
-      price: "119",
+      price: '119',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: netflixId,
-      name: "Netflix 4 mois",
+      name: 'Netflix 4 mois',
       durationMonths: 4,
-      price: "149",
+      price: '149',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: netflixId,
-      name: "Netflix 6 mois",
+      name: 'Netflix 6 mois',
       durationMonths: 6,
-      price: "220",
+      price: '220',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     // Shahid VIP
     {
       id: id(),
       serviceId: shahidId,
-      name: "Shahid 3 mois",
+      name: 'Shahid 3 mois',
       durationMonths: 3,
-      price: "89",
+      price: '89',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: shahidId,
-      name: "Shahid 4 mois",
+      name: 'Shahid 4 mois',
       durationMonths: 4,
-      price: "119",
+      price: '119',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: shahidId,
-      name: "Shahid 6 mois",
+      name: 'Shahid 6 mois',
       durationMonths: 6,
-      price: "149",
+      price: '149',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: shahidId,
-      name: "Shahid 12 mois",
+      name: 'Shahid 12 mois',
       durationMonths: 12,
-      price: "249",
+      price: '249',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     // Disney+
     {
       id: id(),
       serviceId: disneyId,
-      name: "Disney+ 1 mois",
+      name: 'Disney+ 1 mois',
       durationMonths: 1,
-      price: "39",
+      price: '39',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: disneyId,
-      name: "Disney+ 2 mois",
+      name: 'Disney+ 2 mois',
       durationMonths: 2,
-      price: "79",
+      price: '79',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: disneyId,
-      name: "Disney+ 3 mois",
+      name: 'Disney+ 3 mois',
       durationMonths: 3,
-      price: "119",
+      price: '119',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: disneyId,
-      name: "Disney+ 4 mois",
+      name: 'Disney+ 4 mois',
       durationMonths: 4,
-      price: "149",
+      price: '149',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: disneyId,
-      name: "Disney+ 6 mois",
+      name: 'Disney+ 6 mois',
       durationMonths: 6,
-      price: "220",
+      price: '220',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     // Prime Video
     {
       id: id(),
       serviceId: primeId,
-      name: "Prime 1 mois",
+      name: 'Prime 1 mois',
       durationMonths: 1,
-      price: "35",
+      price: '35',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: primeId,
-      name: "Prime 2 mois",
+      name: 'Prime 2 mois',
       durationMonths: 2,
-      price: "69",
+      price: '69',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: primeId,
-      name: "Prime 3 mois",
+      name: 'Prime 3 mois',
       durationMonths: 3,
-      price: "100",
+      price: '100',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: primeId,
-      name: "Prime 4 mois",
+      name: 'Prime 4 mois',
       durationMonths: 4,
-      price: "129",
+      price: '129',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: primeId,
-      name: "Prime 6 mois",
+      name: 'Prime 6 mois',
       durationMonths: 6,
-      price: "199",
+      price: '199',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     // Spotify
     {
       id: id(),
       serviceId: spotifyId,
-      name: "Spotify 1 mois",
+      name: 'Spotify 1 mois',
       durationMonths: 1,
-      price: "39",
+      price: '39',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: spotifyId,
-      name: "Spotify 3 mois",
+      name: 'Spotify 3 mois',
       durationMonths: 3,
-      price: "99",
+      price: '99',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
     {
       id: id(),
       serviceId: spotifyId,
-      name: "Spotify 6 mois",
+      name: 'Spotify 6 mois',
       durationMonths: 6,
-      price: "159",
+      price: '159',
       currencyCode: MAD,
-      planType: "full",
+      planType: 'full',
     },
   ];
   await db.insert(plans).values(servicePlans).onConflictDoNothing();
@@ -319,13 +321,13 @@ async function seed() {
     .values([
       {
         id: promoTripleId,
-        name: "Netflix + Shahid VIP + Prime Video",
-        description: "Pack complet 3 plateformes pour un prix réduit.",
+        name: 'Netflix + Shahid VIP + Prime Video',
+        description: 'Pack complet 3 plateformes pour un prix réduit.',
       },
       {
         id: promoDuoId,
-        name: "Netflix + Prime Video",
-        description: "Pack duo Netflix et Prime Video.",
+        name: 'Netflix + Prime Video',
+        description: 'Pack duo Netflix et Prime Video.',
       },
     ])
     .onConflictDoNothing();
@@ -353,66 +355,66 @@ async function seed() {
       {
         id: id(),
         promotionId: promoTripleId,
-        name: "Triple 1 mois",
+        name: 'Triple 1 mois',
         durationMonths: 1,
-        price: "69",
+        price: '69',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       {
         id: id(),
         promotionId: promoTripleId,
-        name: "Triple 2 mois",
+        name: 'Triple 2 mois',
         durationMonths: 2,
-        price: "139",
+        price: '139',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       {
         id: promoTriplePlan3mId,
         promotionId: promoTripleId,
-        name: "Triple 3 mois",
+        name: 'Triple 3 mois',
         durationMonths: 3,
-        price: "199",
+        price: '199',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       // Duo pack
       {
         id: promoDuo1mId,
         promotionId: promoDuoId,
-        name: "Duo 1 mois",
+        name: 'Duo 1 mois',
         durationMonths: 1,
-        price: "55",
+        price: '55',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       {
         id: id(),
         promotionId: promoDuoId,
-        name: "Duo 2 mois",
+        name: 'Duo 2 mois',
         durationMonths: 2,
-        price: "99",
+        price: '99',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       {
         id: id(),
         promotionId: promoDuoId,
-        name: "Duo 3 mois",
+        name: 'Duo 3 mois',
         durationMonths: 3,
-        price: "149",
+        price: '149',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
       {
         id: id(),
         promotionId: promoDuoId,
-        name: "Duo 6 mois",
+        name: 'Duo 6 mois',
         durationMonths: 6,
-        price: "279",
+        price: '279',
         currencyCode: MAD,
-        planType: "bundle",
+        planType: 'bundle',
       },
     ])
     .onConflictDoNothing();
@@ -423,29 +425,29 @@ async function seed() {
     .values([
       {
         id: client1Id,
-        name: "Ahmed Benali",
-        email: "ahmed@exemple.com",
-        phone: "+212 6 12 34 56 78",
+        name: 'Ahmed Benali',
+        email: 'ahmed@exemple.com',
+        phone: '+212 6 12 34 56 78',
       },
       {
         id: client2Id,
-        name: "Fatima Zahra",
-        email: "fatima@exemple.com",
-        phone: "+212 6 98 76 54 32",
+        name: 'Fatima Zahra',
+        email: 'fatima@exemple.com',
+        phone: '+212 6 98 76 54 32',
       },
       {
         id: client3Id,
-        name: "Youssef El Idrissi",
+        name: 'Youssef El Idrissi',
         email: null,
-        phone: "+212 6 55 44 33 22",
+        phone: '+212 6 55 44 33 22',
       },
     ])
     .onConflictDoNothing();
 
   // ── Sample subscriptions + payments ───────────────────────────────────────
   // We need a plan ID for sample subscriptions — pick Netflix 3 mois and Triple 3 mois
-  const netflixPlan3m = servicePlans.find((p) => p.name === "Netflix 3 mois")!;
-  const spotifyPlan3m = servicePlans.find((p) => p.name === "Spotify 3 mois")!;
+  const netflixPlan3m = servicePlans.find((p) => p.name === 'Netflix 3 mois')!;
+  const spotifyPlan3m = servicePlans.find((p) => p.name === 'Spotify 3 mois')!;
 
   const today = new Date().toISOString().slice(0, 10);
   const sub1Id = id();
@@ -462,7 +464,7 @@ async function seed() {
         startDate: today,
         endDate: addMonths(today, 3),
         isRecurring: true,
-        status: "active",
+        status: 'active',
       },
       {
         id: sub2Id,
@@ -471,7 +473,7 @@ async function seed() {
         startDate: today,
         endDate: addMonths(today, 3),
         isRecurring: false,
-        status: "active",
+        status: 'active',
       },
       {
         id: sub3Id,
@@ -480,7 +482,7 @@ async function seed() {
         startDate: today,
         endDate: addMonths(today, 3),
         isRecurring: true,
-        status: "active",
+        status: 'active',
       },
     ])
     .onConflictDoNothing();
@@ -494,15 +496,15 @@ async function seed() {
         dueDate: today,
         amount: netflixPlan3m.price,
         currencyCode: MAD,
-        status: "unpaid",
+        status: 'unpaid',
       },
       {
         id: id(),
         subscriptionId: sub2Id,
         dueDate: today,
-        amount: "199",
+        amount: '199',
         currencyCode: MAD,
-        status: "unpaid",
+        status: 'unpaid',
       },
       {
         id: id(),
@@ -510,22 +512,20 @@ async function seed() {
         dueDate: today,
         amount: spotifyPlan3m.price,
         currencyCode: MAD,
-        status: "unpaid",
+        status: 'unpaid',
       },
     ])
     .onConflictDoNothing();
 
-  console.log("✅ Seed complete!");
-  console.log(
-    "   Services : Netflix, Shahid VIP, Disney+, Prime Video, Spotify",
-  );
-  console.log("   Promotions: Triple pack, Duo pack");
-  console.log("   Clients  : 3 sample clients");
-  console.log("   Subscriptions + payments: 3 active subscriptions");
+  console.log('✅ Seed complete!');
+  console.log('   Services : Netflix, Shahid VIP, Disney+, Prime Video, Spotify');
+  console.log('   Promotions: Triple pack, Duo pack');
+  console.log('   Clients  : 3 sample clients');
+  console.log('   Subscriptions + payments: 3 active subscriptions');
   await client.end();
 }
 
-seed().catch((err) => {
-  console.error("❌ Seed failed:", err);
+seed().catch((error) => {
+  console.error('❌ Seed failed:', error);
   process.exit(1);
 });

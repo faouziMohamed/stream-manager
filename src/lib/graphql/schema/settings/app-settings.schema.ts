@@ -1,7 +1,1 @@
-// App settings schema
-export const appSettingsSchema = /* GraphQL */ `
-  type AppSetting {
-    key: String!
-    value: String!
-  }
-`;
+export * from '@/modules/settings/server/graphql/app-settings.schema';

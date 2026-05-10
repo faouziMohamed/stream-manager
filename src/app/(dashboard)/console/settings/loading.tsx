@@ -1,4 +1,4 @@
-import { TablePageSkeleton } from "@/components/shared/skeletons";
+import { TablePageSkeleton } from '@/components/shared/skeletons';
 
 export default function Loading() {
   return <TablePageSkeleton rows={3} />;

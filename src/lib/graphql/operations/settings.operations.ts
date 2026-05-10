@@ -1,7 +1,6 @@
-// Barrel export for all settings operations
-export * from "@/lib/graphql/operations/settings/app-settings.operations";
-export * from "@/lib/graphql/operations/settings/summary-links.operations";
-export * from "@/lib/graphql/operations/settings/smtp-settings.operations";
-export * from "@/lib/graphql/operations/settings/cloudinary-settings.operations";
-export * from "@/lib/graphql/operations/settings/inquiries.operations";
-export * from "@/lib/graphql/operations/settings/notifications.operations";
+export * from '@/modules/settings/client/graphql/app-settings.operations';
+export * from '@/modules/settings/client/graphql/cloudinary-settings.operations';
+export * from '@/modules/settings/client/graphql/smtp-settings.operations';
+export * from '@/modules/settings/client/graphql/notifications.operations';
+export * from '@/modules/settings/client/graphql/inquiries.operations';
+export * from '@/modules/settings/client/graphql/summary-links.operations';

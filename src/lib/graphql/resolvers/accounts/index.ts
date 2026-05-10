@@ -1,19 +1,21 @@
-// Barrel export for all accounts resolvers
-// Barrel export for all accounts resolvers
 import {
   streamingAccountsFieldResolvers,
   streamingAccountsMutationResolvers,
   streamingAccountsQueryResolvers,
-} from "@/lib/graphql/resolvers/accounts/streaming-accounts.resolvers";
+} from '@/modules/accounts/server/graphql/streaming-accounts.resolvers';
 import {
   streamingProfilesFieldResolvers,
   streamingProfilesMutationResolvers,
   streamingProfilesQueryResolvers,
-} from "@/lib/graphql/resolvers/accounts/streaming-profiles.resolvers";
+} from '@/modules/accounts/server/graphql/streaming-profiles.resolvers';
 import {
   profileAssignmentsMutationResolvers,
   profileAssignmentsQueryResolvers,
-} from "@/lib/graphql/resolvers/accounts/profile-assignments.resolvers";
+} from '@/modules/accounts/server/graphql/profile-assignments.resolvers';
+
+export * from '@/modules/accounts/server/graphql/streaming-accounts.resolvers';
+export * from '@/modules/accounts/server/graphql/streaming-profiles.resolvers';
+export * from '@/modules/accounts/server/graphql/profile-assignments.resolvers';
 
 export const accountsResolvers = {
   Query: {

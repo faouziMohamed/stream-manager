@@ -1,4 +1,3 @@
-// Barrel export for all accounts schema
-export * from "@/lib/graphql/schema/accounts/streaming-accounts.schema";
-export * from "@/lib/graphql/schema/accounts/streaming-profiles.schema";
-export * from "@/lib/graphql/schema/accounts/profile-assignments.schema";
+export * from '@/modules/accounts/server/graphql/streaming-accounts.schema';
+export * from '@/modules/accounts/server/graphql/streaming-profiles.schema';
+export * from '@/modules/accounts/server/graphql/profile-assignments.schema';

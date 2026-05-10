@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
-import { type ReactNode } from "react";
-import { Info } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { type ReactNode } from 'react';
+import { Info } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface FormGroupProps {
   label: string;
@@ -19,16 +15,9 @@ interface FormGroupProps {
   className?: string;
 }
 
-export function FormGroup({
-  label,
-  required,
-  hint,
-  error,
-  children,
-  className,
-}: FormGroupProps) {
+export function FormGroup({ label, required, hint, error, children, className }: FormGroupProps) {
   return (
-    <div className={cn("space-y-1.5 group", className)}>
+    <div className={cn('group space-y-1.5', className)}>
       <div className="flex items-center gap-1">
         <Label className="text-sm font-medium">
           {label}
@@ -37,7 +26,7 @@ export function FormGroup({
         {hint && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help shrink-0" />
+              <Info className="text-muted-foreground h-3.5 w-3.5 shrink-0 cursor-help" />
             </TooltipTrigger>
             <TooltipContent side="top" className="max-w-60">
               <p className="text-xs">{hint}</p>
@@ -47,8 +36,8 @@ export function FormGroup({
       </div>
       {children}
       {error && (
-        <p className="text-xs text-destructive sm-fade-in flex items-center gap-1.5">
-          <span className="size-1 rounded-full bg-destructive shrink-0" />
+        <p className="text-destructive sm-fade-in flex items-center gap-1.5 text-xs">
+          <span className="bg-destructive size-1 shrink-0 rounded-full" />
           {error}
         </p>
       )}

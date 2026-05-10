@@ -1,167 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, MessageCircle, Shield, Zap, Clock } from "lucide-react";
-import { ROUTES } from "@/lib/config/routes";
-
-type ServiceItem = { id: string; name: string; logoUrl: string | null };
-
-// ─── Animated counter ──────────────────────────────────────────────────────
-
-function useCountUp(target: number, active: boolean, duration = 1400) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!active) return;
-    let start: number | null = null;
-    let raf: number;
-    function step(ts: number) {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    }
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [active, target, duration]);
-  return value;
-}
-
-// ─── Stat pill ─────────────────────────────────────────────────────────────
-
-type StatProps = {
-  icon: React.ElementType;
-  value: number;
-  prefix?: string;
-  suffix?: string;
-  label: string;
-  color: string;
-  bg: string;
-  border: string;
-  active: boolean;
-  delay: number;
-};
-
-function StatPill({
-  icon: Icon,
-  value,
-  prefix = "",
-  suffix = "",
-  label,
-  color,
-  bg,
-  border,
-  active,
-  delay,
-}: StatProps) {
-  const count = useCountUp(value, active, 1400);
-  return (
-    <div
-      className="sm-reveal flex items-center gap-2 xs:gap-3 rounded-xl xs:rounded-2xl px-2.5 xs:px-4 py-2 xs:py-3 border"
-      style={{
-        background: bg,
-        borderColor: border,
-        transitionDelay: `${delay}ms`,
-      }}
-    >
-      <div
-        className="h-6 xs:h-8 w-6 xs:w-8 rounded-lg xs:rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: bg, border: `1px solid ${border}` }}
-      >
-        <Icon className="h-3 xs:h-4 w-3 xs:w-4" style={{ color }} />
-      </div>
-      <div>
-        <p
-          className="font-display font-extrabold text-xs xs:text-xl leading-none tabular-nums"
-          style={{ color }}
-        >
-          {prefix}
-          {count}
-          {suffix}
-        </p>
-        <p
-          className="text-[9px] xs:text-[11px] mt-0.5"
-          style={{ color: "var(--sm-muted)" }}
-        >
-          {label}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Perspective logo mosaic ───────────────────────────────────────────────
-
-function LogoMosaic({ services }: { services: ServiceItem[] }) {
-  if (services.length === 0) return null;
-
-  const TOTAL = 16;
-  const tiles: ServiceItem[] = [];
-  while (tiles.length < TOTAL) {
-    tiles.push(...services.slice(0, TOTAL - tiles.length));
-  }
-
-  return (
-    <div className="relative select-none" style={{ perspective: "700px" }}>
-      {/* Ambient glow behind grid */}
-      <div
-        className="absolute inset-0 -z-10 blur-3xl pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 90% 80% at 50% 50%, oklch(0.62 0.22 28 / 0.1), oklch(0.58 0.18 255 / 0.06), transparent)",
-        }}
-        aria-hidden="true"
-      />
-
-      <div
-        className="grid grid-cols-4 gap-3"
-        style={{
-          transform: "rotateX(18deg) rotateY(-12deg)",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {tiles.map((s, i) => {
-          const floatDuration = 2.8 + (i % 5) * 0.35;
-          const floatDelay = i * 0.09;
-          return (
-            <div
-              key={`tile-${i}`}
-              className="h-16 w-16 rounded-2xl overflow-hidden border flex items-center justify-center"
-              style={{
-                background: "var(--sm-surface)",
-                borderColor: "var(--sm-border2)",
-                boxShadow: "0 8px 24px oklch(0 0 0 / 0.15)",
-                animation: `sm-float ${floatDuration}s ease-in-out infinite`,
-                animationDelay: `${floatDelay}s`,
-              }}
-            >
-              {s.logoUrl ? (
-                <Image
-                  src={s.logoUrl}
-                  alt={s.name}
-                  width={64}
-                  height={64}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <span
-                  className="font-display font-bold text-xl"
-                  style={{ color: "var(--sm-coral)" }}
-                >
-                  {s.name.charAt(0)}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Hero ──────────────────────────────────────────────────────────────────
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { ArrowRight, MessageCircle, Shield, Zap, Clock } from 'lucide-react';
+import { ROUTES } from '@/lib/config/routes';
+import type { ServiceItem } from '@/components/website/home/hero-logo-mosaic';
+import { LogoMosaic } from '@/components/website/home/hero-logo-mosaic';
+import { StatPill } from '@/components/website/home/hero-stat-pill';
 
 export function HeroSection({ services }: { services: ServiceItem[] }) {
   const statsRef = useRef<HTMLDivElement>(null);
@@ -174,7 +19,7 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
       ([entry]) => {
         if (entry.isIntersecting) setStatsActive(true);
       },
-      { threshold: 0.2 },
+      { threshold: 0.2 }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -183,77 +28,70 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
   const serviceCountLabel =
     services.length > 0
       ? `${services.length} plateforme${
-          services.length > 1 ? "s" : ""
-        } disponible${services.length > 1 ? "s" : ""}`
-      : "vos plateformes préférées";
+          services.length > 1 ? 's' : ''
+        } disponible${services.length > 1 ? 's' : ''}`
+      : 'vos plateformes préférées';
 
   return (
     <section
-      className="relative overflow-hidden sm-grain"
-      style={{ background: "var(--sm-void)", minHeight: "100svh" }}
+      className="sm-grain relative overflow-hidden"
+      style={{ background: 'var(--sm-void)', minHeight: '100svh' }}
     >
-      {/* Geometric grid background */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="pointer-events-none absolute inset-0"
         aria-hidden="true"
         style={{
           backgroundImage:
-            "linear-gradient(var(--sm-hero-grid) 1px, transparent 1px), linear-gradient(90deg, var(--sm-hero-grid) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
+            'linear-gradient(var(--sm-hero-grid) 1px, transparent 1px), linear-gradient(90deg, var(--sm-hero-grid) 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
         }}
       />
 
-      {/* Coral ambient — top right */}
       <div
-        className="absolute top-0 right-0 pointer-events-none blur-[120px]"
+        className="pointer-events-none absolute top-0 right-0 blur-[120px]"
         aria-hidden="true"
         style={{
-          width: "clamp(300px, 100vw, 700px)",
-          height: "clamp(250px, 80vw, 500px)",
-          background: "oklch(0.62 0.22 28 / 0.07)",
-          transform: "translate(20%, -20%)",
+          width: 'clamp(300px, 100vw, 700px)',
+          height: 'clamp(250px, 80vw, 500px)',
+          background: 'oklch(0.62 0.22 28 / 0.07)',
+          transform: 'translate(20%, -20%)',
         }}
       />
-      {/* Indigo ambient — bottom left */}
       <div
-        className="absolute bottom-0 left-0 pointer-events-none blur-[120px]"
+        className="pointer-events-none absolute bottom-0 left-0 blur-[120px]"
         aria-hidden="true"
         style={{
-          width: "clamp(250px, 90vw, 500px)",
-          height: "clamp(200px, 70vw, 400px)",
-          background: "oklch(0.58 0.18 255 / 0.07)",
-          transform: "translate(-20%, 20%)",
+          width: 'clamp(250px, 90vw, 500px)',
+          height: 'clamp(200px, 70vw, 400px)',
+          background: 'oklch(0.58 0.18 255 / 0.07)',
+          transform: 'translate(-20%, 20%)',
         }}
       />
 
-      {/* Main content */}
-      <div className="relative z-10 max-w-6xl mx-auto px-3 xs:px-4 sm:px-6 min-h-[100svh] flex flex-col justify-center py-16 xs:py-20 sm:py-28 lg:py-36">
-        <div className="grid lg:grid-cols-5 gap-12 lg:gap-6 items-center">
-          {/* ── Left: copy ──────────────────────────────────────────── */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Eyebrow */}
+      <div className="xs:px-4 xs:py-20 relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-center px-3 py-16 sm:px-6 sm:py-28 lg:py-36">
+        <div className="grid items-center gap-12 lg:grid-cols-5 lg:gap-6">
+          <div className="space-y-8 lg:col-span-3">
             <div
-              className="sm-fade-in inline-flex items-center gap-2 rounded-full px-3 xs:px-4 py-1 xs:py-1.5 text-[10px] xs:text-xs font-semibold uppercase tracking-widest"
+              className="sm-fade-in xs:px-4 xs:py-1.5 xs:text-xs inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-semibold tracking-widest uppercase"
               style={{
-                background: "var(--sm-coral-s)",
-                border: "1px solid var(--sm-coral-b)",
-                color: "var(--sm-coral)",
-                animationDelay: "0ms",
+                background: 'var(--sm-coral-s)',
+                border: '1px solid var(--sm-coral-b)',
+                color: 'var(--sm-coral)',
+                animationDelay: '0ms',
               }}
             >
-              <span className="h-1 xs:h-1.5 w-1 xs:w-1.5 rounded-full bg-current animate-pulse" />
+              <span className="xs:h-1.5 xs:w-1.5 h-1 w-1 animate-pulse rounded-full bg-current" />
               {serviceCountLabel}
             </div>
 
-            {/* Headline */}
-            <div style={{ maxWidth: "580px" }}>
-              <h1 className="font-display font-extrabold leading-[0.92] tracking-tight">
+            <div style={{ maxWidth: '580px' }}>
+              <h1 className="font-display leading-[0.92] font-extrabold tracking-tight">
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(1.75rem,5vw,5.5rem)",
-                    color: "var(--sm-fg)",
-                    animationDelay: "80ms",
+                    fontSize: 'clamp(1.75rem,5vw,5.5rem)',
+                    color: 'var(--sm-fg)',
+                    animationDelay: '80ms',
                   }}
                 >
                   Streamez.
@@ -261,9 +99,9 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(1.75rem,5vw,5.5rem)",
-                    color: "var(--sm-fg)",
-                    animationDelay: "160ms",
+                    fontSize: 'clamp(1.75rem,5vw,5.5rem)',
+                    color: 'var(--sm-fg)',
+                    animationDelay: '160ms',
                   }}
                 >
                   Profitez.
@@ -271,9 +109,9 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
                 <span
                   className="sm-fade-up block"
                   style={{
-                    fontSize: "clamp(1.25rem,4vw,4rem)",
-                    color: "var(--sm-coral)",
-                    animationDelay: "240ms",
+                    fontSize: 'clamp(1.25rem,4vw,4rem)',
+                    color: 'var(--sm-coral)',
+                    animationDelay: '240ms',
                   }}
                 >
                   À prix imbattable.
@@ -281,17 +119,15 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
               </h1>
             </div>
 
-            {/* Subtitle */}
             <p
-              className="sm-fade-up text-xs xs:text-base sm:text-lg max-w-md leading-relaxed"
-              style={{ color: "var(--sm-muted)", animationDelay: "320ms" }}
+              className="sm-fade-up xs:text-base max-w-md text-xs leading-relaxed sm:text-lg"
+              style={{ color: 'var(--sm-muted)', animationDelay: '320ms' }}
             >
-              Netflix, Shahid, Disney+ et vos plateformes préférées — sans
-              engagement, activés en moins de 24h.
+              Netflix, Shahid, Disney+ et vos plateformes préférées — sans engagement, activés en
+              moins de 24h.
             </p>
 
-            {/* Trust stats */}
-            <div ref={statsRef} className="flex flex-wrap gap-2 xs:gap-3">
+            <div ref={statsRef} className="xs:gap-3 flex flex-wrap gap-2">
               <StatPill
                 icon={Zap}
                 value={services.length > 0 ? services.length : 20}
@@ -327,42 +163,35 @@ export function HeroSection({ services }: { services: ServiceItem[] }) {
               />
             </div>
 
-            {/* CTAs */}
             <div
-              className="sm-fade-up flex flex-col xs:flex-row gap-2 xs:gap-3"
-              style={{ animationDelay: "480ms" }}
+              className="sm-fade-up xs:flex-row xs:gap-3 flex flex-col gap-2"
+              style={{ animationDelay: '480ms' }}
             >
-              <Link
-                href={ROUTES.contact}
-                className="sm-btn-coral text-xs xs:text-sm"
-              >
-                <MessageCircle className="h-3 xs:h-4 w-3 xs:w-4" />
-                <span className="hidden xs:inline">Commander maintenant</span>
-                <span className="inline xs:hidden">Commander</span>
-                <ArrowRight className="h-3 xs:h-4 w-3 xs:w-4" />
+              <Link href={ROUTES.contact} className="sm-btn-coral xs:text-sm text-xs">
+                <MessageCircle className="xs:h-4 xs:w-4 h-3 w-3" />
+                <span className="xs:inline hidden">Commander maintenant</span>
+                <span className="xs:hidden inline">Commander</span>
+                <ArrowRight className="xs:h-4 xs:w-4 h-3 w-3" />
               </Link>
-              <a href="#catalogue" className="sm-btn-ghost text-xs xs:text-sm">
+              <a href="#catalogue" className="sm-btn-ghost xs:text-sm text-xs">
                 Voir le catalogue
               </a>
             </div>
           </div>
 
-          {/* ── Right: logo mosaic ──────────────────────────────────── */}
           <div
-            className="hidden lg:flex lg:col-span-2 items-center justify-center sm-fade-in"
-            style={{ animationDelay: "560ms" }}
+            className="sm-fade-in hidden items-center justify-center lg:col-span-2 lg:flex"
+            style={{ animationDelay: '560ms' }}
           >
             <LogoMosaic services={services} />
           </div>
         </div>
       </div>
 
-      {/* Bottom fade into page */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none z-10"
+        className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-32"
         style={{
-          background:
-            "linear-gradient(to bottom, transparent, var(--background))",
+          background: 'linear-gradient(to bottom, transparent, var(--background))',
         }}
         aria-hidden="true"
       />

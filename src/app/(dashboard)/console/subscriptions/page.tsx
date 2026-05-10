@@ -1,27 +1,26 @@
-import { getAllSubscriptions } from "@/lib/db/repositories/subscriptions.repository";
+import { getAllSubscriptions } from '@/lib/db/repositories/subscriptions.repository';
 import {
   getAllPlans,
   getAllPromotions,
   getAllServices,
-} from "@/lib/db/repositories/services.repository";
-import { getAllClients } from "@/lib/db/repositories/clients.repository";
+} from '@/lib/db/repositories/services.repository';
+import { getAllClients } from '@/lib/db/repositories/clients.repository';
 
-import { SubscriptionsEditor } from "@/components/console/cms/subscriptions-editor";
-import type { SubscriptionDto } from "@/lib/graphql/operations/subscriptions.operations";
-import type { PlanDto } from "@/lib/graphql/operations/plans.operations";
-import type { ServiceDto } from "@/lib/graphql/operations/services.operations";
-import type { ClientDto } from "@/lib/graphql/operations/clients.operations";
-import type { PromotionDto } from "@/lib/graphql/operations/promotions.operations";
+import { SubscriptionsEditor } from '@/modules/subscriptions/client/components/subscriptions-editor';
+import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
+import type { PlanDto } from '@/lib/graphql/operations/plans.operations';
+import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
+import type { ClientDto } from '@/lib/graphql/operations/clients.operations';
+import type { PromotionDto } from '@/lib/graphql/operations/promotions.operations';
 
 export default async function SubscriptionsPage() {
-  const [rows, planRows, serviceRows, clientRows, promotionRows] =
-    await Promise.all([
-      getAllSubscriptions(),
-      getAllPlans(),
-      getAllServices(),
-      getAllClients(),
-      getAllPromotions(),
-    ]);
+  const [rows, planRows, serviceRows, clientRows, promotionRows] = await Promise.all([
+    getAllSubscriptions(),
+    getAllPlans(),
+    getAllServices(),
+    getAllClients(),
+    getAllPromotions(),
+  ]);
 
   const subscriptions: SubscriptionDto[] = rows.map((s) => ({
     ...s,
@@ -33,9 +32,9 @@ export default async function SubscriptionsPage() {
     id: p.id,
     name: p.name,
     durationMonths: p.durationMonths,
-    price: parseFloat(p.price),
+    price: Number.parseFloat(p.price),
     currencyCode: p.currencyCode,
-    planType: p.planType as PlanDto["planType"],
+    planType: p.planType as PlanDto['planType'],
     description: p.description ?? null,
     isActive: p.isActive,
     serviceId: p.serviceId ?? null,

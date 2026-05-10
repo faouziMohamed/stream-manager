@@ -1,13 +1,10 @@
-import {
-  getAllAccounts,
-  getProfilesByAccount,
-} from "@/lib/db/repositories/accounts";
-import { getAllServices } from "@/lib/db/repositories/services.repository";
-import { getAllSubscriptions } from "@/lib/db/repositories/subscriptions.repository";
-import { AccountsEditor } from "@/components/console/cms/accounts-editor";
-import type { StreamingAccountDto } from "@/lib/graphql/operations/accounts.operations";
-import type { ServiceDto } from "@/lib/graphql/operations/services.operations";
-import type { SubscriptionDto } from "@/lib/graphql/operations/subscriptions.operations";
+import { getAllAccounts, getProfilesByAccount } from '@/lib/db/repositories/accounts';
+import { getAllServices } from '@/lib/db/repositories/services.repository';
+import { getAllSubscriptions } from '@/lib/db/repositories/subscriptions.repository';
+import { AccountsEditor } from '@/modules/accounts/client/components/accounts-editor';
+import type { StreamingAccountDto } from '@/lib/graphql/operations/accounts.operations';
+import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
+import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
 
 export default async function AccountsPage() {
   const [accountRows, serviceRows, subscriptionRows] = await Promise.all([
@@ -20,6 +17,7 @@ export default async function AccountsPage() {
   const accounts: StreamingAccountDto[] = await Promise.all(
     accountRows.map(async (acc) => {
       const profiles = await getProfilesByAccount(acc.id);
+      const svc = serviceRows.find((s) => s.id === acc.serviceId);
       return {
         id: acc.id,
         serviceId: acc.serviceId,
@@ -33,15 +31,7 @@ export default async function AccountsPage() {
         isActive: acc.isActive,
         createdAt: acc.createdAt.toISOString(),
         updatedAt: acc.updatedAt.toISOString(),
-        service: serviceRows.find((s) => s.id === acc.serviceId)
-          ? {
-              id: serviceRows.find((s) => s.id === acc.serviceId)!.id,
-              name: serviceRows.find((s) => s.id === acc.serviceId)!.name,
-              logoUrl:
-                serviceRows.find((s) => s.id === acc.serviceId)!.logoUrl ??
-                null,
-            }
-          : null,
+        service: svc ? { id: svc.id, name: svc.name, logoUrl: svc.logoUrl ?? null } : null,
         profiles: profiles.map((p) => ({
           id: p.id,
           accountId: p.accountId,
@@ -53,7 +43,7 @@ export default async function AccountsPage() {
         })),
         accountAssignment: null,
       };
-    }),
+    })
   );
 
   const services: ServiceDto[] = serviceRows.map((s) => ({
@@ -75,10 +65,6 @@ export default async function AccountsPage() {
   }));
 
   return (
-    <AccountsEditor
-      initialData={accounts}
-      services={services}
-      subscriptions={subscriptions}
-    />
+    <AccountsEditor initialData={accounts} services={services} subscriptions={subscriptions} />
   );
 }

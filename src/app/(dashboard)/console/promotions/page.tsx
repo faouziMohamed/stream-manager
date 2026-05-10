@@ -2,16 +2,13 @@ import {
   getAllPromotions,
   getPlansByPromotion,
   getServicesForPromotion,
-} from "@/lib/db/repositories/services.repository";
-import { getDefaultCurrency } from "@/lib/db/repositories/analytics.repository";
-import { PromotionsEditor } from "@/components/console/cms/promotions-editor";
-import type { PromotionDto } from "@/lib/graphql/operations/promotions.operations";
+} from '@/lib/db/repositories/services.repository';
+import { getDefaultCurrency } from '@/lib/db/repositories/analytics.repository';
+import { PromotionsEditor } from '@/modules/promotions/client/components/promotions-editor';
+import type { PromotionDto } from '@/lib/graphql/operations/promotions.operations';
 
 export default async function PromotionsPage() {
-  const [dbPromotions, currency] = await Promise.all([
-    getAllPromotions(),
-    getDefaultCurrency(),
-  ]);
+  const [dbPromotions, currency] = await Promise.all([getAllPromotions(), getDefaultCurrency()]);
 
   const now = new Date();
   const promotions: PromotionDto[] = await Promise.all(
@@ -31,16 +28,14 @@ export default async function PromotionsPage() {
           id: pl.id,
           name: pl.name,
           durationMonths: pl.durationMonths,
-          price: parseFloat(pl.price),
+          price: Number.parseFloat(pl.price),
           currencyCode: pl.currencyCode,
         })),
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
       };
-    }),
+    })
   );
 
-  return (
-    <PromotionsEditor initialData={promotions} defaultCurrency={currency} />
-  );
+  return <PromotionsEditor initialData={promotions} defaultCurrency={currency} />;
 }

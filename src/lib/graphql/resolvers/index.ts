@@ -1,13 +1,13 @@
-import { DateResolver, DateTimeResolver } from "graphql-scalars";
-import { servicesResolvers } from "./services.resolvers";
-import { plansResolvers } from "./plans.resolvers";
-import { promotionsResolvers } from "./promotions.resolvers";
-import { clientsResolvers } from "./clients.resolvers";
-import { subscriptionsResolvers } from "./subscriptions.resolvers";
-import { paymentsResolvers } from "./payments.resolvers";
-import { analyticsResolvers } from "./analytics.resolvers";
-import { settingsResolvers } from "./settings";
-import { accountsResolvers } from "./accounts";
+import { DateResolver, DateTimeResolver } from 'graphql-scalars';
+import { servicesResolvers } from '@/lib/graphql/resolvers/services.resolvers';
+import { plansResolvers } from '@/lib/graphql/resolvers/plans.resolvers';
+import { promotionsResolvers } from '@/lib/graphql/resolvers/promotions.resolvers';
+import { clientsResolvers } from '@/lib/graphql/resolvers/clients.resolvers';
+import { subscriptionsResolvers } from '@/lib/graphql/resolvers/subscriptions.resolvers';
+import { paymentsResolvers } from '@/lib/graphql/resolvers/payments.resolvers';
+import { analyticsResolvers } from '@/lib/graphql/resolvers/analytics.resolvers';
+import { settingsResolvers } from '@/lib/graphql/resolvers/settings';
+import { accountsResolvers } from '@/lib/graphql/resolvers/accounts';
 
 export const resolvers = {
   // Custom scalars

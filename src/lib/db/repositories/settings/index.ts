@@ -1,6 +1,5 @@
-// Barrel export for all settings repositories
-export * from "@/lib/db/repositories/settings/app-settings.repository";
-export * from "@/lib/db/repositories/settings/smtp-settings.repository";
-export * from "@/lib/db/repositories/settings/cloudinary-settings.repository";
-export * from "@/lib/db/repositories/settings/inquiries.repository";
-export * from "@/lib/db/repositories/settings/summary-links.repository";
+export * from '@/modules/settings/server/repositories/app-settings.repository';
+export * from '@/modules/settings/server/repositories/cloudinary-settings.repository';
+export * from '@/modules/settings/server/repositories/smtp-settings.repository';
+export * from '@/modules/settings/server/repositories/inquiries.repository';
+export * from '@/modules/settings/server/repositories/summary-links.repository';

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { toast } from "sonner";
-import { clientLogger } from "@/lib/logger/client-logger";
+import { toast } from 'sonner';
+import { clientLogger } from '@/lib/logger/client-logger';
 
-const logger = clientLogger("toast");
+const logger = clientLogger('toast');
 
 interface GqlError {
   message: string;
@@ -30,15 +30,14 @@ function extractMessage(err: unknown): string {
     const first = errors[0]!;
     const code = first.extensions?.code;
 
-    if (code === "VALIDATION_ERROR") return first.message;
-    if (code === "FORBIDDEN") return "Action non autorisée.";
-    if (code === "NOT_FOUND") return "Ressource introuvable.";
+    if (code === 'VALIDATION_ERROR') return first.message;
+    if (code === 'FORBIDDEN') return 'Action non autorisée.';
+    if (code === 'NOT_FOUND') return 'Ressource introuvable.';
     // Surface unexpected server messages for non-production ease
-    if (first.message && first.message !== "Unexpected error.")
-      return first.message;
+    if (first.message && first.message !== 'Unexpected error.') return first.message;
   }
 
-  return "Une erreur est survenue. Veuillez réessayer.";
+  return 'Une erreur est survenue. Veuillez réessayer.';
 }
 
 /**
@@ -51,10 +50,7 @@ export function toastError(err: unknown, context?: string): void {
     description: context ?? undefined,
     duration: 6000,
   });
-  logger.error(
-    context ?? "mutation error",
-    err instanceof Error ? err : new Error(String(err)),
-  );
+  logger.error(context ?? 'mutation error', err instanceof Error ? err : new Error(String(err)));
 }
 
 /**

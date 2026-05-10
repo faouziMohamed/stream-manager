@@ -22,12 +22,7 @@ export const querySchema = /* GraphQL */ `
     subscription(id: ID!): Subscription
 
     # Payments
-    payments(
-      subscriptionId: ID
-      status: PaymentStatus
-      fromDate: Date
-      toDate: Date
-    ): [Payment!]!
+    payments(subscriptionId: ID, status: PaymentStatus, fromDate: Date, toDate: Date): [Payment!]!
     payment(id: ID!): Payment
 
     # Dashboard

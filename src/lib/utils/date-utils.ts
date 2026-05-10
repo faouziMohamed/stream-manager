@@ -61,10 +61,9 @@ export function parseDateISO(dateStr: string): Date {
  */
 export function toDateTimeString(value: string): string {
   // Already a full datetime with timezone info — return as-is
-  if (/T.*[Z+\-]/.test(value)) return value;
+  if (/T.*[+Z-]/.test(value)) return value;
   // Has time part but no timezone — append Z
-  if (value.includes("T"))
-    return `${value}:00.000Z`.replace(/(:00)+\.000Z$/, ":00.000Z");
+  if (value.includes('T')) return `${value}:00.000Z`.replace(/(:00)+\.000Z$/, ':00.000Z');
   // Date-only — add midnight UTC time
   return `${value}T00:00:00.000Z`;
 }

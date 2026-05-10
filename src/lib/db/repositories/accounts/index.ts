@@ -1,4 +1,3 @@
-// Barrel export for all accounts repositories
-export * from "@/lib/db/repositories/accounts/streaming-accounts.repository";
-export * from "@/lib/db/repositories/accounts/streaming-profiles.repository";
-export * from "@/lib/db/repositories/accounts/profile-assignments.repository";
+export * from '@/modules/accounts/server/repositories/streaming-accounts.repository';
+export * from '@/modules/accounts/server/repositories/streaming-profiles.repository';
+export * from '@/modules/accounts/server/repositories/profile-assignments.repository';

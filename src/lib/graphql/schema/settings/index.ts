@@ -1,7 +1,6 @@
-// Barrel export for all settings schema
-export * from "@/lib/graphql/schema/settings/app-settings.schema";
-export * from "@/lib/graphql/schema/settings/summary-links.schema";
-export * from "@/lib/graphql/schema/settings/smtp-settings.schema";
-export * from "@/lib/graphql/schema/settings/cloudinary-settings.schema";
-export * from "@/lib/graphql/schema/settings/inquiries.schema";
-export * from "@/lib/graphql/schema/settings/notifications.schema";
+export * from '@/modules/settings/server/graphql/app-settings.schema';
+export * from '@/modules/settings/server/graphql/cloudinary-settings.schema';
+export * from '@/modules/settings/server/graphql/smtp-settings.schema';
+export * from '@/modules/settings/server/graphql/notifications.schema';
+export * from '@/modules/settings/server/graphql/inquiries.schema';
+export * from '@/modules/settings/server/graphql/summary-links.schema';

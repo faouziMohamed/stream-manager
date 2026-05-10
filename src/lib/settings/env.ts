@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 export const env = createEnv({
   server: {
@@ -9,12 +9,8 @@ export const env = createEnv({
     GITHUB_CLIENT_ID: z.string().min(1),
     GITHUB_CLIENT_SECRET: z.string().min(1),
     DB_SSL_CA: z.string().min(1),
-    ENCRYPTION_KEY: z
-      .string()
-      .length(64, "ENCRYPTION_KEY must be 64 hex chars (32 bytes)"),
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+    ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be 64 hex chars (32 bytes)'),
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   },
   client: {
     NEXT_PUBLIC_URL: z.url(),

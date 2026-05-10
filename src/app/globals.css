@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -134,6 +134,14 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-feature-settings:
+    'calt' 1,
+    'liga' 1,
+    'case' 1,
+    'zero' 1,
+    'ss01' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
@@ -147,6 +155,117 @@ body {
 
   html {
     @apply font-sans;
+  }
+}
+
+/* ─── Premium UI Polish ──────────────────────────────────────────────────── */
+@layer base {
+  /* Card hover elevation */
+  .card-hover {
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px oklch(0 0 0 / 0.08);
+  }
+  .dark .card-hover:hover {
+    box-shadow: 0 8px 30px oklch(0 0 0 / 0.25);
+  }
+
+  /* Glass dialog overlay */
+  .dialog-overlay-gloss {
+    backdrop-filter: blur(4px);
+    background: oklch(0 0 0 / 0.3);
+  }
+  .dark .dialog-overlay-gloss {
+    background: oklch(0 0 0 / 0.55);
+  }
+
+  /* Refined focus ring */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Subtle button press */
+  button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* Table row hover */
+  .table-row-hover tbody tr {
+    transition: background-color 0.15s ease;
+  }
+  .table-row-hover tbody tr:hover {
+    background-color: var(--muted);
+  }
+
+  /* Premium status badge pulse for active */
+  @keyframes badge-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 oklch(0.6 0.2 145 / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 0 4px oklch(0.6 0.2 145 / 0);
+    }
+  }
+  .badge-active-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  /* Skeleton shimmer */
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--muted) 25%, oklch(0 0 0 / 0.06) 50%, var(--muted) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Custom scrollbar for main content */
+  .content-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .content-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .content-scrollbar::-webkit-scrollbar-thumb {
+    background: oklch(0 0 0 / 0.12);
+    border-radius: 3px;
+  }
+  .content-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(0 0 0 / 0.2);
+  }
+  .dark .content-scrollbar::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.12);
+  }
+  .dark .content-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 0.2);
+  }
+
+  /* Refined dialog content animation */
+  @keyframes dialog-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  .dialog-enter {
+    animation: dialog-enter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
@@ -209,7 +328,7 @@ body {
 /* ─── Font display ────────────────────────────────────────────────────────── */
 .font-display {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
   font-synthesis: none;
 }
 
@@ -351,7 +470,7 @@ body {
 
 /* ─── Grain overlay ───────────────────────────────────────────────────────── */
 .sm-grain::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");

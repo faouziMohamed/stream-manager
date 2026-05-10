@@ -3,19 +3,18 @@ import {
   getMonthlyRevenue,
   getPaymentBreakdown,
   getSubscriptionsByService,
-} from "@/lib/db/repositories/analytics.repository";
-import { SummaryView } from "@/components/console/cms/summary-view";
-import { SummaryLinksManager } from "@/components/console/cms/summary-links-manager";
-import type { AnalyticsDto } from "@/lib/graphql/operations/analytics.operations";
+} from '@/lib/db/repositories/analytics.repository';
+import { SummaryView } from '@/modules/settings/client/components/summary-view';
+import { SummaryLinksManager } from '@/modules/settings/client/components/summary-links-manager';
+import type { AnalyticsDto } from '@/lib/graphql/operations/analytics.operations';
 
 export default async function SummaryPage() {
-  const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] =
-    await Promise.all([
-      getDashboardStats(),
-      getMonthlyRevenue(6),
-      getPaymentBreakdown(6),
-      getSubscriptionsByService(),
-    ]);
+  const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] = await Promise.all([
+    getDashboardStats(),
+    getMonthlyRevenue(6),
+    getPaymentBreakdown(6),
+    getSubscriptionsByService(),
+  ]);
 
   const analytics: AnalyticsDto = {
     monthlyRevenue,
@@ -29,8 +28,7 @@ export default async function SummaryPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">Résumé & Liens de partage</h1>
         <p className="text-muted-foreground text-sm">
-          Prévisualisation du résumé public. Gérez vos liens de partage
-          ci-dessous.
+          Prévisualisation du résumé public. Gérez vos liens de partage ci-dessous.
         </p>
       </div>
 
@@ -38,8 +36,8 @@ export default async function SummaryPage() {
       <SummaryLinksManager />
 
       {/* Live preview */}
-      <div className="border rounded-xl overflow-hidden">
-        <div className="bg-muted/40 px-4 py-2 text-xs text-muted-foreground font-medium border-b">
+      <div className="overflow-hidden rounded-xl border">
+        <div className="bg-muted/40 text-muted-foreground border-b px-4 py-2 text-xs font-medium">
           Aperçu du résumé partagé (informations sensibles visibles)
         </div>
         <SummaryView

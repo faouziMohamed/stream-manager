@@ -1,3 +1,4 @@
+/* eslint-disable no-console,unicorn/no-process-exit */
 /**
  * Promote a user to admin by email.
  *
@@ -6,11 +7,12 @@
  *   # or promote ALL existing users (first-time setup):
  *   npm run db:promote
  */
-import "dotenv/config";
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { eq } from "drizzle-orm";
-import { users } from "@/lib/db/tables/auth.table";
+
+import 'dotenv/config';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq } from 'drizzle-orm';
+import { users } from '@/lib/db/tables/auth.table';
 
 const DATABASE_URL = process.env.DATABASE_URL!;
 const DB_SSL_CA = process.env.DB_SSL_CA;
@@ -27,7 +29,7 @@ async function promote() {
   if (targetEmail) {
     const [updated] = await db
       .update(users)
-      .set({ role: "admin" })
+      .set({ role: 'admin' })
       .where(eq(users.email, targetEmail))
       .returning({ id: users.id, email: users.email, role: users.role });
 
@@ -40,20 +42,20 @@ async function promote() {
     // No email provided — promote ALL users (useful for first-time setup)
     const updated = await db
       .update(users)
-      .set({ role: "admin" })
+      .set({ role: 'admin' })
       .returning({ id: users.id, email: users.email, role: users.role });
 
     if (updated.length === 0) {
-      console.log("ℹ️  No users found in the database yet.");
+      console.log('ℹ️  No users found in the database yet.');
     } else {
-      updated.forEach((u) => console.log(`✅ Promoted ${u.email} → admin`));
+      for (const u of updated) console.log(`✅ Promoted ${u.email} → admin`);
     }
   }
 
   await client.end();
 }
 
-promote().catch((err) => {
-  console.error("❌ Promote failed:", err);
+promote().catch((error) => {
+  console.error('❌ Promote failed:', error);
   process.exit(1);
 });

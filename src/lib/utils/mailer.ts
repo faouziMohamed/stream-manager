@@ -2,20 +2,17 @@
  * Shared mailer utility — wraps nodemailer using SMTP settings stored in DB.
  * Import this in any server-side module that needs to send email.
  */
-import { nanoid } from "nanoid";
-import { db } from "@/lib/db";
+import { nanoid } from 'nanoid';
+import { db } from '@/lib/db';
 import {
   notificationEvents,
   notificationSettings,
-} from "@/lib/db/tables/subscription-management.table";
-import {
-  getSmtpPassword,
-  getSmtpSettings,
-} from "@/lib/db/repositories/settings";
-import { createLogger } from "@/lib/logger";
-import { eq } from "drizzle-orm";
+} from '@/lib/db/tables/subscription-management.table';
+import { getSmtpPassword, getSmtpSettings } from '@/lib/db/repositories/settings';
+import { createLogger } from '@/lib/logger';
+import { eq } from 'drizzle-orm';
 
-const logger = createLogger("mailer");
+const logger = createLogger('mailer');
 
 export interface MailOptions {
   to: string;
@@ -31,12 +28,12 @@ export interface MailOptions {
  */
 export async function sendViaSMTP(mail: MailOptions): Promise<string | null> {
   const smtp = await getSmtpSettings();
-  if (!smtp.host || !smtp.user) return "Configuration SMTP incomplète.";
+  if (!smtp.host || !smtp.user) return 'Configuration SMTP incomplète.';
   const password = await getSmtpPassword();
-  if (!password) return "Mot de passe SMTP manquant.";
+  if (!password) return 'Mot de passe SMTP manquant.';
 
   try {
-    const nodemailer = await import("nodemailer");
+    const nodemailer = await import('nodemailer');
     const transportOptions = {
       host: smtp.host,
       port: smtp.port ?? 587,
@@ -47,48 +44,46 @@ export async function sendViaSMTP(mail: MailOptions): Promise<string | null> {
       greetingTimeout: 10_000,
       socketTimeout: 15_000,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const transporter = nodemailer.createTransport(transportOptions as any);
     try {
       await transporter.sendMail({
-        from: `"${smtp.senderName ?? "StreamManager"}" <${smtp.senderEmail ?? smtp.user}>`,
+        from: `"${smtp.senderName ?? 'StreamManager'}" <${smtp.senderEmail ?? smtp.user}>`,
         ...mail,
       });
     } finally {
       transporter.close();
     }
     return null;
-  } catch (err) {
-    return err instanceof Error ? err.message : "Erreur inconnue";
+  } catch (error) {
+    return error instanceof Error ? error.message : 'Erreur inconnue';
   }
 }
 
 // ─── Notification event types ─────────────────────────────────────────────────
 
 export type NotificationEventType =
-  | "new_inquiry"
-  | "payment_overdue"
-  | "payment_paid"
-  | "subscription_created"
-  | "subscription_renewed"
-  | "subscription_expiring";
+  | 'new_inquiry'
+  | 'payment_overdue'
+  | 'payment_paid'
+  | 'subscription_created'
+  | 'subscription_renewed'
+  | 'subscription_expiring';
 
 export const NOTIFICATION_LABELS: Record<NotificationEventType, string> = {
-  new_inquiry: "Nouveau message de contact",
-  payment_overdue: "Paiement en retard",
-  payment_paid: "Paiement reçu",
-  subscription_created: "Abonnement créé",
-  subscription_renewed: "Abonnement renouvelé",
-  subscription_expiring: "Abonnement expirant bientôt",
+  new_inquiry: 'Nouveau message de contact',
+  payment_overdue: 'Paiement en retard',
+  payment_paid: 'Paiement reçu',
+  subscription_created: 'Abonnement créé',
+  subscription_renewed: 'Abonnement renouvelé',
+  subscription_expiring: 'Abonnement expirant bientôt',
 };
 
 /**
  * Check if a notification event type is enabled in DB settings.
  * Falls back to `true` if no row found (default-on).
  */
-export async function isNotificationEnabled(
-  event: NotificationEventType,
-): Promise<boolean> {
+export async function isNotificationEnabled(event: NotificationEventType): Promise<boolean> {
   try {
     const [row] = await db
       .select()
@@ -106,21 +101,18 @@ export async function isNotificationEnabled(
  */
 export async function sendNotification(
   event: NotificationEventType,
-  mail: MailOptions,
+  mail: MailOptions
 ): Promise<void> {
   const enabled = await isNotificationEnabled(event);
   if (!enabled) {
-    logger.debug({ event }, "Notification skipped (disabled)");
+    logger.debug({ event }, 'Notification skipped (disabled)');
     return;
   }
 
   const smtp = await getSmtpSettings();
-  const to = mail.to || smtp.senderEmail || smtp.user || "";
+  const to = mail.to || smtp.senderEmail || smtp.user || '';
   if (!to) {
-    logger.warn(
-      { event },
-      "Notification skipped — no recipient email configured",
-    );
+    logger.warn({ event }, 'Notification skipped — no recipient email configured');
     return;
   }
 
@@ -136,14 +128,14 @@ export async function sendNotification(
       success: error === null,
       errorMessage: error ?? null,
     });
-  } catch (logErr) {
-    logger.error({ logErr }, "Failed to log notification event");
+  } catch (error_) {
+    logger.error({ logErr: error_ }, 'Failed to log notification event');
   }
 
   if (error) {
-    logger.warn({ event, error }, "Notification email failed");
+    logger.warn({ event, error }, 'Notification email failed');
   } else {
-    logger.info({ event, to }, "Notification email sent");
+    logger.info({ event, to }, 'Notification email sent');
   }
 }
 

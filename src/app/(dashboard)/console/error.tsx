@@ -1,18 +1,12 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { AlertTriangle, RefreshCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { clientLogger } from "@/lib/logger/client-logger";
+import { useEffect } from 'react';
+import { AlertTriangle, RefreshCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { clientLogger } from '@/lib/logger/client-logger';
 
-const logger = clientLogger("console-error-boundary");
+const logger = clientLogger('console-error-boundary');
 
 export default function ConsoleError({
   error,
@@ -22,28 +16,25 @@ export default function ConsoleError({
   reset: () => void;
 }) {
   useEffect(() => {
-    logger.error("Console page error", {
+    logger.error('Console page error', {
       message: error.message,
       digest: error.digest,
     });
   }, [error]);
 
   return (
-    <div className="flex items-center justify-center min-h-[60vh] p-4">
-      <Card className="w-full max-w-md text-center border-destructive/30">
+    <div className="flex min-h-[60vh] items-center justify-center p-4">
+      <Card className="border-destructive/30 w-full max-w-md text-center">
         <CardHeader>
-          <div className="flex justify-center mb-2">
-            <AlertTriangle className="h-10 w-10 text-destructive" />
+          <div className="mb-2 flex justify-center">
+            <AlertTriangle className="text-destructive h-10 w-10" />
           </div>
           <CardTitle>Une erreur est survenue</CardTitle>
           <CardDescription>
-            {error.message ||
-              "Impossible de charger cette page. Veuillez réessayer."}
+            {error.message || 'Impossible de charger cette page. Veuillez réessayer.'}
           </CardDescription>
           {error.digest && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Code : {error.digest}
-            </p>
+            <p className="text-muted-foreground mt-1 text-xs">Code : {error.digest}</p>
           )}
         </CardHeader>
         <CardContent>

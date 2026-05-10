@@ -1,19 +1,18 @@
-import { ConsoleSidebar } from "@/components/console/console-sidebar";
-import { ConsoleTopbar } from "@/components/console/console-topbar";
-import { SidebarProvider } from "@/components/console/sidebar-context";
+import type { ReactNode } from 'react';
+import { ConsoleSidebar } from '@/components/console/console-sidebar';
+import { ConsoleTopbar } from '@/components/console/console-topbar';
+import { ConsoleBreadcrumbs } from '@/components/console/console-breadcrumbs';
+import { SidebarProvider } from '@/components/console/sidebar-context';
 
-export default function ConsoleLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ConsoleLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden">
         <ConsoleSidebar />
-        <div className="flex flex-col flex-1 overflow-hidden min-w-0">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <ConsoleTopbar />
-          <main className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-6">
+          <main className="bg-muted/20 content-scrollbar flex-1 overflow-y-auto p-4 md:p-6">
+            <ConsoleBreadcrumbs />
             {children}
           </main>
         </div>

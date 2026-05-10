@@ -135,18 +135,16 @@ const mutation = useMutation({
   onError: (_, __, context) => {
     /* rollback */
   },
-  onSettled: () => queryClient.invalidateQueries({ queryKey: ["key"] }),
+  onSettled: () => queryClient.invalidateQueries({ queryKey: ['key'] }),
 });
 ```
 
 ```tsx
 // ─── #6 — Inline form errors ──────────────────────────────────────────────────
 // ✅ Good
-<Input error={errors.name?.message} {...register("name")} />;
+<Input error={errors.name?.message} {...register('name')} />;
 {
-  errors.name && (
-    <p className="text-xs text-destructive">{errors.name.message}</p>
-  );
+  errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>;
 }
 // ❌ Bad — toast or alert on validation failure
 // toast.error("Veuillez remplir tous les champs");
@@ -158,7 +156,7 @@ const mutation = useMutation({
 // const form = useForm({ defaultValues: { ...apiDto } });
 // ✅ Good — explicit mapping
 function toForm(dto?: ServiceDto): ServiceForm {
-  return { name: dto?.name ?? "", category: dto?.category ?? "streaming" };
+  return { name: dto?.name ?? '', category: dto?.category ?? 'streaming' };
 }
 ```
 
@@ -167,7 +165,7 @@ function toForm(dto?: ServiceDto): ServiceForm {
 // ❌ Bad
 // const db = new Pool({ connectionString: process.env.DATABASE_URL });
 // ✅ Good
-import { env } from "@/lib/settings/env";
+import { env } from '@/lib/settings/env';
 const db = new Pool({ connectionString: env.DATABASE_URL });
 ```
 
@@ -232,13 +230,50 @@ src/
   components/website/  Public components
   lib/auth/            BetterAuth config, client, helpers
   lib/config/          Routes, app config
-  lib/db/              Drizzle client, tables (auth + subscription), repositories
-  lib/graphql/         Schema, resolvers, operations, context, client
-  lib/hooks/queries/   React Query hooks per domain
+  lib/db/              Drizzle client, table definitions — shims re-exporting from modules
+  lib/graphql/         Schema/operations/resolvers index merging — shims re-exporting from modules
+  lib/hooks/queries/   Re-export shims pointing to modules
   lib/settings/        Env validation, app config
   lib/logger/          Pino (server) + client logger
   lib/utils/           Helpers, date utils, mailer
+  modules/             Domain modules (primary implementation location)
 ```
+
+---
+
+## Module System (Domain-Driven)
+
+Domain modules live under `src/modules/<domain>/` and encapsulate all logic for a domain. Each module follows a strict server/client/common split:
+
+```
+src/modules/<domain>/
+├── server/
+│   ├── graphql/           <domain>.schema.ts + <domain>.resolvers.ts
+│   ├── repositories/      <domain>.repository.ts
+│   └── services/          Business logic (optional)
+├── client/
+│   ├── graphql/           <domain>.operations.ts (typed operations + DTO types)
+│   ├── queries/           use-<domain>.queries.ts (React Query hooks)
+│   └── hooks/             Client-side hooks (optional)
+└── common/                Types, form mappings, constants shared across server/client
+```
+
+The old `src/lib/` files (`lib/db/repositories/`, `lib/graphql/`, `lib/hooks/queries/`) now contain **re-export shims** that point to the module locations for backward compatibility. When adding new code, always import from the module path directly.
+
+### Module Map
+
+| Module           | Server (repositories, graphql resolvers/schemas) | Client (operations, hooks)   | Common |
+| ---------------- | ------------------------------------------------ | ---------------------------- | ------ |
+| `analytics/`     | Analytics dashboard stats, revenue queries       | Analytics operations + hooks | —      |
+| `clients/`       | Client CRUD                                      | Client operations + hooks    | —      |
+| `services/`      | Services + Plans CRUD                            | Service/plan ops + hooks     | —      |
+| `promotions/`    | Promotion/bundle CRUD                            | Promotion ops + hooks        | —      |
+| `subscriptions/` | Subscription CRUD, renewals                      | Subscription ops + hooks     | —      |
+| `payments/`      | Payment tracking, overdue sync                   | Payment ops + hooks          | —      |
+| `accounts/`      | Streaming accounts, profiles, assignments        | Account ops + hooks          | —      |
+| `settings/`      | App/cloudinary/smtp/notifications/summary-links  | Settings ops + hooks         | —      |
+| `inquiries/`     | Contact inquiry read/reply                       | Inquiry operations           | —      |
+| `timeline/`      | Timeline subscription queries (Gantt/Calendar)   | —                            | types  |
 
 ---
 
@@ -246,7 +281,7 @@ src/
 
 ## Resolvers Structure
 
-Resolvers are split by domain under `src/lib/graphql/resolvers/`:
+Resolvers are split by domain under `src/lib/graphql/resolvers/` (re-export shims pointing to modules):
 
 | File / Directory                            | Domain                                               |
 | ------------------------------------------- | ---------------------------------------------------- |
@@ -271,6 +306,8 @@ Resolvers are split by domain under `src/lib/graphql/resolvers/`:
 
 `src/lib/graphql/resolvers.ts` is a 1-line re-export shim — do not add logic to it.
 
+Actual resolver implementation lives in `src/modules/<domain>/server/graphql/<domain>.resolvers.ts`.
+
 ---
 
 ## Image Uploads (Cloudinary)
@@ -279,7 +316,7 @@ Resolvers are split by domain under `src/lib/graphql/resolvers/`:
 - The server calls the Cloudinary SDK with DB-stored credentials — nothing reaches the browser.
 - Media library component: `src/components/console/cms/media-library.tsx`
 - Cloudinary settings editor: `src/components/console/cms/cloudinary-editor.tsx`
-- Resolver: `src/lib/graphql/resolvers/settings/cloudinary-settings.resolvers.ts`
+- Resolver: `src/modules/settings/server/graphql/cloudinary-settings.resolvers.ts`
 
 ---
 
@@ -376,11 +413,11 @@ All domain tables live in `src/lib/db/tables/subscription-management.table.ts`.
 Follow this order — each step depends on the previous:
 
 - [ ] 1. Add table(s) to `src/lib/db/tables/subscription-management.table.ts` + generate migration (`npm run db:generate && npm run db:migrate`)
-- [ ] 2. Create repository in `src/lib/db/repositories/<domain>.repository.ts` (or `repositories/<domain>/index.ts` for sub-domains)
-- [ ] 3. Add GraphQL SDL in `src/lib/graphql/schema/<domain>.schema.ts`
-- [ ] 4. Add resolver (auth-guarded) in `src/lib/graphql/resolvers/<domain>.resolvers.ts`
-- [ ] 5. Add typed operations in `src/lib/graphql/operations/<domain>.operations.ts` (re-exported by `operations.ts`)
-- [ ] 6. Create React Query hook `src/lib/hooks/queries/use-<domain>.queries.ts`
+- [ ] 2. Create repository in `src/modules/<domain>/server/repositories/<domain>.repository.ts` (or sub-directory for sub-domains)
+- [ ] 3. Add GraphQL SDL in `src/modules/<domain>/server/graphql/<domain>.schema.ts`
+- [ ] 4. Add resolver (auth-guarded) in `src/modules/<domain>/server/graphql/<domain>.resolvers.ts`
+- [ ] 5. Add typed operations in `src/modules/<domain>/client/graphql/<domain>.operations.ts`
+- [ ] 6. Create React Query hook in `src/modules/<domain>/client/queries/use-<domain>.queries.ts`
 - [ ] 7. Create editor component `src/components/console/cms/<domain>-editor.tsx`
 - [ ] 8. Create console page `src/app/(dashboard)/console/<domain>/page.tsx`
 - [ ] 9. Add route constant to `src/lib/config/routes.ts`
