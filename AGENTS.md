@@ -9,7 +9,7 @@
 ## What is this project?
 
 **StreamManager** — a subscription management dashboard for streaming service resellers.
-
+ 
 | Layer            | Technology                                                   |
 | ---------------- | ------------------------------------------------------------ |
 | App name         | StreamManager                                                |

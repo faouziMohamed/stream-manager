@@ -9,6 +9,7 @@ import {
 import { gqlRequest } from "@/lib/graphql/client";
 import {
   type AppSettingDto,
+  type CloudinaryResourceDto,
   type CloudinarySettingsDto,
   type CloudinarySettingsInput,
   type CloudinaryTestResultDto,
@@ -16,6 +17,7 @@ import {
   DELETE_FROM_CLOUDINARY,
   DELETE_INQUIRY,
   DELETE_SUMMARY_LINK,
+  GET_CLOUDINARY_MEDIA,
   GET_CLOUDINARY_SETTINGS,
   GET_DEFAULT_CURRENCY,
   GET_INQUIRIES,
@@ -228,6 +230,17 @@ export function useCloudinarySettings(initialData?: CloudinarySettingsDto) {
         GET_CLOUDINARY_SETTINGS,
       ).then((r) => r.cloudinarySettings),
     initialData,
+  });
+}
+
+export function useCloudinaryMedia(folder?: string) {
+  return useQuery({
+    queryKey: settingsKeys.media(folder),
+    queryFn: () =>
+      gqlRequest<{ cloudinaryMedia: CloudinaryResourceDto[] }>(
+        GET_CLOUDINARY_MEDIA,
+        { folder },
+      ).then((r) => r.cloudinaryMedia),
   });
 }
 
