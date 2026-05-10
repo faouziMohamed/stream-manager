@@ -1,13 +1,8 @@
 "use client";
 
-import { type Resolver, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useCallback, useRef, useState } from "react";
 import {
   CheckCircle,
-  Eye,
-  EyeOff,
   ImageIcon,
   Loader2,
   Trash2,
@@ -15,8 +10,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -28,19 +21,10 @@ import {
 import {
   useCloudinarySettings,
   useDeleteFromCloudinary,
-  useSetCloudinarySettings,
   useUploadToCloudinary,
 } from "@/lib/hooks/queries/use-settings.queries";
+import { CloudinaryConfigForm } from "./cloudinary-config-form";
 import type { CloudinarySettingsDto } from "@/lib/graphql/operations/settings.operations";
-
-const cloudinarySchema = z.object({
-  cloudName: z.string().min(1, "Cloud name requis"),
-  apiKey: z.string().min(1, "API Key requise"),
-  apiSecret: z.string().optional(),
-  uploadPreset: z.string().optional(),
-  folder: z.string().optional(),
-});
-type CloudinaryForm = z.infer<typeof cloudinarySchema>;
 
 interface UploadedImage {
   publicId: string;
@@ -55,11 +39,9 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
   const { data: cloudinary } = useCloudinarySettings(
     initialCloudinary ?? undefined,
   );
-  const setCloudinary = useSetCloudinarySettings();
   const uploadMutation = useUploadToCloudinary();
   const deleteMutation = useDeleteFromCloudinary();
 
-  const [showSecret, setShowSecret] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
@@ -69,35 +51,14 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<CloudinaryForm>({
-    resolver: zodResolver(cloudinarySchema) as Resolver<CloudinaryForm>,
-    defaultValues: {
-      cloudName: initialCloudinary?.cloudName ?? "",
-      apiKey: initialCloudinary?.apiKey ?? "",
-      apiSecret: "",
-      uploadPreset: initialCloudinary?.uploadPreset ?? "",
-      folder: initialCloudinary?.folder ?? "streammanager",
-    },
-  });
-
-  const onSubmit = async (data: CloudinaryForm) => {
-    await setCloudinary.mutateAsync({
-      cloudName: data.cloudName,
-      apiKey: data.apiKey,
-      apiSecret: data.apiSecret || undefined,
-      uploadPreset: data.uploadPreset || undefined,
-      folder: data.folder || undefined,
-    });
-    form.setValue("apiSecret", "");
-  };
-
-  const readFileAsBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
+  function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  }
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -134,13 +95,13 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
     [handleFile],
   );
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) handleFile(file);
     e.target.value = "";
-  };
+  }
 
-  const onDelete = async () => {
+  async function onDelete() {
     if (!uploadedImage) return;
     const result = await deleteMutation.mutateAsync(uploadedImage.publicId);
     if (result.success) {
@@ -150,14 +111,14 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
     } else {
       setErrorMsg(result.message);
     }
-  };
+  }
 
-  const resetTest = () => {
+  function resetTest() {
     setUploadedImage(null);
     setPreview(null);
     setErrorMsg(null);
     setDeleteSuccess(false);
-  };
+  }
 
   const isConfigured = !!cloudinary?.hasApiSecret;
 
@@ -171,130 +132,8 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
         </p>
       </div>
 
-      {/* ── Config card ───────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle>Identifiants Cloudinary</CardTitle>
-              <CardDescription>
-                Retrouvez ces informations dans votre tableau de bord
-                Cloudinary.
-              </CardDescription>
-            </div>
-            {cloudinary?.hasApiSecret && (
-              <Badge variant="secondary" className="shrink-0 mt-0.5">
-                API Secret enregistré
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="cloudName">Cloud Name</Label>
-              <Input
-                id="cloudName"
-                placeholder="my-cloud"
-                {...form.register("cloudName")}
-              />
-              {form.formState.errors.cloudName && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.cloudName.message}
-                </p>
-              )}
-            </div>
+      <CloudinaryConfigForm initialCloudinary={initialCloudinary} />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="apiKey">API Key</Label>
-              <Input
-                id="apiKey"
-                placeholder="123456789012345"
-                {...form.register("apiKey")}
-              />
-              {form.formState.errors.apiKey && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.apiKey.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="apiSecret">
-                API Secret
-                {cloudinary?.hasApiSecret && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    (laisser vide pour conserver l&apos;actuel)
-                  </span>
-                )}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="apiSecret"
-                  type={showSecret ? "text" : "password"}
-                  placeholder={
-                    cloudinary?.hasApiSecret
-                      ? "••••••••••••••••"
-                      : "API Secret Cloudinary"
-                  }
-                  autoComplete="new-password"
-                  className="pr-10"
-                  {...form.register("apiSecret")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSecret((v) => !v)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  tabIndex={-1}
-                  aria-label={showSecret ? "Masquer" : "Afficher"}
-                >
-                  {showSecret ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="uploadPreset">
-                  Upload Preset
-                  <span className="ml-1 text-xs font-normal text-muted-foreground">
-                    (optionnel)
-                  </span>
-                </Label>
-                <Input
-                  id="uploadPreset"
-                  placeholder="ml_default"
-                  {...form.register("uploadPreset")}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="folder">Dossier par défaut</Label>
-                <Input
-                  id="folder"
-                  placeholder="streammanager"
-                  {...form.register("folder")}
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={setCloudinary.isPending}
-              className="cursor-pointer"
-            >
-              {setCloudinary.isPending
-                ? "Enregistrement…"
-                : "Enregistrer la configuration Cloudinary"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* ── Test card ─────────────────────────────────────────────────── */}
       <Card>
         <CardHeader>
           <CardTitle>Tester la configuration</CardTitle>
@@ -313,7 +152,6 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
 
           {isConfigured && !uploadedImage && !uploadMutation.isPending && (
             <>
-              {/* Drop zone */}
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => {
@@ -323,14 +161,14 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={onDrop}
                 className={`
-                                    relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed
-                                    px-6 py-10 text-center transition-colors cursor-pointer select-none
-                                    ${
-                                      isDragging
-                                        ? "border-primary bg-primary/5"
-                                        : "border-border hover:border-primary/50 hover:bg-muted/40"
-                                    }
-                                `}
+                  relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed
+                  px-6 py-10 text-center transition-colors cursor-pointer select-none
+                  ${
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50 hover:bg-muted/40"
+                  }
+                `}
               >
                 <UploadCloud
                   className={`h-10 w-10 ${isDragging ? "text-primary" : "text-muted-foreground"}`}
@@ -355,7 +193,6 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
             </>
           )}
 
-          {/* Uploading spinner */}
           {uploadMutation.isPending && (
             <div className="flex items-center justify-center gap-3 rounded-xl border border-dashed px-6 py-10 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -363,7 +200,6 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
             </div>
           )}
 
-          {/* Image preview + actions */}
           {uploadedImage && preview && (
             <div className="space-y-3">
               <div className="relative overflow-hidden rounded-xl border bg-muted/30">
@@ -420,7 +256,6 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
             </div>
           )}
 
-          {/* Delete success */}
           {deleteSuccess && (
             <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
               <CheckCircle className="h-4 w-4 shrink-0" />
@@ -437,7 +272,6 @@ export function CloudinaryEditor({ initialCloudinary }: Props) {
             </div>
           )}
 
-          {/* Error */}
           {errorMsg && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <XCircle className="h-4 w-4 mt-0.5 shrink-0" />

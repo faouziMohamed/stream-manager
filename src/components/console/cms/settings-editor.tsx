@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormGroup } from "@/components/ui/form-group";
 import {
   Card,
   CardContent,
@@ -62,21 +62,18 @@ export function SettingsEditor({ defaultCurrency = "MAD" }: Props) {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex gap-3 items-end"
           >
-            <div className="space-y-1.5 flex-1">
-              <Label htmlFor="currency">Code devise</Label>
+            <FormGroup
+              label="Code devise"
+              error={form.formState.errors.currency?.message}
+              className="flex-1"
+            >
               <Input
-                id="currency"
                 placeholder="MAD"
                 defaultValue={currency}
                 className="max-w-30 uppercase"
                 {...form.register("currency")}
               />
-              {form.formState.errors.currency && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.currency.message}
-                </p>
-              )}
-            </div>
+            </FormGroup>
             <Button
               type="submit"
               disabled={setCurrency.isPending}

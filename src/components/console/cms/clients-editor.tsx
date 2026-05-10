@@ -7,8 +7,8 @@ import { z } from "zod";
 import { Pencil, Plus, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormGroup } from "@/components/ui/form-group";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -212,47 +212,33 @@ export function ClientsEditor({ initialData }: Props) {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Nom *</Label>
+            <FormGroup label="Nom" required error={errors.name?.message}>
               <Input
                 placeholder="Nom complet"
                 {...register("name")}
                 error={errors.name?.message}
               />
-              {errors.name && (
-                <p className="text-xs text-destructive">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
+            </FormGroup>
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Email</Label>
+              <FormGroup label="Email" error={errors.email?.message}>
                 <Input
                   type="email"
                   placeholder="email@exemple.com"
                   {...register("email")}
                   error={errors.email?.message}
                 />
-                {errors.email && (
-                  <p className="text-xs text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label>Téléphone</Label>
+              </FormGroup>
+              <FormGroup label="Téléphone">
                 <Input placeholder="+212 6XX XXX XXX" {...register("phone")} />
-              </div>
+              </FormGroup>
             </div>
-            <div className="space-y-1.5">
-              <Label>Notes</Label>
+            <FormGroup label="Notes">
               <Textarea
                 placeholder="Notes internes…"
                 rows={2}
                 {...register("notes")}
               />
-            </div>
+            </FormGroup>
             <DialogFooter>
               <Button
                 type="button"

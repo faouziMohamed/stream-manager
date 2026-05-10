@@ -13,35 +13,20 @@ import {
   type CloudinarySettingsDto,
   type CloudinarySettingsInput,
   type CloudinaryTestResultDto,
-  CREATE_SUMMARY_LINK,
   DELETE_FROM_CLOUDINARY,
-  DELETE_INQUIRY,
-  DELETE_SUMMARY_LINK,
   GET_CLOUDINARY_MEDIA,
   GET_CLOUDINARY_SETTINGS,
   GET_DEFAULT_CURRENCY,
-  GET_INQUIRIES,
-  GET_NOTIFICATION_HISTORY,
-  GET_NOTIFICATION_SETTINGS,
   GET_SMTP_SETTINGS,
-  GET_SUMMARY_LINKS,
-  type InquiryDto,
-  MARK_INQUIRY_READ,
-  type NotificationEventDto,
-  type NotificationSettingDto,
   REPLACE_CLOUDINARY_IMAGE,
-  REPLY_TO_INQUIRY,
   SET_APP_SETTING,
   SET_CLOUDINARY_SETTINGS,
-  SET_NOTIFICATION_SETTING,
   SET_SMTP_SETTINGS,
   type SmtpSettingsDto,
   type SmtpSettingsInput,
-  type SummaryLinkDto,
   TEST_CLOUDINARY,
   TEST_SMTP,
   type TestResultDto,
-  TOGGLE_SUMMARY_LINK,
   UPLOAD_TO_CLOUDINARY,
 } from "@/lib/graphql/operations/settings.operations";
 import { toastError, toastSuccess } from "@/lib/utils/toast";
@@ -70,7 +55,7 @@ export function useDefaultCurrency(initialData?: string) {
         (r) => r.defaultCurrency,
       ),
     initialData,
-    staleTime: 5 * 60_000, // 5 minutes
+    staleTime: 5 * 60_000,
   });
 }
 
@@ -94,94 +79,6 @@ export function useSetDefaultCurrency() {
     },
     onSuccess: () => toastSuccess("Devise mise à jour"),
     onSettled: () => qc.invalidateQueries({ queryKey: settingsKeys.currency }),
-  });
-}
-
-// ─── Summary links hooks ─────────────────────────────────────────────────────
-
-export function useSummaryLinks(initialData?: SummaryLinkDto[]) {
-  return useQuery({
-    queryKey: settingsKeys.summaryLinks,
-    queryFn: () =>
-      gqlRequest<{ summaryLinks: SummaryLinkDto[] }>(GET_SUMMARY_LINKS).then(
-        (r) => r.summaryLinks,
-      ),
-    initialData,
-  });
-}
-
-export function useCreateSummaryLink() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (input: {
-      label?: string;
-      showSensitiveInfo: boolean;
-      expiresAt?: string;
-    }) =>
-      gqlRequest<{ createSummaryLink: SummaryLinkDto }>(
-        CREATE_SUMMARY_LINK,
-        input,
-      ).then((r) => r.createSummaryLink),
-    onSuccess: () => toastSuccess("Lien de partage créé"),
-    onError: (err) => toastError(err, "Création du lien de partage"),
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.summaryLinks }),
-  });
-}
-
-export function useDeleteSummaryLink() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) =>
-      gqlRequest<{ deleteSummaryLink: boolean }>(DELETE_SUMMARY_LINK, {
-        id,
-      }).then((r) => r.deleteSummaryLink),
-    onMutate: async (id) => {
-      await qc.cancelQueries({ queryKey: settingsKeys.summaryLinks });
-      const prev = qc.getQueryData<SummaryLinkDto[]>(settingsKeys.summaryLinks);
-      qc.setQueryData<SummaryLinkDto[]>(
-        settingsKeys.summaryLinks,
-        (old) => old?.filter((l) => l.id !== id) ?? [],
-      );
-      return { prev };
-    },
-    onError: (err, _, ctx) => {
-      toastError(err, "Suppression du lien de partage");
-      if (ctx?.prev) qc.setQueryData(settingsKeys.summaryLinks, ctx.prev);
-    },
-    onSuccess: () => toastSuccess("Lien de partage supprimé"),
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.summaryLinks }),
-  });
-}
-
-export function useToggleSummaryLink() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      gqlRequest<{ toggleSummaryLink: SummaryLinkDto }>(TOGGLE_SUMMARY_LINK, {
-        id,
-        isActive,
-      }).then((r) => r.toggleSummaryLink),
-    onMutate: async ({ id, isActive }) => {
-      await qc.cancelQueries({ queryKey: settingsKeys.summaryLinks });
-      const prev = qc.getQueryData<SummaryLinkDto[]>(settingsKeys.summaryLinks);
-      qc.setQueryData<SummaryLinkDto[]>(
-        settingsKeys.summaryLinks,
-        (old) => old?.map((l) => (l.id === id ? { ...l, isActive } : l)) ?? [],
-      );
-      return { prev };
-    },
-    onError: (err, _, ctx) => {
-      toastError(err, "Activation du lien de partage");
-      if (ctx?.prev) qc.setQueryData(settingsKeys.summaryLinks, ctx.prev);
-    },
-    onSuccess: (
-      _data: SummaryLinkDto,
-      vars: { id: string; isActive: boolean },
-    ) => toastSuccess(vars.isActive ? "Lien activé" : "Lien désactivé"),
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.summaryLinks }),
   });
 }
 
@@ -309,133 +206,5 @@ export function useReplaceCloudinaryImage() {
       ).then((r) => r.replaceCloudinaryImage),
     onSuccess: () => toastSuccess("Image remplacée"),
     onError: (err) => toastError(err, "Remplacement image"),
-  });
-}
-
-// ─── Inquiry hooks ────────────────────────────────────────────────────────────
-
-export function useInquiries(unreadOnly?: boolean, initialData?: InquiryDto[]) {
-  return useQuery({
-    queryKey: settingsKeys.inquiries(unreadOnly),
-    queryFn: () =>
-      gqlRequest<{ inquiries: InquiryDto[] }>(GET_INQUIRIES, {
-        unreadOnly,
-      }).then((r) => r.inquiries),
-    initialData,
-  });
-}
-
-export function useMarkInquiryRead() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, isRead }: { id: string; isRead: boolean }) =>
-      gqlRequest<{ markInquiryRead: InquiryDto }>(MARK_INQUIRY_READ, {
-        id,
-        isRead,
-      }).then((r) => r.markInquiryRead),
-    onMutate: async ({ id, isRead }) => {
-      await qc.cancelQueries({ queryKey: settingsKeys.inquiries() });
-      const prev = qc.getQueryData<InquiryDto[]>(settingsKeys.inquiries());
-      qc.setQueryData<InquiryDto[]>(settingsKeys.inquiries(), (old) =>
-        old?.map((i) => (i.id === id ? { ...i, isRead } : i)),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) qc.setQueryData(settingsKeys.inquiries(), ctx.prev);
-    },
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() }),
-  });
-}
-
-export function useReplyToInquiry() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: string }) =>
-      gqlRequest(REPLY_TO_INQUIRY, { id, body }),
-    onSuccess: (_, { id }) => {
-      toastSuccess("Réponse envoyée");
-      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() });
-      qc.invalidateQueries({ queryKey: settingsKeys.inquiries(false) });
-      qc.invalidateQueries({ queryKey: ["settings", "inquiries", id] });
-    },
-    onError: (err) => toastError(err, "Envoi de la réponse"),
-  });
-}
-
-export function useDeleteInquiry() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => gqlRequest(DELETE_INQUIRY, { id }),
-    onMutate: async (id) => {
-      await qc.cancelQueries({ queryKey: settingsKeys.inquiries() });
-      const prev = qc.getQueryData<InquiryDto[]>(settingsKeys.inquiries());
-      qc.setQueryData<InquiryDto[]>(settingsKeys.inquiries(), (old) =>
-        old?.filter((i) => i.id !== id),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev) qc.setQueryData(settingsKeys.inquiries(), ctx.prev);
-    },
-    onSuccess: () => toastSuccess("Message supprimé"),
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.inquiries() }),
-  });
-}
-
-// ─── Notification settings hooks ─────────────────────────────────────────────
-
-export function useNotificationSettings(
-  initialData?: NotificationSettingDto[],
-) {
-  return useQuery({
-    queryKey: settingsKeys.notificationSettings,
-    queryFn: () =>
-      gqlRequest<{ notificationSettings: NotificationSettingDto[] }>(
-        GET_NOTIFICATION_SETTINGS,
-      ).then((r) => r.notificationSettings),
-    initialData,
-  });
-}
-
-export function useNotificationHistory(limit?: number) {
-  return useQuery({
-    queryKey: settingsKeys.notificationHistory(limit),
-    queryFn: () =>
-      gqlRequest<{ notificationHistory: NotificationEventDto[] }>(
-        GET_NOTIFICATION_HISTORY,
-        { limit },
-      ).then((r) => r.notificationHistory),
-  });
-}
-
-export function useSetNotificationSetting() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ event, enabled }: { event: string; enabled: boolean }) =>
-      gqlRequest<{ setNotificationSetting: NotificationSettingDto }>(
-        SET_NOTIFICATION_SETTING,
-        { event, enabled },
-      ).then((r) => r.setNotificationSetting),
-    onMutate: async ({ event, enabled }) => {
-      await qc.cancelQueries({ queryKey: settingsKeys.notificationSettings });
-      const prev = qc.getQueryData<NotificationSettingDto[]>(
-        settingsKeys.notificationSettings,
-      );
-      qc.setQueryData<NotificationSettingDto[]>(
-        settingsKeys.notificationSettings,
-        (old) =>
-          old?.map((s) => (s.event === event ? { ...s, enabled } : s)) ?? [],
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev)
-        qc.setQueryData(settingsKeys.notificationSettings, ctx.prev);
-    },
-    onSettled: () =>
-      qc.invalidateQueries({ queryKey: settingsKeys.notificationSettings }),
   });
 }

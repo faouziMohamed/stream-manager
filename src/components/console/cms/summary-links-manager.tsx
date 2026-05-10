@@ -13,8 +13,16 @@ import {
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { FormGroup } from "@/components/ui/form-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -45,7 +53,7 @@ import {
   useDeleteSummaryLink,
   useSummaryLinks,
   useToggleSummaryLink,
-} from "@/lib/hooks/queries/use-settings.queries";
+} from "@/lib/hooks/queries/use-summary-links.queries";
 import type { SummaryLinkDto } from "@/lib/graphql/operations/settings.operations";
 import { toDateTimeString } from "@/lib/utils/date-utils";
 
@@ -214,31 +222,45 @@ export function SummaryLinksManager() {
             onSubmit={linkForm.handleSubmit(onCreateLink)}
             className="space-y-4"
           >
-            <div className="space-y-1.5">
-              <Label>Libellé (optionnel)</Label>
+            <FormGroup label="Libellé (optionnel)">
               <Input
                 placeholder="ex: Comptable janvier"
                 {...linkForm.register("label")}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Expiration (optionnel)</Label>
+            </FormGroup>
+            <FormGroup label="Expiration (optionnel)">
               <DateTimePicker
                 value={linkForm.watch("expiresAt") || undefined}
                 onChange={(v) => linkForm.setValue("expiresAt", v ?? "")}
                 placeholder="Pas d'expiration"
               />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="showSensitive"
-                {...linkForm.register("showSensitiveInfo")}
-                className="h-4 w-4 rounded border-input"
+            </FormGroup>
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  Informations sensibles
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>
+                        Afficher les montants et noms des clients dans le lien
+                        partagé
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Montants et noms des clients visibles
+                </p>
+              </div>
+              <Switch
+                checked={linkForm.watch("showSensitiveInfo")}
+                onCheckedChange={(v) =>
+                  linkForm.setValue("showSensitiveInfo", v)
+                }
               />
-              <Label htmlFor="showSensitive" className="cursor-pointer text-sm">
-                Afficher les informations sensibles (montants, noms clients)
-              </Label>
             </div>
             <DialogFooter>
               <Button

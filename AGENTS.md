@@ -1,15 +1,21 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
 # AGENTS.md — Universal AI Agent Instructions for stream.mfaouzi.com
 
-> This file is the universal entry point for **any** AI agent (Claude, Copilot, Cursor, Windsurf, Gemini, GPT,
-> etc.). The authoritative and complete set of rules lives in **`CLAUDE.md`** — always read that file first.
-> This file provides orientation and cross-agent conventions.
+> Authoritative instructions for **StreamManager** — a subscription management dashboard for streaming service resellers.
+> Single source of truth. No separate CLAUDE.md.
 
 ---
 
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read
+the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
 ## What is this project?
 
-**StreamManager** — a subscription management dashboard for streaming service resellers.
- 
+Authoritative rules for **StreamManager** — a subscription management dashboard for streaming service resellers.
+
 | Layer            | Technology                                                   |
 | ---------------- | ------------------------------------------------------------ |
 | App name         | StreamManager                                                |
@@ -18,44 +24,175 @@
 | Styling          | Tailwind CSS v4 + shadcn/ui                                  |
 | Forms            | react-hook-form + zod v4                                     |
 | React Compiler   | Enabled (`babel-plugin-react-compiler`)                      |
-| Data             | TanStack React Query v5 + GraphQL (yoga/request)             |
+| Node required    | ≥ 24.0.0                                                     |
+| GraphQL server   | graphql-yoga at `/api/graphql`                               |
+| GraphQL client   | graphql-request (no Apollo)                                  |
+| Data fetching    | TanStack React Query v5                                      |
+| Auth             | BetterAuth at `/api/auth/[...all]` — do not touch            |
 | Database         | PostgreSQL (Aiven) via Drizzle ORM (`postgres` driver)       |
-| Auth             | BetterAuth (`/api/auth/[...all]`) — do not touch             |
 | Default currency | MAD (Moroccan Dirham, symbol: DH) — configurable in settings |
 | Charts           | Recharts                                                     |
 | Logging          | Pino (server) + clientLogger (client)                        |
-| Node             | ≥ 24.0.0                                                     |
 
 ---
 
 ## Quick-Start for Agents
 
-1. **Read `CLAUDE.md`** — it contains the full directory structure, conventions, workflow rules, and agent skills.
-2. **Understand the client/server boundary:**
+1. **Understand the client/server boundary:**
    - Server Components → call DB repositories directly (no HTTP)
    - Client Components → call React Query hooks backed by GraphQL only
-3. **All data mutations go through GraphQL** — no new REST routes, no raw `fetch()` from client code.
-4. **Never modify** `src/components/ui/` or `src/app/api/auth/` without explicit user approval.
-5. **Use centralized routes** — import from `src/lib/config/routes.ts` (`ROUTES`, `ROUTE_PREFIXES`), never hardcode paths.
+1. **All data mutations go through GraphQL** — no new REST routes, no raw `fetch()` from client code.
+1. **Never modify** `src/components/ui/` or `src/app/api/auth/` without explicit user approval.
+1. **Use centralized routes** — import from `src/lib/config/routes.ts` (`ROUTES`, `ROUTE_PREFIXES`), never hardcode paths.
 
 ---
 
-## Non-Negotiable Rules (all agents)
+## Additional Workflow Rules
 
-| #   | Rule                                                                                                                                                                                                                                                                                            |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Plan before coding** — describe your approach, wait for approval                                                                                                                                                                                                                              |
-| 2   | **Clarify ambiguity** — ask before writing code when unclear                                                                                                                                                                                                                                    |
-| 3   | **No `cat`/shell redirection to write files** — use IDE file-edit tools only (tracked diffs, rollback)                                                                                                                                                                                          |
-| 4   | **No new REST routes** — GraphQL only; BetterAuth is the only REST endpoint                                                                                                                                                                                                                     |
-| 5   | **No `router.refresh()`** — optimistic updates + `invalidateQueries` keep UI in sync                                                                                                                                                                                                            |
-| 6   | **Always inline form errors** — `error?` prop on wrappers, `iErrCls` on inputs, `onInvalid` handler                                                                                                                                                                                             |
-| 7   | **Never spread DTOs into RHF `defaultValues`** — map fields explicitly                                                                                                                                                                                                                          |
-| 8   | **Prefer file tools over CLI** — CLI can silently return empty output; use `read_file`, `grep_search`, etc.                                                                                                                                                                                     |
-| 9   | **Image uploads are server-side** — client sends base64 to `uploadImage` mutation; Cloudinary SDK runs on the server; no credentials reach the browser                                                                                                                                          |
-| 10  | **Always use the `env` object** — `import { env } from '@/lib/settings/env'` for every env var access; never use `process.env.*` directly in application code                                                                                                                                   |
-| 11  | **Use the logger everywhere** — server: `createLogger('module')` from `@/lib/logger`; client: `clientLogger('module')` from `@/lib/logger/client-logger`. Never use `console.*` in server or client code. Client `warn/error/fatal` forward to the server via `forwardClientLog` Server Action. |
-| 12  | **Never write direct DB queries in non-repository files** — all database operations must go through exported repository functions.                                                                                                                                                              |
+| #   | Rule                                                                                     |
+| --- | ---------------------------------------------------------------------------------------- |
+| 1   | **Post-code review** — after writing code, list edge cases and suggest test cases        |
+| 2   | **Limit scope** — if a task touches more than 3 files, break it into smaller tasks first |
+| 3   | **Bug-fix workflow** — write a reproducing test first, then fix until the test passes    |
+
+## Data Transport
+
+- **GraphQL only** for client → server data — no new REST routes
+- Client: `gqlRequest()` from `@/lib/graphql/client.ts`
+
+## React Query
+
+- Every mutation: `onMutate` (optimistic) → `onError` (rollback) → `onSettled` (invalidate)
+- Use `initialData` from server page — no loading state on first render
+
+## Implementation Status
+
+| Phase | Status      | Description                                                                             |
+| ----- | ----------- | --------------------------------------------------------------------------------------- |
+| 1     | ✅ Complete | Foundation: DB schema, BetterAuth, GraphQL server, middleware, auth pages, public pages |
+| 2     | ✅ Complete | Repositories + full GraphQL resolvers + React Query hooks for all domains               |
+| 3     | ✅ Complete | Management pages + Timeline + Analytics + Summary + Shared link — all in French         |
+| 4     | ✅ Complete | Timeline (Gantt/Grid/Calendar) + Analytics (Recharts charts) views                      |
+| 5     | ✅ Complete | Shared summary page (/s/[token]) + settings + polish + all TS errors resolved           |
+
+---
+
+## 🚨 Non-Negotiable Rules — All Tasks
+
+> **These rules are mandatory for every agent, every task, and every session.**
+
+> **⛔ You are absolutely prohibited from violating any rule stated in this file.**
+> Rule violations are not permitted under any circumstance — not when a skill is active,
+> not when a sub-agent is running, not when the user asks informally, and not when the
+> implementation appears simpler without the rules. If following a rule creates a conflict,
+> stop and ask the user for guidance. There are no exceptions.
+
+| #   | Rule                                                      | ✅ Do                                                                   | ❌ Don't                                                         |
+| --- | --------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1   | **Plan before coding**                                    | Describe your approach, wait for approval                               | Start coding immediately without confirming the plan             |
+| 2   | **Clarify ambiguity**                                     | Ask questions when unclear                                              | Make assumptions and write code based on them                    |
+| 3   | **No shell redirection to write files**                   | Use Write/Edit tools (tracked diffs, rollback)                          | `cat > file << EOF` or any shell redirect to create/modify files |
+| 4   | **No new REST routes**                                    | Add a GraphQL query/mutation for new operations                         | Create `route.ts` outside `api/auth/` or `api/graphql/`          |
+| 5   | **No `router.refresh()`**                                 | Optimistic updates + `invalidateQueries` keep UI in sync                | Call `router.refresh()` after mutations                          |
+| 6   | **Always inline form errors**                             | `error?` prop on wrappers, `iErrCls` on inputs, `onInvalid` handler     | Show errors in a toast/alert or skip validation feedback         |
+| 7   | **Never spread DTOs into RHF `defaultValues`**            | Map fields explicitly in a `toForm()` helper                            | `defaultValues: { ...apiDto }` (extra keys fail silently)        |
+| 8   | **Prefer file tools over CLI**                            | Read, Write, Edit, Glob, Grep tools                                     | `cat`, `grep`, `sed`, `awk`, `find` from shell                   |
+| 9   | **Image uploads are server-side**                         | Client sends base64 → `uploadImage` mutation → Cloudinary SDK on server | Send Cloudinary credentials to the browser                       |
+| 10  | **Always use the `env` object**                           | `import { env } from '@/lib/settings/env'`                              | `process.env.*` directly in application code                     |
+| 11  | **Use the logger everywhere**                             | Server: `createLogger('module')` · Client: `clientLogger('module')`     | `console.log()` / `console.error()` in any file                  |
+| 12  | **Never write direct DB queries in non-repository files** | Call exported repository functions                                      | `db.select()` or raw SQL in resolvers, components, or pages      |
+| 13  | **No git write ops without instruction**                  | `git log`, `git diff`, `git status` (always fine)                       | `git add`, `git commit`, `git push` without explicit request     |
+| 14  | **No DB write ops without approval**                      | Describe what will change, ask in plain terms, wait for "yes"           | INSERT/UPDATE/DELETE/migrations without explicit approval        |
+| 15  | **Skip heavy plan docs**                                  | Brief outlines (approach + file list) in code comments                  | Implementation code in `.md` plan files                          |
+| 16  | **Announce skills before use**                            | Tell which skill and why before invoking                                | Invoke silently without warning                                  |
+| 17  | **Ask approval for token-heavy skills**                   | Warn the user, offer granular opt-out                                   | Spawn sub-agents without asking                                  |
+
+### Code examples
+
+```ts
+// ─── #3 — File tools ──────────────────────────────────────────────────────────
+// ✅ Good — use file tools (Write, Edit, Read, Grep)
+// ❌ Bad — shell redirects (untracked, no rollback)
+
+// ─── #4 — GraphQL only ────────────────────────────────────────────────────────
+// ❌ Bad — creating a REST route.ts
+// export async function GET() { ... }     // src/app/api/foo/route.ts
+// ✅ Good — add a GraphQL mutation
+// type Mutation { doSomething(input: Foo!): Bar }
+```
+
+```tsx
+// ─── #5 — No router.refresh() ─────────────────────────────────────────────────
+// ❌ Bad
+const mutation = useMutation({
+  onSuccess: () => router.refresh(), // full SSR round-trip, loading flash
+});
+// ✅ Good
+const mutation = useMutation({
+  onMutate: async () => {
+    /* optimistic update */
+  },
+  onError: (_, __, context) => {
+    /* rollback */
+  },
+  onSettled: () => queryClient.invalidateQueries({ queryKey: ["key"] }),
+});
+```
+
+```tsx
+// ─── #6 — Inline form errors ──────────────────────────────────────────────────
+// ✅ Good
+<Input error={errors.name?.message} {...register("name")} />;
+{
+  errors.name && (
+    <p className="text-xs text-destructive">{errors.name.message}</p>
+  );
+}
+// ❌ Bad — toast or alert on validation failure
+// toast.error("Veuillez remplir tous les champs");
+```
+
+```ts
+// ─── #7 — Never spread DTOs ───────────────────────────────────────────────────
+// ❌ Bad — extra keys fail silently
+// const form = useForm({ defaultValues: { ...apiDto } });
+// ✅ Good — explicit mapping
+function toForm(dto?: ServiceDto): ServiceForm {
+  return { name: dto?.name ?? "", category: dto?.category ?? "streaming" };
+}
+```
+
+```tsx
+// ─── #10 — Env object ─────────────────────────────────────────────────────────
+// ❌ Bad
+// const db = new Pool({ connectionString: process.env.DATABASE_URL });
+// ✅ Good
+import { env } from "@/lib/settings/env";
+const db = new Pool({ connectionString: env.DATABASE_URL });
+```
+
+```ts
+// ─── #11 — Logger everywhere ──────────────────────────────────────────────────
+// ❌ Bad
+// console.log("User created", user);
+// ✅ Good (server)
+// import { createLogger } from '@/lib/logger';
+// const log = createLogger('users');
+// log.info({ userId: user.id }, "User created");
+// ✅ Good (client)
+// import { clientLogger } from '@/lib/logger/client-logger';
+// const log = clientLogger('users');
+// log.info("User created");
+```
+
+```ts
+// ─── #12 — Repository layer ───────────────────────────────────────────────────
+// ❌ Bad — in a resolver or component
+// const users = await db.select().from(usersTable);
+// ✅ Good — call exported repository
+// import { getUsers } from '@/lib/db/repositories/users.repository';
+// const users = await getUsers();
+```
 
 ---
 
@@ -80,88 +217,30 @@ aggregate domain files and must not contain logic.
 
 ## Where Things Live
 
-```
-CLAUDE.md                    ← Full authoritative instructions
-AGENTS.md                    ← This file — universal agent entry point
-
+```text
 src/
-  proxy.ts                   ← Middleware logic (session check, redirects)
-  app/(website)/             ← Public pages (landing, contact form)
-  app/(dashboard)/console/   ← Admin console (auth-gated via middleware)
-  app/s/[token]/             ← Public shared summary (read-only accountant view)
-  app/api/graphql/           ← GraphQL endpoint (yoga — GET + POST)
-  app/api/auth/              ← BetterAuth — DO NOT TOUCH
-  components/
-    ui/                      ← shadcn/ui primitives — DO NOT edit
-    shared/                  ← Providers, theme, skeletons
-    console/
-      cms/                   ← Page-specific editors (accounts, clients, payments, …)
-      timeline/              ← Gantt/Grid/Calendar view components
-    website/                 ← Public page components
-  lib/
-    auth/
-      auth.ts                ← BetterAuth config (GitHub OAuth + password)
-      auth-client.ts         ← BetterAuth browser client
-      helpers.ts             ← isAdmin(), isAccountant()
-    config/
-      routes.ts              ← Centralised ROUTES + ROUTE_PREFIXES constants
-    db/
-      index.ts               ← Drizzle client (postgres driver + SSL)
-      schema.ts              ← Barrel re-export
-      tables/
-        auth.table.ts
-        subscription-management.table.ts   ← ALL domain tables in one file
-      repositories/          ← DB access layer (*.repository.ts)
-        accounts/            ← streaming-accounts, streaming-profiles, profile-assignments
-        settings/            ← app-settings, smtp, cloudinary, summary-links, inquiries, notifications
-    graphql/
-      schema.ts              ← Merges all SDL slices
-      resolvers.ts           ← 1-line re-export shim
-      context.ts             ← Per-request auth context
-      client.ts              ← gqlRequest() — graphql-request wrapper
-      operations.ts          ← Barrel re-export
-      schema/                ← SDL slices per domain (*.schema.ts)
-        accounts/
-        settings/
-      resolvers/             ← Resolver slices per domain (*.resolvers.ts)
-        accounts/
-        settings/
-      operations/            ← Typed GQL operations per domain (*.operations.ts)
-        accounts/
-        settings/
-    hooks/queries/           ← React Query hooks (*.queries.ts) — one file per domain
-    settings/
-      env.ts                 ← @t3-oss/env-nextjs validation
-      config.ts              ← App config (name, default currency)
-    logger/
-      logger.ts              ← Pino (server) — createLogger('module')
-      client-logger.ts       ← Client logger — clientLogger('module')
-      client-log.action.ts   ← Server Action — forwards client warn/error/fatal
-    utils/
-      helpers.ts             ← cn(), formatCurrency(), slugify()
-      date-utils.ts          ← addMonths(), computeEndDate(), isOverdue()
-      mailer.ts              ← SMTP mail helper + NOTIFICATION_LABELS map
-  middleware.ts              ← Imports proxy() from src/proxy.ts
-  drizzle.config.ts
+  proxy.ts             Session/redirect middleware
+  middleware.ts        Imports proxy()
+  app/(website)/       Public pages (landing, contact)
+  app/(dashboard)/     Console (auth-gated)
+  app/s/[token]/       Read-only accountant summary
+  app/api/graphql/     Yoga GraphQL endpoint
+  app/api/auth/        BetterAuth — DO NOT TOUCH
+  components/ui/       shadcn/ui primitives — DO NOT edit
+  components/shared/   Providers, theme, skeletons
+  components/console/  CMS editors, timeline views
+  components/website/  Public components
+  lib/auth/            BetterAuth config, client, helpers
+  lib/config/          Routes, app config
+  lib/db/              Drizzle client, tables (auth + subscription), repositories
+  lib/graphql/         Schema, resolvers, operations, context, client
+  lib/hooks/queries/   React Query hooks per domain
+  lib/settings/        Env validation, app config
+  lib/logger/          Pino (server) + client logger
+  lib/utils/           Helpers, date utils, mailer
 ```
 
 ---
-
-## Agent Capability Matrix
-
-Different AI agents have different tool sets. Adapt accordingly:
-
-| Capability             | Claude (Anthropic) | Copilot (GitHub) | Cursor | Windsurf |
-| ---------------------- | ------------------ | ---------------- | ------ | -------- |
-| File read/write tools  | ✅ Native          | ✅ Native        | ✅     | ✅       |
-| Terminal execution     | ✅ (use sparingly) | ✅               | ✅     | ✅       |
-| Multi-file edits       | ✅                 | ✅               | ✅     | ✅       |
-| Semantic search        | ✅                 | ✅               | ✅     | ✅       |
-| Rollback/diff tracking | ✅ (tool-based)    | ✅ (IDE-based)   | ✅     | ✅       |
-
-**Key rule for all agents:** never use shell commands to write file content — always use the native file-edit tool
-of the agent/IDE. Shell writes (`cat > file`, `echo >> file`, `tee`, heredocs) are not tracked in the diff and
-cannot be rolled back.
 
 ---
 
@@ -328,15 +407,77 @@ Follow this order — each step depends on the previous:
 
 ---
 
-## Coding Style Rules
+## TypeScript Rules
 
-- Prefer named functions over arrow functions, especially for components. Arrow functions are only acceptable in special
-  component cases (e.g., inline callbacks, hooks, or when required for lexical `this`).
-- For default exports, use the `export default function` syntax directly on the function declaration, not as a separate
-  statement.
+- **`import type` for type-only imports** — never `import { type Foo }`; use `import type { Foo }`
+- **No `any`** — use `unknown` + narrowing or proper types
+- **Max 300 lines per file** — split immediately when a `.ts`/`.tsx` file exceeds 300 lines.
+  - Extract into: `*-types.ts`, `*-constants.ts`, `*-helpers.ts`, `*-utils.ts`, `*-sections.tsx`
+  - Keep the original as a barrel with re-exports for backwards compatibility if needed
+  - Exceptions (up to 400 lines): visual renderers (`*.renderer.tsx`), auto-generated shadcn/ui files
+  - Split directly — do not use token-intensive skills; sub-agents are fine for parallel independent files
 
-## Additional Coding Rules
+- **Always use `@` absolute imports** — never use relative paths (`./`, `../`) for files inside `src/`. The `@*` → `./src/*` alias is configured in `tsconfig.json`.
 
-- If a component is too long, refactor it into smaller components to make it easier to read (!!! only if necessary).
-- Avoid nested ternary expressions. If a ternary would be nested, extract the condition or result to a variable or
-  function instead.
+  | Situation      | ✅ Good                         | ❌ Bad                   |
+  | -------------- | ------------------------------- | ------------------------ |
+  | Same directory | `from '@features/auth/helpers'` | `from './helpers'`       |
+  | Parent dir     | `from '@features/auth/types'`   | `from '../auth/types'`   |
+  | Cross-module   | `from '@lib/utils'`             | `from '../../lib/utils'` |
+
+  Exception: third-party packages (`react`, `next`, `zod`) and Node built-ins (`fs`, `path`) stay as-is.
+
+- **Exports at top of file** — place exported functions, classes, types, and constants at the top; non-exported helpers go below. Exception: when hoisting is impossible due to initialization order.
+
+  ```ts
+  export function main() { return helper() }  // ✅ exported first
+
+  function helper() { ... }                   // ✅ helper below
+  ```
+
+- **Named `function` declarations over arrow variables** — for any non-trivial function (more than a one-liner), prefer `function foo() {}` over `const foo = () => {}`.
+
+- **For default exports**, use the `export default function` syntax directly on the function declaration, not as a separate statement.
+
+- **Avoid nested ternary expressions.** If a ternary would be nested, extract the condition or result to a variable or function instead.
+
+## React Rules — shadcn/ui
+
+- **Never use native HTML interactive elements** — always use library components instead.
+
+  | Element                                      | Use instead                                                   |
+  | -------------------------------------------- | ------------------------------------------------------------- |
+  | `<input>`, `<textarea>`                      | `Input`, `Textarea` from `src/components/ui/`                 |
+  | `<select>`, `<option>`                       | `Select` / `SelectContent` / `SelectItem` from the UI library |
+  | `<input type="date">`                        | `Calendar` + `Popover` (shadcn/ui + `react-day-picker`)       |
+  | `<button>`                                   | `Button` from `src/components/ui/button.tsx`                  |
+  | `<dialog>`, `window.alert`, `window.confirm` | `Dialog`, `AlertDialog`, `Sheet` from shadcn/ui               |
+  | `<label>`                                    | `Label` from `src/components/ui/label.tsx`                    |
+
+  **Icons:** use `lucide-react` or `react-icons` — never inline SVG or emoji for interactive icons.
+
+  **Missing component:** scaffold from [@radix-ui](https://www.radix-ui.com/) primitives following the existing shadcn pattern, then import it.
+
+  ```tsx
+  // ✅ Good
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline"><CalendarIcon className="h-4 w-4" /> Pick date</Button>
+    </PopoverTrigger>
+    <PopoverContent><Calendar mode="single" /></PopoverContent>
+  </Popover>
+
+  // ❌ Bad
+  <input type="date" onChange={...} />
+  <select><option>...</option></select>
+  <button onClick={...}>Click</button>
+  if (window.confirm('Delete?')) { ... }
+  ```
+
+## Next.js Rules
+
+- **Read the docs before writing any code** — Next.js has breaking changes that may differ from training data. Check `node_modules/next/dist/docs/` before starting. Heed deprecation notices.
+
+- **Validate env vars with `@t3-oss/env-nextjs`** — all env vars must be validated in `src/lib/settings/env.ts`. Keep server-only vars separate from `NEXT_PUBLIC_*` client vars.
+
+<!-- END:nextjs-agent-rules -->

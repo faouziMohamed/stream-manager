@@ -4,10 +4,12 @@ import { type Resolver, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { CheckCircle, Eye, EyeOff, Loader2, Send, XCircle } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { FormGroup } from "@/components/ui/form-group";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -19,15 +21,9 @@ import {
 import {
   useSetSmtpSettings,
   useSmtpSettings,
-  useTestSmtp,
 } from "@/lib/hooks/queries/use-settings.queries";
-import type {
-  SmtpSettingsDto,
-  TestResultDto,
-} from "@/lib/graphql/operations/settings.operations";
-import { clientLogger } from "@/lib/logger/client-logger";
-
-const logger = clientLogger("smtp-editor");
+import type { SmtpSettingsDto } from "@/lib/graphql/operations/settings.operations";
+import { SmtpTestSection } from "./smtp-test-section";
 
 const smtpSchema = z.object({
   host: z.string().min(1, "Hôte requis"),
@@ -47,10 +43,7 @@ interface Props {
 export function SmtpEditor({ initialSmtp }: Props) {
   const { data: smtp } = useSmtpSettings(initialSmtp ?? undefined);
   const setSmtp = useSetSmtpSettings();
-  const testSmtp = useTestSmtp();
   const [showPassword, setShowPassword] = useState(false);
-  const [testEmail, setTestEmail] = useState("");
-  const [testResult, setTestResult] = useState<TestResultDto | null>(null);
 
   const form = useForm<SmtpForm>({
     resolver: zodResolver(smtpSchema) as Resolver<SmtpForm>,
@@ -76,20 +69,6 @@ export function SmtpEditor({ initialSmtp }: Props) {
       senderName: data.senderName,
     });
     form.setValue("password", "");
-  };
-
-  const onTest = async () => {
-    setTestResult(null);
-    try {
-      const result = await testSmtp.mutateAsync(testEmail);
-      setTestResult(result);
-    } catch (err) {
-      logger.error("SMTP test failed", err);
-      setTestResult({
-        success: false,
-        message: "Erreur de connexion au serveur. Vérifiez votre session.",
-      });
-    }
   };
 
   return (
@@ -122,77 +101,60 @@ export function SmtpEditor({ initialSmtp }: Props) {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="sm:col-span-2 space-y-1.5">
-                <Label htmlFor="smtpHost">Hôte SMTP</Label>
+              <FormGroup
+                label="Hôte SMTP"
+                error={form.formState.errors.host?.message}
+                className="sm:col-span-2"
+              >
                 <Input
-                  id="smtpHost"
                   placeholder="smtp-relay.brevo.com"
                   {...form.register("host")}
                 />
-                {form.formState.errors.host && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.host.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="smtpPort">Port</Label>
+              </FormGroup>
+              <FormGroup
+                label="Port"
+                error={form.formState.errors.port?.message}
+              >
                 <Input
-                  id="smtpPort"
                   type="number"
                   placeholder="587"
                   {...form.register("port")}
                 />
-                {form.formState.errors.port && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.port.message}
-                  </p>
-                )}
-              </div>
+              </FormGroup>
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                id="smtpSecure"
-                type="checkbox"
-                className="h-4 w-4 rounded border-input cursor-pointer"
-                {...form.register("secure")}
-              />
-              <Label
-                htmlFor="smtpSecure"
-                className="cursor-pointer text-sm font-normal"
-              >
+            <div className="flex items-center justify-between rounded-lg border px-3 py-2.5">
+              <Label className="text-sm font-medium cursor-pointer">
                 Connexion sécurisée TLS (port 465)
               </Label>
+              <Switch
+                checked={form.watch("secure")}
+                onCheckedChange={(v) => form.setValue("secure", v)}
+              />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="smtpUser">Utilisateur SMTP</Label>
+            <FormGroup
+              label="Utilisateur SMTP"
+              error={form.formState.errors.user?.message}
+            >
               <Input
-                id="smtpUser"
                 placeholder="user@smtp.example.com"
                 autoComplete="username"
                 {...form.register("user")}
               />
-              {form.formState.errors.user && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.user.message}
-                </p>
-              )}
-            </div>
+            </FormGroup>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="smtpPassword">
-                Mot de passe
-                {smtp?.hasPassword && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    (laisser vide pour conserver l&apos;actuel)
-                  </span>
-                )}
-              </Label>
+            <FormGroup
+              label="Mot de passe"
+              hint={
+                smtp?.hasPassword
+                  ? "Laisser vide pour conserver l'actuel"
+                  : undefined
+              }
+              error={form.formState.errors.password?.message}
+            >
               <div className="relative">
                 <Input
-                  id="smtpPassword"
                   type={showPassword ? "text" : "password"}
                   placeholder={
                     smtp?.hasPassword ? "••••••••" : "Mot de passe SMTP"
@@ -215,36 +177,28 @@ export function SmtpEditor({ initialSmtp }: Props) {
                   )}
                 </button>
               </div>
-            </div>
+            </FormGroup>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="senderEmail">Email expéditeur</Label>
+              <FormGroup
+                label="Email expéditeur"
+                error={form.formState.errors.senderEmail?.message}
+              >
                 <Input
-                  id="senderEmail"
                   type="email"
                   placeholder="contact@example.com"
                   {...form.register("senderEmail")}
                 />
-                {form.formState.errors.senderEmail && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.senderEmail.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="senderName">Nom expéditeur</Label>
+              </FormGroup>
+              <FormGroup
+                label="Nom expéditeur"
+                error={form.formState.errors.senderName?.message}
+              >
                 <Input
-                  id="senderName"
                   placeholder="Mon Service"
                   {...form.register("senderName")}
                 />
-                {form.formState.errors.senderName && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.senderName.message}
-                  </p>
-                )}
-              </div>
+              </FormGroup>
             </div>
 
             <Button
@@ -260,70 +214,7 @@ export function SmtpEditor({ initialSmtp }: Props) {
         </CardContent>
       </Card>
 
-      {/* ── Test card ─────────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tester la configuration</CardTitle>
-          <CardDescription>
-            Envoyez un e-mail de test pour vérifier que la configuration SMTP
-            fonctionne.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void onTest();
-            }}
-            className="flex gap-3 items-end"
-          >
-            <div className="space-y-1.5 flex-1">
-              <Label htmlFor="testEmail">Adresse e-mail de test</Label>
-              <Input
-                id="testEmail"
-                type="email"
-                placeholder="vous@exemple.com"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!testEmail || testSmtp.isPending || !smtp?.hasPassword}
-              className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium shadow-xs transition-all hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-            >
-              {testSmtp.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              Envoyer le test
-            </button>
-          </form>
-          {!smtp?.hasPassword && (
-            <p className="text-xs text-muted-foreground">
-              Enregistrez d&apos;abord la configuration avec un mot de passe
-              avant de tester.
-            </p>
-          )}
-          {testResult && (
-            <div
-              className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${
-                testResult.success
-                  ? "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
-                  : "border-destructive/30 bg-destructive/10 text-destructive"
-              }`}
-            >
-              {testResult.success ? (
-                <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              ) : (
-                <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              )}
-              <span>{testResult.message}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SmtpTestSection hasPassword={!!smtp?.hasPassword} />
     </div>
   );
 }

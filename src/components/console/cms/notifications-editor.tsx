@@ -21,7 +21,7 @@ import {
   useNotificationHistory,
   useNotificationSettings,
   useSetNotificationSetting,
-} from "@/lib/hooks/queries/use-settings.queries";
+} from "@/lib/hooks/queries/use-notifications.queries";
 import { cn } from "@/lib/utils/helpers";
 import type { NotificationSettingDto } from "@/lib/graphql/operations/settings.operations";
 
