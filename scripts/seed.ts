@@ -10,14 +10,13 @@ import 'dotenv/config';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { nanoid } from 'nanoid';
+import { env } from '@/lib/settings/env';
 import * as schema from '../src/lib/db/schema';
 
 // ── DB connection ─────────────────────────────────────────────────────────────
-const DATABASE_URL = process.env.DATABASE_URL!;
-const DB_SSL_CA = process.env.DB_SSL_CA;
 
-const client = postgres(DATABASE_URL, {
-  ssl: DB_SSL_CA ? { ca: DB_SSL_CA } : undefined,
+const client = postgres(env.DATABASE_URL, {
+  ssl: env.DB_SSL_CA ? { ca: env.DB_SSL_CA } : undefined,
   max: 1,
 });
 const db = drizzle(client, { schema });

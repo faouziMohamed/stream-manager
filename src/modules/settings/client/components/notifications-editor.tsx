@@ -169,7 +169,7 @@ export function NotificationsEditor({ initialData }: Props) {
         <CardContent className="p-0">
           {historyLoading ? (
             <div className="text-muted-foreground px-6 py-8 text-center text-sm">Chargement…</div>
-          ) : history.length === 0 ? (
+          ) : (history.length === 0 ? (
             <div className="text-muted-foreground px-6 py-8 text-center text-sm italic">
               Aucune notification envoyée pour l&apos;instant.
             </div>
@@ -209,7 +209,7 @@ export function NotificationsEditor({ initialData }: Props) {
                 );
               })}
             </div>
-          )}
+          ))}
         </CardContent>
       </Card>
     </div>

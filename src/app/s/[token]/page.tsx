@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { summaryLinks } from '@/lib/db/tables/subscription-management.table';
@@ -11,9 +12,27 @@ import {
 import { SummaryView } from '@/modules/settings/client/components/summary-view';
 import { SharedSummaryHeader } from '@/components/shared/shared-summary-header';
 import type { AnalyticsDto } from '@/lib/graphql/operations/analytics.operations';
+import { SEO, ogImageUrl } from '@/modules/seo/client/helpers/social-card';
 
 interface Props {
   params: Promise<{ token: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { token } = await params;
+  const [link] = await db.select().from(summaryLinks).where(eq(summaryLinks.token, token));
+  if (!link || !link.isActive) return { title: 'Lien introuvable' };
+  const title = `Rapport — ${link.label} — ${SEO.siteName}`;
+  return {
+    title,
+    description: 'Rapport de gestion des abonnements streaming.',
+    robots: { index: false, follow: false },
+    openGraph: {
+      title,
+      description: 'Rapport de gestion des abonnements streaming.',
+      images: [{ url: ogImageUrl(title, 'Rapport de gestion des abonnements streaming.') }],
+    },
+  };
 }
 
 export default async function SharedSummaryPage({ params }: Props) {

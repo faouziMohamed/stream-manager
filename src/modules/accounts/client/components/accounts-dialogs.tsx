@@ -72,7 +72,7 @@ export function AccountDialog({ open, acc, onOpenChange, services, onSubmit }: A
               Annuler
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Enregistrement…' : acc ? 'Enregistrer' : 'Créer'}
+              {form.formState.isSubmitting ? 'Enregistrement…' : (acc ? 'Enregistrer' : 'Créer')}
             </Button>
           </DialogFooter>
         </form>

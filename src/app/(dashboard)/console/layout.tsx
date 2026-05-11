@@ -1,8 +1,13 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { ConsoleSidebar } from '@/components/console/console-sidebar';
 import { ConsoleTopbar } from '@/components/console/console-topbar';
 import { ConsoleBreadcrumbs } from '@/components/console/console-breadcrumbs';
 import { SidebarProvider } from '@/components/console/sidebar-context';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function ConsoleLayout({ children }: { children: ReactNode }) {
   return (

@@ -11,9 +11,10 @@ export const env = createEnv({
     DB_SSL_CA: z.string().min(1),
     ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be 64 hex chars (32 bytes)'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    SOCIAL_CARD_BASE_URL: z.string().url().default('https://social-card.mfaouzi.com'),
   },
   client: {
-    NEXT_PUBLIC_URL: z.url(),
+    NEXT_PUBLIC_URL: z.string().url(),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -24,6 +25,7 @@ export const env = createEnv({
     DB_SSL_CA: process.env.DB_SSL_CA,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     NODE_ENV: process.env.NODE_ENV,
+    SOCIAL_CARD_BASE_URL: process.env.SOCIAL_CARD_BASE_URL,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
   },
 });
