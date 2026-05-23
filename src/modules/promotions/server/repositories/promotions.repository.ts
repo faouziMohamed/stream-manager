@@ -12,7 +12,7 @@ const logger = createLogger('promotions-repository');
 
 export type CreatePromotionInput = {
   name: string;
-  description?: string | null;
+  description?: unknown | null;
   serviceIds: string[];
   startsAt?: string | null;
   expiresAt?: string | null;
@@ -21,7 +21,7 @@ export type CreatePromotionInput = {
 
 export type UpdatePromotionInput = {
   name?: string;
-  description?: string | null;
+  description?: unknown | null;
   isActive?: boolean;
   showOnHomepage?: boolean;
   serviceIds?: string[];

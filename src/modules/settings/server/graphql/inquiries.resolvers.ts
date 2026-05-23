@@ -6,6 +6,8 @@ import { nanoid } from 'nanoid';
 import { createLogger } from '@/lib/logger';
 import { getAdminEmail, sendNotification, sendViaSMTP } from '@/lib/utils/mailer';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { extractPlainTextFromRichText } from '@/components/rich-text/rich-text-utils';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 const logger = createLogger('inquiries-resolvers');
 
@@ -48,11 +50,13 @@ export const inquiriesMutationResolvers = {
         name: string;
         email?: string;
         phone?: string;
-        message: string;
+        message: unknown;
       };
     }
   ) => {
     try {
+      const plainMessage = extractPlainTextFromRichText(input.message);
+      const escapedMessage = escapeHtml(plainMessage);
       await db.insert(contactInquiries).values({
         id: nanoid(),
         name: input.name,
@@ -80,7 +84,7 @@ export const inquiriesMutationResolvers = {
             contactInfo,
             ``,
             `Message :`,
-            input.message,
+            plainMessage,
           ]
             .filter((l) => l !== null)
             .join('\n'),
@@ -92,7 +96,7 @@ export const inquiriesMutationResolvers = {
                 ${input.phone ? `<tr><td style="padding:6px 0;color:#666">Téléphone</td><td style="padding:6px 0">${input.phone}</td></tr>` : ''}
               </table>
               <hr style="margin:16px 0;border:none;border-top:1px solid #eee"/>
-              <p style="white-space:pre-wrap;margin:0">${input.message.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</p>
+              <p style="white-space:pre-wrap;margin:0">${escapedMessage}</p>
             `,
         });
       }
@@ -125,7 +129,7 @@ export const inquiriesMutationResolvers = {
   },
   replyToInquiry: async (
     _: unknown,
-    { id, body }: { id: string; body: string },
+    { id, body }: { id: string; body: unknown },
     ctx: GraphQLContext
   ) => {
     requireAdmin(ctx);
@@ -137,21 +141,30 @@ export const inquiriesMutationResolvers = {
       .insert(inquiryReplies)
       .values({ id: replyId, inquiryId: id, body })
       .returning();
+    await reconcileSavedRichTextField({
+      entityId: reply.id,
+      entityType: 'inquiryReply',
+      fieldName: 'body',
+      previousValue: null,
+      nextValue: reply.body,
+    });
 
     await db.update(contactInquiries).set({ isRead: true }).where(eq(contactInquiries.id, id));
 
     if (inquiry.email) {
+      const plainBody = extractPlainTextFromRichText(body);
+      const escapedBody = escapeHtml(plainBody);
       const error = await sendViaSMTP({
         to: inquiry.email,
         subject: `Re: Votre message — StreamManager`,
-        text: body,
+        text: plainBody,
         html: `
             <p>Bonjour ${inquiry.email ? inquiry.name : ''},</p>
-            <p style="white-space:pre-wrap">${body.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</p>
+            <p style="white-space:pre-wrap">${escapedBody}</p>
             <hr style="margin:24px 0;border:none;border-top:1px solid #eee"/>
             <p style="color:#999;font-size:12px">Votre message original :</p>
             <blockquote style="border-left:3px solid #eee;margin:0;padding:0 0 0 12px;color:#666;font-size:13px">
-              <p style="white-space:pre-wrap">${inquiry.message.replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</p>
+              <p style="white-space:pre-wrap">${escapeHtml(extractPlainTextFromRichText(inquiry.message))}</p>
             </blockquote>
           `,
       });
@@ -172,3 +185,7 @@ export const inquiriesMutationResolvers = {
     return true;
   },
 };
+
+function escapeHtml(value: string) {
+  return value.replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}

@@ -8,7 +8,7 @@ const logger = createLogger('payments-repository');
 export type UpdatePaymentInput = {
   status?: 'paid' | 'unpaid' | 'overdue';
   paidDate?: string | null;
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export async function getAllPayments(filters?: {

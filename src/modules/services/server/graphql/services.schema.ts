@@ -3,7 +3,7 @@ export const servicesSchema = /* GraphQL */ `
     id: ID!
     name: String!
     category: String!
-    description: String
+    description: JSON
     logoUrl: String
     isActive: Boolean!
     showOnHomepage: Boolean!
@@ -16,7 +16,7 @@ export const servicesSchema = /* GraphQL */ `
   input CreateServiceInput {
     name: String!
     category: String!
-    description: String
+    description: JSON
     logoUrl: String
     showOnHomepage: Boolean
   }
@@ -24,7 +24,7 @@ export const servicesSchema = /* GraphQL */ `
   input UpdateServiceInput {
     name: String
     category: String
-    description: String
+    description: JSON
     logoUrl: String
     isActive: Boolean
     showOnHomepage: Boolean

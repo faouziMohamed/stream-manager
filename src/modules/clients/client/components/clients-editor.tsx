@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Pencil, Plus, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { FormGroup } from '@/components/ui/form-group';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,12 +33,13 @@ import {
   useUpdateClient,
 } from '@/lib/hooks/queries/use-clients.queries';
 import type { ClientDto } from '@/lib/graphql/operations/clients.operations';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 const clientSchema = z.object({
   name: z.string().min(1, 'Nom requis'),
   email: z.email('Email invalide').optional().or(z.literal('')),
   phone: z.string().optional(),
-  notes: z.string().optional(),
+  notes: z.unknown().optional(),
 });
 
 type ClientForm = z.infer<typeof clientSchema>;
@@ -63,6 +63,7 @@ export function ClientsEditor({ initialData }: Props) {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ClientForm>({ resolver: zodResolver(clientSchema) });
@@ -213,7 +214,18 @@ export function ClientsEditor({ initialData }: Props) {
               </FormGroup>
             </div>
             <FormGroup label="Notes">
-              <Textarea placeholder="Notes internes…" rows={2} {...register('notes')} />
+              <Controller
+                name="notes"
+                control={control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    preset="internal"
+                    placeholder="Notes internes…"
+                  />
+                )}
+              />
             </FormGroup>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialog({ open: false })}>

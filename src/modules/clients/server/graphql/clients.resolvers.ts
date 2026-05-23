@@ -11,6 +11,7 @@ import {
   countActiveSubscriptionsByClient,
 } from '@/modules/subscriptions/server/repositories/subscriptions.repository';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 export const clientsResolvers = {
   Query: {
@@ -29,12 +30,20 @@ export const clientsResolvers = {
       {
         input,
       }: {
-        input: { name: string; email?: string; phone?: string; notes?: string };
+        input: { name: string; email?: string; phone?: string; notes?: unknown };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
-      return createClient(input);
+      const client = await createClient(input);
+      await reconcileSavedRichTextField({
+        entityId: client.id,
+        entityType: 'client',
+        fieldName: 'notes',
+        previousValue: null,
+        nextValue: client.notes,
+      });
+      return client;
     },
     updateClient: async (
       _: unknown,
@@ -47,15 +56,23 @@ export const clientsResolvers = {
           name?: string;
           email?: string;
           phone?: string;
-          notes?: string;
+          notes?: unknown;
           isActive?: boolean;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getClientById(id);
       const client = await updateClient(id, input);
       if (!client) throw new Error(`Client ${id} not found`);
+      await reconcileSavedRichTextField({
+        entityId: client.id,
+        entityType: 'client',
+        fieldName: 'notes',
+        previousValue: previous?.notes,
+        nextValue: client.notes,
+      });
       return client;
     },
     deleteClient: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {

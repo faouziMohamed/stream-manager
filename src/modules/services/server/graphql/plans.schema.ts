@@ -13,7 +13,7 @@ export const plansSchema = /* GraphQL */ `
     price: Float!
     currencyCode: String!
     planType: PlanType!
-    description: String
+    description: JSON
     isActive: Boolean!
     serviceId: ID
     promotionId: ID
@@ -29,7 +29,7 @@ export const plansSchema = /* GraphQL */ `
     price: Float!
     currencyCode: String!
     planType: PlanType!
-    description: String
+    description: JSON
     serviceId: ID
     promotionId: ID
   }
@@ -40,7 +40,7 @@ export const plansSchema = /* GraphQL */ `
     price: Float
     currencyCode: String
     planType: PlanType
-    description: String
+    description: JSON
     isActive: Boolean
   }
 `;

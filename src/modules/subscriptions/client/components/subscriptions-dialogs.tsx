@@ -1,12 +1,11 @@
 'use client';
 /* eslint-disable react/jsx-max-depth */
 
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FormGroup } from '@/components/ui/form-group';
@@ -27,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -35,13 +35,13 @@ type Status = 'active' | 'expired' | 'paused' | 'cancelled';
 export interface UpdateForm {
   status: Status;
   isRecurring: boolean;
-  notes?: string;
+  notes?: unknown;
 }
 
 export interface RenewForm {
   startDate: string;
   isRecurring: boolean;
-  notes?: string;
+  notes?: unknown;
 }
 
 // ─── Update Dialog ────────────────────────────────────────────────────────────
@@ -59,13 +59,13 @@ export function UpdateSubscriptionDialog({ open, sub, onOpenChange, onSubmit }: 
       z.object({
         status: z.enum(['active', 'expired', 'paused', 'cancelled']),
         isRecurring: z.boolean(),
-        notes: z.string().optional(),
+        notes: z.unknown().optional(),
       })
     ),
     values: {
       status: (sub?.status as Status) ?? 'active',
       isRecurring: sub?.isRecurring ?? false,
-      notes: sub?.notes ?? '',
+      notes: sub?.notes ?? null,
     },
   });
 
@@ -120,7 +120,18 @@ export function UpdateSubscriptionDialog({ open, sub, onOpenChange, onSubmit }: 
             label="Notes"
             hint="Notes internes visibles uniquement par les administrateurs"
           >
-            <Textarea rows={2} {...form.register('notes')} />
+            <Controller
+              name="notes"
+              control={form.control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  preset="internal"
+                  placeholder="Notes internes…"
+                />
+              )}
+            />
           </FormGroup>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -158,7 +169,7 @@ export function RenewSubscriptionDialog({
       z.object({
         startDate: z.string().min(1, 'Date de début requise'),
         isRecurring: z.boolean(),
-        notes: z.string().optional(),
+        notes: z.unknown().optional(),
       })
     ),
     defaultValues: {
@@ -216,7 +227,18 @@ export function RenewSubscriptionDialog({
             label="Notes"
             hint="Notes internes visibles uniquement par les administrateurs"
           >
-            <Textarea rows={2} {...form.register('notes')} />
+            <Controller
+              name="notes"
+              control={form.control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  preset="internal"
+                  placeholder="Notes internes…"
+                />
+              )}
+            />
           </FormGroup>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -11,7 +11,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { FormGroup } from '@/components/ui/form-group';
 import {
@@ -24,13 +23,14 @@ import {
 import { LogoUploader } from './services-logo-uploader';
 import { useDeleteFromCloudinary } from '@/lib/hooks/queries/use-settings.queries';
 import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 export const serviceSchema = z.object({
   name: z.string().min(1, 'Nom requis'),
   category: z.string().min(1, 'Catégorie requise'),
-  description: z.string().optional(),
+  description: z.unknown().optional(),
   logoUrl: z.string().optional(),
   showOnHomepage: z.boolean().default(true),
 });
@@ -113,7 +113,18 @@ export function ServiceDialog({ open, service, onOpenChange, onSubmit }: Service
             <Input placeholder="ex: streaming" {...register('category')} />
           </FormGroup>
           <FormGroup label="Description" hint="Description visible sur la page d'accueil">
-            <Textarea placeholder="Description du service…" rows={2} {...register('description')} />
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  preset="marketing"
+                  placeholder="Description du service…"
+                />
+              )}
+            />
           </FormGroup>
           <div className="space-y-1.5">
             <Label>Logo du service</Label>

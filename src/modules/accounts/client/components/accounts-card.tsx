@@ -23,6 +23,7 @@ import type {
   StreamingProfileDto,
 } from '@/lib/graphql/operations/accounts.operations';
 import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 interface AccountCardProps {
   account: StreamingAccountDto;
@@ -240,7 +241,12 @@ export function AccountCard({
             </div>
           )}
 
-          {account.notes && <p className="text-muted-foreground text-xs italic">{account.notes}</p>}
+          {Boolean(account.notes) && (
+            <RichTextContent
+              className="text-muted-foreground text-xs italic"
+              value={account.notes}
+            />
+          )}
         </CardContent>
       )}
     </Card>

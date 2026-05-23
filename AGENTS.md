@@ -2,6 +2,18 @@
 
 # AGENTS.md — Universal AI Agent Instructions for stream.mfaouzi.com
 
+> This file is the universal entry point for **any** AI agent (Claude, Copilot, Cursor, Windsurf, Gemini, GPT,
+> etc.). The authoritative and complete set of rules lives in **`CLAUDE.md`** — always read that file first.
+> This file provides orientation and cross-agent conventions.
+
+> **These rules are mandatory for every agent, every task, and every session.**
+
+> **⛔ You are absolutely prohibited from violating any rule stated in this file.**
+> Rule violations are not permitted under any circumstance — not when a skill is active,
+> not when a sub-agent is running, not when the user asks informally, and not when the
+> implementation appears simpler without the rules. If following a rule creates a conflict,
+> stop and ask the user for guidance. There are no exceptions.
+>
 > Authoritative instructions for **StreamManager** — a subscription management dashboard for streaming service resellers.
 > Single source of truth. No separate CLAUDE.md.
 
@@ -106,6 +118,80 @@ Authoritative rules for **StreamManager** — a subscription management dashboar
 | 15  | **Skip heavy plan docs**                                  | Brief outlines (approach + file list) in code comments                  | Implementation code in `.md` plan files                          |
 | 16  | **Announce skills before use**                            | Tell which skill and why before invoking                                | Invoke silently without warning                                  |
 | 17  | **Ask approval for token-heavy skills**                   | Warn the user, offer granular opt-out                                   | Spawn sub-agents without asking                                  |
+| 18  | **Announce skills before long-running tasks**             | Say which implementation skill you will use and why before invoking it  | Silently invoke long-running or multi-step implementation skills |
+| 19  | **Max 300 lines per `.ts`/`.tsx` file**                   | Split types, constants, helpers, sections, and utilities immediately    | Let files grow past 300 lines without splitting                  |
+| 20  | **Exports at top of file**                                | Place exported declarations as high as possible                         | Hide exported code below helper implementations                  |
+
+### #18 — Announce Skills Before Long-Running Tasks
+
+Before invoking any skill for a long-running or multi-step task, explicitly tell the user which
+skill you are about to use and why. Do not silently invoke skills. This allows the user to
+intervene before a skill takes over.
+
+**Good:**
+
+> "I'm going to use the `writing-plans` skill to turn the approved spec into a detailed
+> implementation plan."
+
+**Bad:** Invoking a skill without any prior announcement.
+
+This rule applies to `writing-plans`, `executing-plans`, `subagent-driven-development`,
+`dispatching-parallel-agents`, `test-driven-development`, and any other skill that drives
+implementation work.
+
+### #19 — Max File Size: 300 Lines
+
+No `.ts` or `.tsx` file may exceed 300 lines. When a file grows beyond 300 lines, split it
+immediately.
+
+**Strategy:**
+
+- Extract logical groups into separate files: `*-types.ts`, `*-sections.ts`,
+  `*-constants.ts`, `*-helpers.ts`, and `*-utils.ts`.
+- Keep the original as a barrel file with re-exports if needed for backwards compatibility.
+- For large data/constants, split by category, such as `*-sans.ts` and `*-serif.ts`.
+
+**Exceptions (up to 400 lines):**
+
+- Satori renderers (`*.renderer.tsx`) — visual markup is inherently verbose.
+- shadcn/ui component files — auto-generated from Radix primitives.
+
+Do not use token-intensive skills for refactoring. Split the code directly. Sub-agents may be used
+for parallel work on independent files.
+
+### #20 — Exported Declarations at the Top
+
+Exported declarations must be placed at the top of files whenever possible. When reading a file,
+developers should see the actual exported code first, not scroll to the bottom. Place exported
+functions, classes, types, and constants at the top of the file. Dependencies and helper functions
+that cannot be hoisted should be placed below.
+
+**Good:**
+
+```ts
+export function MainFeature() {
+  return helperFunction();
+}
+
+function helperFunction() {
+  // ...
+}
+```
+
+**Bad:**
+
+```ts
+function helperFunction() {
+  // ...
+}
+
+export function MainFeature() {
+  return helperFunction();
+}
+```
+
+**Exception:** Some declarations cannot be hoisted due to initialization order, such as classes that
+extend other classes or functions that use variables. Place exports as high as possible in the file.
 
 ### Code examples
 

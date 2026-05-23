@@ -80,7 +80,7 @@ export interface ClientDto {
   name: string;
   email: string | null;
   phone: string | null;
-  notes: string | null;
+  notes: unknown | null;
   isActive: boolean;
   activeSubscriptionsCount: number;
   createdAt: string;
@@ -91,13 +91,13 @@ export interface CreateClientInput {
   name: string;
   email?: string;
   phone?: string;
-  notes?: string;
+  notes?: unknown;
 }
 
 export interface UpdateClientInput {
   name?: string;
   email?: string;
   phone?: string;
-  notes?: string;
+  notes?: unknown;
   isActive?: boolean;
 }

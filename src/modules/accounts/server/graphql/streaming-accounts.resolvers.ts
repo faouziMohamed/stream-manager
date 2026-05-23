@@ -17,6 +17,7 @@ import {
 import { getServiceById } from '@/modules/services/server/repositories/services.repository';
 import { createLogger } from '@/lib/logger';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 const logger = createLogger('streaming-accounts-resolvers');
 
@@ -43,6 +44,13 @@ export const streamingAccountsMutationResolvers = {
   ) => {
     requireAdmin(ctx);
     const account = await createAccount(input);
+    await reconcileSavedRichTextField({
+      entityId: account.id,
+      entityType: 'streamingAccount',
+      fieldName: 'notes',
+      previousValue: null,
+      nextValue: account.notes,
+    });
     logger.info({ id: account.id, serviceId: input.serviceId }, 'Account created');
     return account;
   },
@@ -53,8 +61,9 @@ export const streamingAccountsMutationResolvers = {
     ctx: GraphQLContext
   ) => {
     requireAdmin(ctx);
+    const previous = await getAccountById(id);
     if (input.maxProfiles !== undefined || input.supportsProfiles !== undefined) {
-      const account = await getAccountById(id);
+      const account = previous;
       if (!account)
         throw new GraphQLError('Compte introuvable', {
           extensions: { code: 'NOT_FOUND' },
@@ -84,7 +93,17 @@ export const streamingAccountsMutationResolvers = {
       }
     }
     logger.info({ id }, 'Account updated');
-    return updateAccount(id, input);
+    const account = await updateAccount(id, input);
+    if (account) {
+      await reconcileSavedRichTextField({
+        entityId: account.id,
+        entityType: 'streamingAccount',
+        fieldName: 'notes',
+        previousValue: previous?.notes,
+        nextValue: account.notes,
+      });
+    }
+    return account;
   },
 
   deleteAccount: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {

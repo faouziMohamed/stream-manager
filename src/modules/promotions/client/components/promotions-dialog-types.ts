@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const promotionSchema = z
   .object({
     name: z.string().min(1, 'Nom requis'),
-    description: z.string().optional(),
+    description: z.unknown().optional(),
     serviceMode: z.enum(['existing', 'new']),
     serviceIds: z.array(z.string()),
     newServiceName: z.string().optional(),
@@ -41,7 +41,7 @@ export interface PromotionDialogProps {
   promotion: {
     id: string;
     name: string;
-    description?: string | null;
+    description?: unknown | null;
     services?: ServiceItem[] | null;
     startsAt?: string | null;
     expiresAt?: string | null;
@@ -55,7 +55,7 @@ export interface PromotionDialogProps {
 export function toForm(
   promotion: {
     name: string;
-    description?: string | null;
+    description?: unknown | null;
     services?: ServiceItem[] | null;
     startsAt?: string | null;
     expiresAt?: string | null;
@@ -64,7 +64,7 @@ export function toForm(
 ): PromotionForm {
   return {
     name: promotion?.name ?? '',
-    description: promotion?.description ?? '',
+    description: promotion?.description ?? null,
     serviceMode: 'existing',
     serviceIds: promotion?.services?.map((s) => s.id) ?? [],
     startsAt: promotion?.startsAt ?? undefined,

@@ -27,6 +27,7 @@ import { PromotionDialog } from './promotions-promotion-dialog';
 import type { PromotionForm } from './promotions-dialog-types';
 import type { PromotionDto } from '@/lib/graphql/operations/promotions.operations';
 import { PromotionPlansTable } from './promotions-plans-table';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 function formatDate(iso: string | null | undefined) {
   if (!iso) return null;
@@ -163,8 +164,11 @@ export function PromotionsEditor({ initialData, defaultCurrency = 'MAD' }: Props
                   </div>
 
                   <div className="ml-10 flex flex-wrap items-center gap-3">
-                    {promo.description && (
-                      <p className="text-muted-foreground text-xs">{promo.description}</p>
+                    {Boolean(promo.description) && (
+                      <RichTextContent
+                        className="text-muted-foreground text-xs"
+                        value={promo.description}
+                      />
                     )}
                     {promo.services && promo.services.length > 0 && (
                       <div className="flex flex-wrap gap-1">

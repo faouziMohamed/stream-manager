@@ -1,8 +1,16 @@
 'use client';
-import { useForm } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+
+import {
+  contactSchema,
+  toCreateInquiryInput,
+  type ContactFormData,
+} from '@/app/(website)/contact/contact-form-utils';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
+import { createRichTextDocumentFromText } from '@/components/rich-text/rich-text-utils';
 import { gqlRequest } from '@/lib/graphql/client';
 import { clientLogger } from '@/lib/logger/client-logger';
 import { Button } from '@/components/ui/button';
@@ -16,31 +24,29 @@ const SEND_INQUIRY = `
     createInquiry(input: $input)
   }
 `;
-const contactSchema = z.object({
-  name: z.string().min(2, 'Nom requis'),
-  email: z.email('Email invalide').optional().or(z.literal('')),
-  phone: z.string().optional(),
-  message: z.string().min(10, 'Message trop court (min. 10 caractères)'),
-});
-type ContactFormData = z.infer<typeof contactSchema>;
+
 export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormData>({ resolver: zodResolver(contactSchema) });
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      message: createRichTextDocumentFromText(''),
+    },
+  });
   const onSubmit = async (data: ContactFormData) => {
     setServerError(null);
     try {
       await gqlRequest(SEND_INQUIRY, {
-        input: {
-          name: data.name,
-          email: data.email || null,
-          phone: data.phone || null,
-          message: data.message,
-        },
+        input: toCreateInquiryInput(data),
       });
       setSent(true);
     } catch (error) {
@@ -102,12 +108,18 @@ export default function ContactForm() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="message">Message *</Label>
-              <textarea
-                id="message"
-                rows={5}
-                placeholder="Décrivez votre besoin..."
-                className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-none rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                {...register('message')}
+              <Controller
+                control={control}
+                name="message"
+                render={({ field }) => (
+                  <RichTextEditor
+                    preset="internal"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Décrivez votre besoin..."
+                    className={errors.message ? 'rich-text-invalid' : undefined}
+                  />
+                )}
               />
               {errors.message && (
                 <p className="text-destructive text-xs">{errors.message.message}</p>

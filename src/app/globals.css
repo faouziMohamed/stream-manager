@@ -232,6 +232,68 @@ body {
     animation: shimmer 1.5s ease-in-out infinite;
   }
 
+  .rich-text-prose p,
+  .rich-text-rendered p {
+    margin-bottom: 0.5rem;
+  }
+
+  .rich-text-prose h2,
+  .rich-text-rendered h2 {
+    margin: 0.75rem 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .rich-text-prose h3,
+  .rich-text-rendered h3 {
+    margin: 0.65rem 0 0.3rem;
+    font-size: 0.92rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .rich-text-prose ul,
+  .rich-text-rendered ul {
+    list-style: disc;
+    margin: 0.45rem 0;
+    padding-left: 1.2rem;
+  }
+
+  .rich-text-prose ol,
+  .rich-text-rendered ol {
+    list-style: decimal;
+    margin: 0.45rem 0;
+    padding-left: 1.2rem;
+  }
+
+  .rich-text-prose blockquote,
+  .rich-text-rendered blockquote {
+    border-left: 2px solid var(--border);
+    color: var(--muted-foreground);
+    margin: 0.65rem 0;
+    padding-left: 0.75rem;
+  }
+
+  .rich-text-prose a,
+  .rich-text-rendered a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .rich-text-prose .is-editor-empty:first-child::before {
+    color: var(--muted-foreground);
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .rich-text-invalid .rich-text-editor {
+    border-color: var(--destructive);
+  }
+
   /* Custom scrollbar for main content */
   .content-scrollbar::-webkit-scrollbar {
     width: 6px;

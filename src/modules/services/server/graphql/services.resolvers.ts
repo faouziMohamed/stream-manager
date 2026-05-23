@@ -12,6 +12,7 @@ import {
 import { getPlansByService } from '@/modules/services/server/repositories/plans.repository';
 import { createLogger } from '@/lib/logger';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 const logger = createLogger('services-resolvers');
 
@@ -39,7 +40,7 @@ export const servicesResolvers = {
         input: {
           name: string;
           category: string;
-          description?: string;
+          description?: unknown;
           logoUrl?: string;
           showOnHomepage?: boolean;
         };
@@ -47,7 +48,15 @@ export const servicesResolvers = {
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
-      return createService(input);
+      const service = await createService(input);
+      await reconcileSavedRichTextField({
+        entityId: service.id,
+        entityType: 'service',
+        fieldName: 'description',
+        previousValue: null,
+        nextValue: service.description,
+      });
+      return service;
     },
     updateService: async (
       _: unknown,
@@ -59,7 +68,7 @@ export const servicesResolvers = {
         input: {
           name?: string;
           category?: string;
-          description?: string;
+          description?: unknown;
           logoUrl?: string;
           isActive?: boolean;
           showOnHomepage?: boolean;
@@ -68,11 +77,19 @@ export const servicesResolvers = {
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getServiceById(id);
       const service = await updateService(id, input);
       if (!service)
         throw new GraphQLError(`Service ${id} introuvable`, {
           extensions: { code: 'NOT_FOUND' },
         });
+      await reconcileSavedRichTextField({
+        entityId: service.id,
+        entityType: 'service',
+        fieldName: 'description',
+        previousValue: previous?.description,
+        nextValue: service.description,
+      });
       return service;
     },
     deleteService: async (

@@ -10,7 +10,7 @@ export type CreateClientInput = {
   name: string;
   email?: string | null;
   phone?: string | null;
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export type UpdateClientInput = Partial<CreateClientInput & { isActive: boolean }>;

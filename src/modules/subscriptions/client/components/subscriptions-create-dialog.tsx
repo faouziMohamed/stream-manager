@@ -1,10 +1,9 @@
 'use client';
 
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Info } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { FormGroup } from '@/components/ui/form-group';
@@ -25,6 +24,7 @@ import type { PlanDto } from '@/lib/graphql/operations/plans.operations';
 import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
 import type { ClientDto } from '@/lib/graphql/operations/clients.operations';
 import type { PromotionDto } from '@/lib/graphql/operations/promotions.operations';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ export interface CreateForm {
   planId: string;
   startDate: string;
   isRecurring: boolean;
-  notes?: string;
+  notes?: unknown;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export function CreateSubscriptionDialog({
         planId: z.string().min(1, 'Formule requise'),
         startDate: z.string().min(1, 'Date de début requise'),
         isRecurring: z.boolean(),
-        notes: z.string().optional(),
+        notes: z.unknown().optional(),
       })
     ),
     defaultValues: { isRecurring: false },
@@ -183,7 +183,18 @@ export function CreateSubscriptionDialog({
         />
       </div>
       <FormGroup label="Notes" hint="Notes internes visibles uniquement par les administrateurs">
-        <Textarea placeholder="Notes internes…" rows={2} {...form.register('notes')} />
+        <Controller
+          name="notes"
+          control={form.control}
+          render={({ field }) => (
+            <RichTextEditor
+              value={field.value}
+              onChange={field.onChange}
+              preset="internal"
+              placeholder="Notes internes…"
+            />
+          )}
+        />
       </FormGroup>
     </FormDialog>
   );

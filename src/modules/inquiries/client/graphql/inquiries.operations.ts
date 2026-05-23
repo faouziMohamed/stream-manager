@@ -39,7 +39,7 @@ export const MARK_INQUIRY_READ = /*graphql*/ `
 `;
 
 export const REPLY_TO_INQUIRY = /*graphql*/ `
-  mutation ReplyToInquiry($id: ID!, $body: String!) {
+  mutation ReplyToInquiry($id: ID!, $body: JSON!) {
     replyToInquiry(id: $id, body: $body) {
       id
       inquiryId
@@ -58,7 +58,7 @@ export const DELETE_INQUIRY = /*graphql*/ `
 export interface InquiryReplyDto {
   id: string;
   inquiryId: string;
-  body: string;
+  body: unknown;
   sentAt: string;
 }
 
@@ -67,7 +67,7 @@ export interface InquiryDto {
   name: string;
   email: string | null;
   phone: string | null;
-  message: string;
+  message: unknown;
   isRead: boolean;
   createdAt: string;
   replies: InquiryReplyDto[];

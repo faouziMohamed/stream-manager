@@ -112,7 +112,7 @@ export interface ServiceDto {
   id: string;
   name: string;
   category: string;
-  description: string | null;
+  description: unknown | null;
   logoUrl: string | null;
   isActive: boolean;
   showOnHomepage: boolean;
@@ -124,7 +124,7 @@ export interface ServiceDto {
 export interface CreateServiceInput {
   name: string;
   category: string;
-  description?: string;
+  description?: unknown;
   logoUrl?: string;
   showOnHomepage?: boolean;
 }
@@ -132,7 +132,7 @@ export interface CreateServiceInput {
 export interface UpdateServiceInput {
   name?: string;
   category?: string;
-  description?: string;
+  description?: unknown;
   logoUrl?: string;
   isActive?: boolean;
   showOnHomepage?: boolean;

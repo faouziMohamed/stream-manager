@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PlansTable } from './services-plans-manager';
 import { cn } from '@/lib/utils/helpers';
 import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 // ─── Active service card ──────────────────────────────────────────────────────
 
@@ -76,8 +77,11 @@ export function ActiveServiceCard({
             </Button>
           </div>
         </div>
-        {service.description && (
-          <p className="text-muted-foreground ml-6 text-xs">{service.description}</p>
+        {Boolean(service.description) && (
+          <RichTextContent
+            className="text-muted-foreground ml-6 text-xs"
+            value={service.description}
+          />
         )}
       </CardHeader>
       {expanded && (

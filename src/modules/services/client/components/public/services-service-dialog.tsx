@@ -7,6 +7,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { formatCurrency } from '@/lib/utils/helpers';
 import { ROUTES } from '@/lib/config/routes';
 import type { Service } from './services-section-types';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 export function ServiceDialog({
   service,
@@ -78,10 +79,10 @@ export function ServiceDialog({
         </div>
 
         <div className="space-y-5 p-6">
-          {service.description && (
-            <p className="text-sm leading-relaxed" style={{ color: 'var(--sm-muted)' }}>
-              {service.description}
-            </p>
+          {Boolean(service.description) && (
+            <div style={{ color: 'var(--sm-muted)' }}>
+              <RichTextContent className="text-sm leading-relaxed" value={service.description} />
+            </div>
           )}
 
           {sorted.length > 0 ? (

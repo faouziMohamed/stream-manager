@@ -74,7 +74,7 @@ export const DELETE_PROMOTION = /*graphql*/ `
 export interface PromotionDto {
   id: string;
   name: string;
-  description: string | null;
+  description: unknown | null;
   isActive: boolean;
   showOnHomepage: boolean;
   isExpired: boolean;
@@ -92,7 +92,7 @@ export interface PromotionDto {
 
 export interface CreatePromotionInput {
   name: string;
-  description?: string;
+  description?: unknown;
   serviceIds: string[];
   newServiceName?: string;
   newServiceCategory?: string;
@@ -103,7 +103,7 @@ export interface CreatePromotionInput {
 
 export interface UpdatePromotionInput {
   name?: string;
-  description?: string;
+  description?: unknown;
   isActive?: boolean;
   showOnHomepage?: boolean;
   serviceIds?: string[];

@@ -3,13 +3,13 @@ export const inquiriesSchema = /* GraphQL */ `
     name: String!
     email: String
     phone: String
-    message: String!
+    message: JSON!
   }
 
   type InquiryReply {
     id: ID!
     inquiryId: ID!
-    body: String!
+    body: JSON!
     sentAt: DateTime!
   }
 
@@ -18,7 +18,7 @@ export const inquiriesSchema = /* GraphQL */ `
     name: String!
     email: String
     phone: String
-    message: String!
+    message: JSON!
     isRead: Boolean!
     createdAt: DateTime!
     replies: [InquiryReply!]!

@@ -1,10 +1,8 @@
 import { and, count, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
-import {
-  type StreamingProfile,
-  streamingProfiles,
-} from '@/lib/db/tables/subscription-management.table';
+import { streamingProfiles } from '@/lib/db/tables/subscription-management.table';
+import type { StreamingProfile } from '@/lib/db/tables/subscription-management.types';
 import { decrypt, encrypt } from '@/lib/utils/encryption';
 import { createLogger } from '@/lib/logger';
 

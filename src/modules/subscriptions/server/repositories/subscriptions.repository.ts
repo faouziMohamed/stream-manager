@@ -12,21 +12,21 @@ export type CreateSubscriptionInput = {
   planId: string;
   startDate: string | Date;
   isRecurring: boolean;
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export type UpdateSubscriptionInput = {
   startDate?: string | Date;
   isRecurring?: boolean;
   status?: 'active' | 'expired' | 'paused' | 'cancelled';
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export type RenewSubscriptionInput = {
   subscriptionId: string;
   startDate: string | Date;
   isRecurring: boolean;
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export async function getAllSubscriptions(clientId?: string, status?: string) {

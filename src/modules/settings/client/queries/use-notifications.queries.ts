@@ -58,7 +58,7 @@ export function useMarkInquiryRead() {
 export function useReplyToInquiry() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: string }) =>
+    mutationFn: ({ id, body }: { id: string; body: unknown }) =>
       gqlRequest(REPLY_TO_INQUIRY, { id, body }),
     onSuccess: (_, { id }) => {
       toastSuccess('Réponse envoyée');

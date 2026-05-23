@@ -8,7 +8,7 @@ export const streamingAccountsSchema = /* GraphQL */ `
     phone: String
     supportsProfiles: Boolean!
     maxProfiles: Int!
-    notes: String
+    notes: JSON
     isActive: Boolean!
     usedProfiles: Int!
     profiles: [StreamingProfile!]!
@@ -24,7 +24,7 @@ export const streamingAccountsSchema = /* GraphQL */ `
     phone: String
     supportsProfiles: Boolean
     maxProfiles: Int
-    notes: String
+    notes: JSON
   }
 
   input UpdateAccountInput {
@@ -33,7 +33,7 @@ export const streamingAccountsSchema = /* GraphQL */ `
     phone: String
     supportsProfiles: Boolean
     maxProfiles: Int
-    notes: String
+    notes: JSON
     isActive: Boolean
   }
 `;

@@ -82,7 +82,7 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
       phone?: string;
       supportsProfiles: boolean;
       maxProfiles: number;
-      notes?: string;
+      notes?: unknown;
     };
     await (accountDialog.acc
       ? updateAccount.mutateAsync({

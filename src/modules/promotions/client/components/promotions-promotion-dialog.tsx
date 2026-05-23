@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { FormGroup } from '@/components/ui/form-group';
 import {
@@ -24,6 +23,7 @@ import {
   type PromotionForm,
   type PromotionDialogProps,
 } from './promotions-dialog-types';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 export function PromotionDialog({
   open,
@@ -76,7 +76,18 @@ export function PromotionDialog({
           </FormGroup>
 
           <FormGroup label="Description" error={errors.description?.message}>
-            <Textarea placeholder="Description…" rows={2} {...register('description')} />
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  preset="marketing"
+                  placeholder="Description…"
+                />
+              )}
+            />
           </FormGroup>
 
           {!isEditing && (

@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1773209393900,
-      "tag": "0000_initial-tables-create",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1773210291887,
-      "tag": "0001_unknown_xorn",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1773218096937,
-      "tag": "0002_sour_lake",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1773221799190,
-      "tag": "0003_dizzy_tusk",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1773222394358,
-      "tag": "0004_chubby_logan",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1773228728691,
-      "tag": "0005_remarkable_rocket_racer",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1773233517569,
-      "tag": "0006_add_show_on_homepage",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1773258193690,
-      "tag": "0007_salty_newton_destine",
+      "when": 1778753555528,
+      "tag": "0000_init_db",
       "breakpoints": true
     }
   ]

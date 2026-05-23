@@ -13,7 +13,7 @@ export const paymentsSchema = /* GraphQL */ `
     amount: Float!
     currencyCode: String!
     status: PaymentStatus!
-    notes: String
+    notes: JSON
     subscription: Subscription!
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -22,6 +22,6 @@ export const paymentsSchema = /* GraphQL */ `
   input UpdatePaymentInput {
     status: PaymentStatus
     paidDate: Date
-    notes: String
+    notes: JSON
   }
 `;

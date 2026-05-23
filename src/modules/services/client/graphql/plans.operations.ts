@@ -73,7 +73,7 @@ export interface PlanDto {
   price: number;
   currencyCode: string;
   planType: PlanType;
-  description: string | null;
+  description: unknown | null;
   isActive: boolean;
   serviceId: string | null;
   promotionId: string | null;
@@ -85,7 +85,7 @@ export interface CreatePlanInput {
   price: number;
   currencyCode: string;
   planType: PlanType;
-  description?: string;
+  description?: unknown;
   serviceId?: string;
   promotionId?: string;
 }
@@ -96,6 +96,6 @@ export interface UpdatePlanInput {
   price?: number;
   currencyCode?: string;
   planType?: PlanType;
-  description?: string;
+  description?: unknown;
   isActive?: boolean;
 }

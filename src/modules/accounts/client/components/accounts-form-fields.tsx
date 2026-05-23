@@ -6,7 +6,6 @@ import { Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -18,6 +17,7 @@ import {
 import { FormGroup } from '@/components/ui/form-group';
 import type { AccountFormInput } from '@/modules/accounts/client/components/accounts-types';
 import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 
 export function AccountFormFields({
   form,
@@ -141,7 +141,12 @@ export function AccountFormFields({
       )}
 
       <FormGroup label="Notes" hint="Notes internes visibles uniquement par les administrateurs">
-        <Textarea rows={2} placeholder="Notes internes…" {...form.register('notes')} />
+        <RichTextEditor
+          value={form.watch('notes')}
+          onChange={(value) => form.setValue('notes', value)}
+          preset="internal"
+          placeholder="Notes internes…"
+        />
       </FormGroup>
     </div>
   );

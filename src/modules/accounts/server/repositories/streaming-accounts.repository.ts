@@ -1,11 +1,8 @@
 import { and, count, eq, isNull } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
-import {
-  type StreamingAccount,
-  streamingAccounts,
-  subscriptionProfiles,
-} from '@/lib/db/tables/subscription-management.table';
+import { streamingAccounts, subscriptionProfiles } from '@/lib/db/tables/subscription-management.table';
+import type { StreamingAccount } from '@/lib/db/tables/subscription-management.types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('streaming-accounts-repository');
@@ -30,7 +27,7 @@ export type CreateAccountInput = {
   phone?: string | null;
   supportsProfiles?: boolean;
   maxProfiles?: number;
-  notes?: string | null;
+  notes?: unknown | null;
 };
 
 export async function createAccount(input: CreateAccountInput): Promise<StreamingAccount> {

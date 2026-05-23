@@ -10,7 +10,7 @@ type ServiceItem = { id: string; name: string; logoUrl?: string | null };
 type Promo = {
   id: string;
   name: string;
-  description?: string | null;
+  description?: unknown | null;
   expiresAt?: Date | string | null;
   services: ServiceItem[];
   plans: Plan[];

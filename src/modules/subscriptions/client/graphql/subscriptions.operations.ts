@@ -143,7 +143,7 @@ export interface SubscriptionDto {
   endDate: string;
   isRecurring: boolean;
   status: SubscriptionStatus;
-  notes: string | null;
+  notes: unknown | null;
   renewedFromId: string | null;
   client?: {
     id: string;
@@ -178,19 +178,19 @@ export interface CreateSubscriptionInput {
   planId: string;
   startDate: string;
   isRecurring: boolean;
-  notes?: string;
+  notes?: unknown;
 }
 
 export interface UpdateSubscriptionInput {
   startDate?: string;
   isRecurring?: boolean;
   status?: SubscriptionStatus;
-  notes?: string;
+  notes?: unknown;
 }
 
 export interface RenewSubscriptionInput {
   subscriptionId: string;
   startDate: string;
   isRecurring: boolean;
-  notes?: string;
+  notes?: unknown;
 }

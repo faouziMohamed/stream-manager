@@ -19,6 +19,7 @@ import {
   streamingAccountsSchema,
   streamingProfilesSchema,
 } from '@/lib/graphql/schema/accounts';
+import { richTextAssetsSchema } from '@/modules/rich-text/server/graphql/rich-text-assets.schema';
 import { querySchema } from '@/lib/graphql/schema/query.schema';
 import { mutationSchema } from '@/lib/graphql/schema/mutation.schema';
 
@@ -40,6 +41,7 @@ export const typeDefs = [
   streamingAccountsSchema,
   streamingProfilesSchema,
   profileAssignmentsSchema,
+  richTextAssetsSchema,
   querySchema,
   mutationSchema,
 ].join('\n');

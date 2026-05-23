@@ -10,6 +10,7 @@ import { getClientById } from '@/modules/clients/server/repositories/clients.rep
 import { getAdminEmail, sendNotification } from '@/lib/utils/mailer';
 import { formatCurrency } from '@/lib/utils/helpers';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 export const paymentsResolvers = {
   Query: {
@@ -47,14 +48,22 @@ export const paymentsResolvers = {
         input: {
           status?: 'paid' | 'unpaid' | 'overdue';
           paidDate?: string;
-          notes?: string;
+          notes?: unknown;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getPaymentById(id);
       const payment = await updatePayment(id, input);
       if (!payment) throw new Error(`Payment ${id} not found`);
+      await reconcileSavedRichTextField({
+        entityId: payment.id,
+        entityType: 'payment',
+        fieldName: 'notes',
+        previousValue: previous?.notes,
+        nextValue: payment.notes,
+      });
 
       // Send notifications based on new status
       const adminEmail = await getAdminEmail();

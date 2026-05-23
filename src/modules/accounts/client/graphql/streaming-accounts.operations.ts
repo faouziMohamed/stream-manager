@@ -118,7 +118,7 @@ export interface StreamingAccountDto {
   supportsProfiles: boolean;
   maxProfiles: number;
   usedProfiles: number;
-  notes: string | null;
+  notes: unknown | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -157,7 +157,7 @@ export interface CreateAccountInput {
   phone?: string;
   supportsProfiles?: boolean;
   maxProfiles?: number;
-  notes?: string;
+  notes?: unknown;
 }
 
 export interface UpdateAccountInput {
@@ -166,6 +166,6 @@ export interface UpdateAccountInput {
   phone?: string;
   supportsProfiles?: boolean;
   maxProfiles?: number;
-  notes?: string;
+  notes?: unknown;
   isActive?: boolean;
 }

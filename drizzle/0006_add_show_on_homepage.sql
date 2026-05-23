@@ -1,2 +1,0 @@
-ALTER TABLE "promotions_promotions" ADD COLUMN "show_on_homepage" boolean DEFAULT true NOT NULL;--> statement-breakpoint
-ALTER TABLE "services_services" ADD COLUMN "show_on_homepage" boolean DEFAULT true NOT NULL;

@@ -7,6 +7,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { formatCurrency } from '@/lib/utils/helpers';
 import { ROUTES } from '@/lib/config/routes';
 import type { Promo } from '@/modules/promotions/client/components/public/promotions-section-types';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 export function PromoDialog({
   promo,
@@ -54,10 +55,10 @@ export function PromoDialog({
           >
             {promo.name}
           </h2>
-          {promo.description && (
-            <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--sm-muted)' }}>
-              {promo.description}
-            </p>
+          {Boolean(promo.description) && (
+            <div className="mt-2" style={{ color: 'var(--sm-muted)' }}>
+              <RichTextContent className="text-sm leading-relaxed" value={promo.description} />
+            </div>
           )}
         </div>
 

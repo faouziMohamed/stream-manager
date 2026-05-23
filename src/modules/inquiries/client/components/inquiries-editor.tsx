@@ -9,6 +9,7 @@ import { useInquiries, useMarkInquiryRead } from '@/lib/hooks/queries/use-notifi
 import type { InquiryDto } from '@/lib/graphql/operations/settings.operations';
 import { InquiryReplyDialog } from '@/modules/inquiries/client/components/inquiries-reply-dialog';
 import { cn } from '@/lib/utils/helpers';
+import { extractPlainTextFromRichText } from '@/components/rich-text/rich-text-utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,9 @@ function InquiryListItem({
               })}
             </span>
           </div>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">{inquiry.message}</p>
+          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+            {extractPlainTextFromRichText(inquiry.message)}
+          </p>
           {inquiry.replies.length > 0 && (
             <div className="mt-1 flex items-center gap-1">
               <MessageSquare className="text-muted-foreground h-3 w-3" />

@@ -14,7 +14,7 @@ export const subscriptionsSchema = /* GraphQL */ `
     endDate: Date!
     isRecurring: Boolean!
     status: SubscriptionStatus!
-    notes: String
+    notes: JSON
     renewedFromId: ID
     client: Client!
     plan: Plan!
@@ -28,20 +28,20 @@ export const subscriptionsSchema = /* GraphQL */ `
     planId: ID!
     startDate: Date!
     isRecurring: Boolean!
-    notes: String
+    notes: JSON
   }
 
   input UpdateSubscriptionInput {
     startDate: Date
     isRecurring: Boolean
     status: SubscriptionStatus
-    notes: String
+    notes: JSON
   }
 
   input RenewSubscriptionInput {
     subscriptionId: ID!
     startDate: Date!
     isRecurring: Boolean!
-    notes: String
+    notes: JSON
   }
 `;

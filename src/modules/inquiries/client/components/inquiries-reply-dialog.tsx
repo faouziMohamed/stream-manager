@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronLeft, Mail, MailOpen, Phone, Send, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { FormGroup } from '@/components/ui/form-group';
 import { ConfirmDialog } from '@/components/console/confirm-dialog';
 import {
@@ -15,11 +14,16 @@ import {
   useReplyToInquiry,
 } from '@/lib/hooks/queries/use-notifications.queries';
 import type { InquiryDto } from '@/lib/graphql/operations/settings.operations';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
+import { extractPlainTextFromRichText } from '@/components/rich-text/rich-text-utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 const replySchema = z.object({
-  body: z.string().min(1, 'La réponse ne peut pas être vide'),
+  body: z.unknown().refine((value) => extractPlainTextFromRichText(value).length > 0, {
+    message: 'La réponse ne peut pas être vide',
+  }),
 });
 type ReplyForm = z.infer<typeof replySchema>;
 
@@ -128,7 +132,7 @@ export function InquiryReplyDialog({ inquiry, onBack }: Props) {
               <span className="text-muted-foreground text-xs">{formatDate(inquiry.createdAt)}</span>
             </div>
             <div className="bg-muted/50 rounded-lg rounded-tl-none px-3 py-2.5 text-sm whitespace-pre-wrap">
-              {inquiry.message}
+              <RichTextContent value={inquiry.message} />
             </div>
           </div>
         </div>
@@ -145,7 +149,7 @@ export function InquiryReplyDialog({ inquiry, onBack }: Props) {
                 <span className="text-sm font-medium">Vous</span>
               </div>
               <div className="bg-primary/10 border-primary/20 rounded-lg rounded-tr-none border px-3 py-2.5 text-sm whitespace-pre-wrap">
-                {r.body}
+                <RichTextContent value={r.body} />
               </div>
             </div>
           </div>
@@ -157,11 +161,17 @@ export function InquiryReplyDialog({ inquiry, onBack }: Props) {
         <div className="border-t p-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormGroup label="Réponse" error={form.formState.errors.body?.message}>
-              <Textarea
-                {...form.register('body')}
-                placeholder={`Répondre à ${inquiry.name}…`}
-                rows={3}
-                className="resize-none"
+              <Controller
+                name="body"
+                control={form.control}
+                render={({ field }) => (
+                  <RichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    preset="internal"
+                    placeholder={`Répondre à ${inquiry.name}…`}
+                  />
+                )}
               />
             </FormGroup>
             <div className="flex items-center justify-between">

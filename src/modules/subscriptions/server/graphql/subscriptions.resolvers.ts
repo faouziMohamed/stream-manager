@@ -12,6 +12,7 @@ import { getPlanById } from '@/modules/services/server/repositories/plans.reposi
 import { getPaymentsBySubscription } from '@/modules/payments/server/repositories/payments.repository';
 import { getAdminEmail, sendNotification } from '@/lib/utils/mailer';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 export const subscriptionsResolvers = {
   Query: {
@@ -39,13 +40,20 @@ export const subscriptionsResolvers = {
           planId: string;
           startDate: string;
           isRecurring: boolean;
-          notes?: string;
+          notes?: unknown;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
       const sub = await createSubscription(input);
+      await reconcileSavedRichTextField({
+        entityId: sub.id,
+        entityType: 'subscription',
+        fieldName: 'notes',
+        previousValue: null,
+        nextValue: sub.notes,
+      });
 
       const adminEmail = await getAdminEmail();
       if (adminEmail) {
@@ -72,14 +80,22 @@ export const subscriptionsResolvers = {
           startDate?: string;
           isRecurring?: boolean;
           status?: 'active' | 'expired' | 'paused' | 'cancelled';
-          notes?: string;
+          notes?: unknown;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getSubscriptionById(id);
       const sub = await updateSubscription(id, input);
       if (!sub) throw new Error(`Subscription ${id} not found`);
+      await reconcileSavedRichTextField({
+        entityId: sub.id,
+        entityType: 'subscription',
+        fieldName: 'notes',
+        previousValue: previous?.notes,
+        nextValue: sub.notes,
+      });
       return sub;
     },
     deleteSubscription: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {
@@ -95,13 +111,20 @@ export const subscriptionsResolvers = {
           subscriptionId: string;
           startDate: string;
           isRecurring: boolean;
-          notes?: string;
+          notes?: unknown;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
       const sub = await renewSubscription(input);
+      await reconcileSavedRichTextField({
+        entityId: sub.id,
+        entityType: 'subscription',
+        fieldName: 'notes',
+        previousValue: null,
+        nextValue: sub.notes,
+      });
 
       const adminEmail = await getAdminEmail();
       if (adminEmail) {

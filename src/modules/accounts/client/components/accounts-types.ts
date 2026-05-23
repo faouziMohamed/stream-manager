@@ -12,7 +12,7 @@ export const accountSchema = z
     maxProfiles: z
       .union([z.number(), z.string().transform(Number)])
       .pipe(z.number().int().min(1).max(20)),
-    notes: z.string().optional(),
+    notes: z.unknown().optional(),
   })
   .refine((d) => !!(d.email || d.phone), {
     message: 'Au moins un email ou un numéro de téléphone est requis',

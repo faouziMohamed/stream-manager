@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ArrowRight, Layers } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/helpers';
 import type { Promo } from '@/modules/promotions/client/components/public/promotions-section-types';
+import { RichTextContent } from '@/components/rich-text/rich-text-content';
 
 export function FeaturedPromoCard({ promo, onClick }: { promo: Promo; onClick: () => void }) {
   const lowestPlan =
@@ -50,10 +51,10 @@ export function FeaturedPromoCard({ promo, onClick }: { promo: Promo; onClick: (
           >
             {promo.name}
           </h3>
-          {promo.description && (
-            <p className="max-w-sm text-sm leading-relaxed" style={{ color: 'var(--sm-muted)' }}>
-              {promo.description}
-            </p>
+          {Boolean(promo.description) && (
+            <div className="max-w-sm" style={{ color: 'var(--sm-muted)' }}>
+              <RichTextContent className="text-sm leading-relaxed" value={promo.description} />
+            </div>
           )}
 
           {promo.services.length > 0 && (

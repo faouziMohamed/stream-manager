@@ -45,11 +45,15 @@ export const mutationSchema = /* GraphQL */ `
       filename: String
     ): CloudinaryTestResult!
 
+    # Rich text assets
+    uploadRichTextAsset(base64: String!, filename: String): RichTextAssetUploadResult!
+    cleanupRichTextAssets(publicIds: [String!]!): Boolean!
+
     # Contact inquiries (public — no auth)
     createInquiry(input: CreateInquiryInput!): Boolean!
     # Contact inquiry management (admin)
     markInquiryRead(id: ID!, isRead: Boolean!): Inquiry!
-    replyToInquiry(id: ID!, body: String!): InquiryReply!
+    replyToInquiry(id: ID!, body: JSON!): InquiryReply!
     deleteInquiry(id: ID!): Boolean!
 
     # Notification settings

@@ -9,7 +9,7 @@ export type CreateInquiryInput = {
   name: string;
   email?: string | null;
   phone?: string | null;
-  message: string;
+  message: unknown;
 };
 
 export async function createContactInquiry(input: CreateInquiryInput) {

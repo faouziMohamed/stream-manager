@@ -9,7 +9,7 @@ const logger = createLogger('services-repository');
 export type CreateServiceInput = {
   name: string;
   category: string;
-  description?: string | null;
+  description?: unknown | null;
   logoUrl?: string | null;
   showOnHomepage?: boolean;
 };

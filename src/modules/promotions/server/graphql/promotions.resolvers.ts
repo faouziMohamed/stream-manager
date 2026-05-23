@@ -10,6 +10,7 @@ import {
 import { getPlansByPromotion } from '@/modules/services/server/repositories/plans.repository';
 import { createService } from '@/modules/services/server/repositories/services.repository';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 export const promotionsResolvers = {
   Query: {
@@ -30,7 +31,7 @@ export const promotionsResolvers = {
       }: {
         input: {
           name: string;
-          description?: string;
+          description?: unknown;
           serviceIds: string[];
           newServiceName?: string;
           newServiceCategory?: string;
@@ -50,7 +51,7 @@ export const promotionsResolvers = {
         });
         serviceIds.push(newSvc.id);
       }
-      return createPromotion({
+      const promotion = await createPromotion({
         name: input.name,
         description: input.description,
         serviceIds,
@@ -58,6 +59,14 @@ export const promotionsResolvers = {
         expiresAt: input.expiresAt,
         showOnHomepage: input.showOnHomepage,
       });
+      await reconcileSavedRichTextField({
+        entityId: promotion.id,
+        entityType: 'promotion',
+        fieldName: 'description',
+        previousValue: null,
+        nextValue: promotion.description,
+      });
+      return promotion;
     },
     updatePromotion: async (
       _: unknown,
@@ -68,7 +77,7 @@ export const promotionsResolvers = {
         id: string;
         input: {
           name?: string;
-          description?: string;
+          description?: unknown;
           isActive?: boolean;
           showOnHomepage?: boolean;
           serviceIds?: string[];
@@ -79,8 +88,16 @@ export const promotionsResolvers = {
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getPromotionById(id);
       const promo = await updatePromotion(id, input);
       if (!promo) throw new Error(`Promotion ${id} not found`);
+      await reconcileSavedRichTextField({
+        entityId: promo.id,
+        entityType: 'promotion',
+        fieldName: 'description',
+        previousValue: previous?.description,
+        nextValue: promo.description,
+      });
       return promo;
     },
     deletePromotion: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {

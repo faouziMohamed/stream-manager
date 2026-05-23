@@ -70,7 +70,7 @@ export interface PaymentDto {
   amount: number;
   currencyCode: string;
   status: PaymentStatus;
-  notes: string | null;
+  notes: unknown | null;
   subscription?: {
     id: string;
     client?: { id: string; name: string };
@@ -83,5 +83,5 @@ export interface PaymentDto {
 export interface UpdatePaymentInput {
   status?: PaymentStatus;
   paidDate?: string;
-  notes?: string;
+  notes?: unknown;
 }

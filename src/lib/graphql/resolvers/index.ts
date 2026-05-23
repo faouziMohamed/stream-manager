@@ -1,4 +1,4 @@
-import { DateResolver, DateTimeResolver } from 'graphql-scalars';
+import { DateResolver, DateTimeResolver, JSONResolver } from 'graphql-scalars';
 import { servicesResolvers } from '@/lib/graphql/resolvers/services.resolvers';
 import { plansResolvers } from '@/lib/graphql/resolvers/plans.resolvers';
 import { promotionsResolvers } from '@/lib/graphql/resolvers/promotions.resolvers';
@@ -8,11 +8,13 @@ import { paymentsResolvers } from '@/lib/graphql/resolvers/payments.resolvers';
 import { analyticsResolvers } from '@/lib/graphql/resolvers/analytics.resolvers';
 import { settingsResolvers } from '@/lib/graphql/resolvers/settings';
 import { accountsResolvers } from '@/lib/graphql/resolvers/accounts';
+import { richTextAssetsResolvers } from '@/modules/rich-text/server/graphql/rich-text-assets.resolvers';
 
 export const resolvers = {
   // Custom scalars
   Date: DateResolver,
   DateTime: DateTimeResolver,
+  JSON: JSONResolver,
 
   Query: {
     ...servicesResolvers.Query,
@@ -35,6 +37,7 @@ export const resolvers = {
     ...paymentsResolvers.Mutation,
     ...settingsResolvers.Mutation,
     ...accountsResolvers.Mutation,
+    ...richTextAssetsResolvers.Mutation,
   },
 
   // Type resolvers

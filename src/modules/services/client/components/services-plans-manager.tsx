@@ -3,7 +3,7 @@
 /* eslint-disable react/jsx-max-depth */
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/table';
 import { ConfirmDialog } from '@/components/console/confirm-dialog';
 import { formatCurrency } from '@/lib/utils/helpers';
+import { RichTextEditor } from '@/components/rich-text/rich-text-editor';
 import {
   useCreatePlan,
   useDeletePlan,
@@ -52,7 +53,7 @@ const planSchema = z.object({
   price: z.coerce.number().min(0, 'Prix invalide'),
   currencyCode: z.string().min(1, 'Devise requise'),
   planType: z.enum(['full', 'partial', 'custom', 'bundle']),
-  description: z.string().optional(),
+  description: z.unknown().optional(),
 });
 
 type PlanForm = {
@@ -61,7 +62,7 @@ type PlanForm = {
   price: number;
   currencyCode: string;
   planType: 'full' | 'partial' | 'custom' | 'bundle';
-  description?: string;
+  description?: unknown;
 };
 
 const planTypeLabels: Record<string, string> = {
@@ -93,6 +94,7 @@ export function PlansTable({ serviceId, currency }: PlansTableProps) {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     setValue,
     formState: { errors, isSubmitting },
@@ -112,7 +114,7 @@ export function PlansTable({ serviceId, currency }: PlansTableProps) {
       price: plan.price,
       currencyCode: plan.currencyCode,
       planType: plan.planType as PlanForm['planType'],
-      description: plan.description ?? '',
+      description: plan.description ?? null,
     });
     setPlanDialog({ open: true, plan });
   };
@@ -232,7 +234,18 @@ export function PlansTable({ serviceId, currency }: PlansTableProps) {
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label>Description (optionnel)</Label>
-                <Input placeholder="Détails supplémentaires…" {...register('description')} />
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      preset="marketing"
+                      placeholder="Détails supplémentaires…"
+                    />
+                  )}
+                />
               </div>
             </div>
             <DialogFooter>

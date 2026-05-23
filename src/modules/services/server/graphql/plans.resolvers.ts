@@ -9,6 +9,7 @@ import {
 import { getPromotionById } from '@/modules/promotions/server/repositories/promotions.repository';
 import { getServiceById } from '@/modules/services/server/repositories/services.repository';
 import type { GraphQLContext } from '@/lib/graphql/context';
+import { reconcileSavedRichTextField } from '@/modules/rich-text/server/services/rich-text-assets.service';
 
 export const plansResolvers = {
   Query: {
@@ -37,7 +38,7 @@ export const plansResolvers = {
           price: number;
           currencyCode: string;
           planType: 'full' | 'partial' | 'custom' | 'bundle';
-          description?: string;
+          description?: unknown;
           serviceId?: string;
           promotionId?: string;
         };
@@ -45,7 +46,15 @@ export const plansResolvers = {
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
-      return createPlan({ ...input, price: String(input.price) });
+      const plan = await createPlan({ ...input, price: String(input.price) });
+      await reconcileSavedRichTextField({
+        entityId: plan.id,
+        entityType: 'plan',
+        fieldName: 'description',
+        previousValue: null,
+        nextValue: plan.description,
+      });
+      return plan;
     },
     updatePlan: async (
       _: unknown,
@@ -60,17 +69,25 @@ export const plansResolvers = {
           price?: number;
           currencyCode?: string;
           planType?: 'full' | 'partial' | 'custom' | 'bundle';
-          description?: string;
+          description?: unknown;
           isActive?: boolean;
         };
       },
       ctx: GraphQLContext
     ) => {
       requireAdmin(ctx);
+      const previous = await getPlanById(id);
       const { price, ...rest } = input;
       const updateData = price === undefined ? rest : { ...rest, price: String(price) };
       const plan = await updatePlan(id, updateData);
       if (!plan) throw new Error(`Plan ${id} not found`);
+      await reconcileSavedRichTextField({
+        entityId: plan.id,
+        entityType: 'plan',
+        fieldName: 'description',
+        previousValue: previous?.description,
+        nextValue: plan.description,
+      });
       return plan;
     },
     deletePlan: async (_: unknown, { id }: { id: string }, ctx: GraphQLContext) => {

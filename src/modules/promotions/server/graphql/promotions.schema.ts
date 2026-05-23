@@ -2,7 +2,7 @@ export const promotionsSchema = /* GraphQL */ `
   type Promotion {
     id: ID!
     name: String!
-    description: String
+    description: JSON
     isActive: Boolean!
     showOnHomepage: Boolean!
     startsAt: DateTime
@@ -16,7 +16,7 @@ export const promotionsSchema = /* GraphQL */ `
 
   input CreatePromotionInput {
     name: String!
-    description: String
+    description: JSON
     serviceIds: [ID!]!
     newServiceName: String
     newServiceCategory: String
@@ -27,7 +27,7 @@ export const promotionsSchema = /* GraphQL */ `
 
   input UpdatePromotionInput {
     name: String
-    description: String
+    description: JSON
     isActive: Boolean
     showOnHomepage: Boolean
     serviceIds: [ID!]

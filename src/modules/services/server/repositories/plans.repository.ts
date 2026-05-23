@@ -12,7 +12,7 @@ export type CreatePlanInput = {
   price: string;
   currencyCode: string;
   planType: 'full' | 'partial' | 'custom' | 'bundle';
-  description?: string | null;
+  description?: unknown | null;
   serviceId?: string | null;
   promotionId?: string | null;
 };

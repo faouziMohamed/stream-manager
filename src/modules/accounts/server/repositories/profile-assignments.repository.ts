@@ -1,10 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
-import {
-  type SubscriptionProfile,
-  subscriptionProfiles,
-} from '@/lib/db/tables/subscription-management.table';
+import { subscriptionProfiles } from '@/lib/db/tables/subscription-management.table';
+import type { SubscriptionProfile } from '@/lib/db/tables/subscription-management.types';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('profile-assignments-repository');
