@@ -56,12 +56,14 @@ export function useCreateSubscription() {
       gqlRequest<{ createSubscription: SubscriptionDto }>(CREATE_SUBSCRIPTION, {
         input,
       }).then((r) => r.createSubscription),
-    onSuccess: () => toastSuccess('Abonnement créé'),
-    onError: (err) => toastError(err, "Création de l'abonnement"),
+    onSuccess: () => toastSuccess('Abonnement cr'),
+    onError: (err) => toastError(err, "Cration de l'abonnement"),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: subscriptionKeys.all });
       qc.invalidateQueries({ queryKey: ['payments'] });
       qc.invalidateQueries({ queryKey: ['dashboardStats'] });
+      // Keep activeSubscriptionsCount on the clients page up to date.
+      qc.invalidateQueries({ queryKey: ['clients'] });
     },
   });
 }
@@ -119,6 +121,7 @@ export function useDeleteSubscription() {
     onSettled: () => {
       qc.invalidateQueries({ queryKey: subscriptionKeys.all });
       qc.invalidateQueries({ queryKey: ['dashboardStats'] });
+      qc.invalidateQueries({ queryKey: ['clients'] });
     },
   });
 }
@@ -130,12 +133,13 @@ export function useRenewSubscription() {
       gqlRequest<{ renewSubscription: SubscriptionDto }>(RENEW_SUBSCRIPTION, {
         input,
       }).then((r) => r.renewSubscription),
-    onSuccess: () => toastSuccess('Abonnement renouvelé'),
+    onSuccess: () => toastSuccess('Abonnement renouvel'),
     onError: (err) => toastError(err, "Renouvellement de l'abonnement"),
     onSettled: () => {
       qc.invalidateQueries({ queryKey: subscriptionKeys.all });
       qc.invalidateQueries({ queryKey: ['payments'] });
       qc.invalidateQueries({ queryKey: ['dashboardStats'] });
+      qc.invalidateQueries({ queryKey: ['clients'] });
     },
   });
 }

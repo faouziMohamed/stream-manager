@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { WorkflowHint } from '@/components/console/workflow-hint';
-import { InfoCallout } from '@/components/console/info-callout';
+import { MonitorPlay, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/console/confirm-dialog';
+import {
+  AccountsStats,
+  EmptyState,
+  FilterPill,
+} from '@/modules/accounts/client/components/accounts-editor-parts';
 import {
   useAssignProfile,
   useCreateAccount,
@@ -31,8 +34,8 @@ import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
 import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
 import type {
   AccountFormInput,
-  ProfileFormInput,
   AssignForm,
+  ProfileFormInput,
 } from '@/modules/accounts/client/components/accounts-types';
 
 interface Props {
@@ -52,11 +55,10 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
   const assignProfile = useAssignProfile();
   const removeAssignment = useRemoveAssignment();
 
-  const [expandedAccount, setExpandedAccount] = useState<string | null>(null);
-  const [accountDialog, setAccountDialog] = useState<{
-    open: boolean;
-    acc?: StreamingAccountDto;
-  }>({ open: false });
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [accountDialog, setAccountDialog] = useState<{ open: boolean; acc?: StreamingAccountDto }>({
+    open: false,
+  });
   const [profileDialog, setProfileDialog] = useState<{
     open: boolean;
     accountId?: string;
@@ -73,7 +75,6 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     id: string;
   } | null>(null);
 
-  // Account handlers
   const onAccountSubmit = async (raw: AccountFormInput) => {
     const data = raw as unknown as {
       serviceId?: string;
@@ -108,21 +109,12 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     setAccountDialog({ open: false });
   };
 
-  // Profile handlers
   const onProfileSubmit = async (raw: ProfileFormInput) => {
-    const data = raw as unknown as {
-      name: string;
-      profileIndex: number;
-      pin?: string;
-    };
+    const data = raw as unknown as { name: string; profileIndex: number; pin?: string };
     if (profileDialog.profile) {
       await updateProfile.mutateAsync({
         id: profileDialog.profile.id,
-        input: {
-          name: data.name,
-          profileIndex: data.profileIndex,
-          pin: data.pin || null,
-        },
+        input: { name: data.name, profileIndex: data.profileIndex, pin: data.pin || null },
       });
     } else if (profileDialog.accountId) {
       await createProfile.mutateAsync({
@@ -135,7 +127,6 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     setProfileDialog({ open: false });
   };
 
-  // Assign handlers
   const onAssignSubmit = async (data: AssignForm) => {
     if (!assignDialog.accountId) return;
     await assignProfile.mutateAsync({
@@ -146,11 +137,6 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     setAssignDialog({ open: false });
   };
 
-  const handleRemoveAssignment = async (subscriptionId: string) => {
-    await removeAssignment.mutateAsync(subscriptionId);
-  };
-
-  // Delete handler
   const handleDelete = async () => {
     if (!deleteTarget) return;
     await (deleteTarget.type === 'account'
@@ -159,65 +145,77 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     setDeleteTarget(null);
   };
 
-  // Stats
   const profileAccounts = accounts.filter((a) => a.supportsProfiles);
   const totalSlots = profileAccounts.reduce((s, a) => s + a.maxProfiles, 0);
   const usedSlots = profileAccounts.reduce((s, a) => s + a.usedProfiles, 0);
-  const noProfileUsed = accounts
-    .filter((a) => !a.supportsProfiles)
-    .reduce((s, a) => s + a.usedProfiles, 0);
+  const totalAssigned = accounts.reduce((s, a) => s + a.usedProfiles, 0);
+
+  const usedServiceIds = new Set(accounts.map((a) => a.serviceId));
+  const activeServices = services.filter((s) => usedServiceIds.has(s.id));
+  const filteredAccounts = selectedServiceId
+    ? accounts.filter((a) => a.serviceId === selectedServiceId)
+    : accounts;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Comptes streaming</h1>
-          <p className="text-muted-foreground text-sm">
-            {accounts.length} compte{accounts.length === 1 ? '' : 's'}
-            {totalSlots > 0 && ` · ${usedSlots}/${totalSlots} profils utilisés`}
-            {noProfileUsed > 0 &&
-              ` · ${noProfileUsed} compte${noProfileUsed === 1 ? '' : 's'} sans profils assigné${noProfileUsed === 1 ? '' : 's'}`}
+          <div className="flex items-center gap-2.5">
+            <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">
+              <MonitorPlay className="text-primary h-4 w-4" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Comptes streaming</h1>
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Gérez vos comptes et assignez des abonnements aux profils clients.
           </p>
         </div>
-        <Button onClick={() => setAccountDialog({ open: true })}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={() => setAccountDialog({ open: true })} className="gap-2">
+          <Plus className="h-4 w-4" />
           Nouveau compte
         </Button>
       </div>
 
-      <WorkflowHint
-        title="Configuration des comptes streaming"
-        steps={[
-          {
-            label: 'Services',
-            href: '/console/services',
-            description: 'Offres de streaming disponibles',
-          },
-          {
-            label: 'Abonnements',
-            href: '/console/subscriptions',
-            description: 'Souscriptions actives des clients',
-          },
-          { label: 'Comptes', active: true, description: 'Comptes réels et profils utilisateur' },
-        ]}
-      />
+      {/* ── Stats chips ── */}
+      {accounts.length > 0 && (
+        <AccountsStats
+          count={accounts.length}
+          totalSlots={totalSlots}
+          usedSlots={usedSlots}
+          totalAssigned={totalAssigned}
+        />
+      )}
 
-      {accounts.length === 0 ? (
-        <InfoCallout variant="info" title="Ajoutez votre premier compte streaming">
-          Les comptes streaming représentent les comptes réels que vous gérez (Netflix, Disney+,
-          etc.). Associez-le à un service, puis assignez des abonnements existants aux profils du
-          compte. Assurez-vous d&apos;avoir créé des <strong>services</strong> et des{' '}
-          <strong>abonnements</strong> au préalable.
-        </InfoCallout>
+      {/* ── Service filter pills ── */}
+      {activeServices.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          <FilterPill
+            label="Tous"
+            active={selectedServiceId === null}
+            onClick={() => setSelectedServiceId(null)}
+          />
+          {activeServices.map((svc) => (
+            <FilterPill
+              key={svc.id}
+              label={svc.name}
+              active={selectedServiceId === svc.id}
+              onClick={() => setSelectedServiceId(selectedServiceId === svc.id ? null : svc.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Cards grid or empty state ── */}
+      {filteredAccounts.length === 0 ? (
+        <EmptyState onAdd={() => setAccountDialog({ open: true })} />
       ) : (
-        <div className="space-y-3">
-          {accounts.map((acc) => (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {filteredAccounts.map((acc) => (
             <AccountCard
               key={acc.id}
               account={acc}
               subscriptions={subscriptions}
-              expanded={expandedAccount === acc.id}
-              onToggleExpand={(id) => setExpandedAccount(expandedAccount === id ? null : id)}
               onEdit={(a) => setAccountDialog({ open: true, acc: a })}
               onDelete={(id) => setDeleteTarget({ type: 'account', id })}
               onAddProfile={(id) => setProfileDialog({ open: true, accountId: id })}
@@ -239,12 +237,13 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
                   title: `Assigner le compte « ${a.label} »`,
                 })
               }
-              onRemoveAssignment={handleRemoveAssignment}
+              onRemoveAssignment={(subId) => removeAssignment.mutateAsync(subId)}
             />
           ))}
         </div>
       )}
 
+      {/* ── Dialogs ── */}
       <AccountDialog
         open={accountDialog.open}
         acc={accountDialog.acc}
@@ -252,14 +251,12 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
         services={services}
         onSubmit={onAccountSubmit}
       />
-
       <ProfileDialog
         open={profileDialog.open}
         profile={profileDialog.profile}
         onOpenChange={(o) => setProfileDialog({ open: o })}
         onSubmit={onProfileSubmit}
       />
-
       <AssignDialog
         open={assignDialog.open}
         title={assignDialog.title}
@@ -267,15 +264,14 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
         onOpenChange={(o) => setAssignDialog({ open: o })}
         onSubmit={onAssignSubmit}
       />
-
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
         title={deleteTarget?.type === 'account' ? 'Supprimer le compte' : 'Supprimer le profil'}
         description={
           deleteTarget?.type === 'account'
-            ? 'Tous les profils et assignations associés seront supprimés.'
-            : "L'assignation associée sera également supprimée."
+            ? 'Tous les profils et assignations associés seront supprimés définitivement.'
+            : "L'assignation du profil sera également supprimée."
         }
         onConfirm={handleDelete}
         loading={deleteAccount.isPending || deleteProfile.isPending}
@@ -283,3 +279,4 @@ export function AccountsEditor({ initialData, services = [], subscriptions = [] 
     </div>
   );
 }
+

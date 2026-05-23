@@ -7,6 +7,10 @@ import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('profile-assignments-repository');
 
+export async function getAllAssignments() {
+  return db.select().from(subscriptionProfiles);
+}
+
 export async function getAssignmentsBySubscription(subscriptionId: string) {
   return db
     .select()

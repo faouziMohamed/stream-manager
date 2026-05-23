@@ -59,11 +59,14 @@ export function useCreateClient() {
       return { prev };
     },
     onError: (err, _, ctx) => {
-      toastError(err, 'Création du client');
+      toastError(err, 'Cration du client');
       if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
     },
-    onSuccess: () => toastSuccess('Client créé'),
-    onSettled: () => qc.invalidateQueries({ queryKey: clientKeys.all }),
+    onSuccess: () => toastSuccess('Client cr'),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: clientKeys.all });
+      qc.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
   });
 }
 
@@ -110,7 +113,10 @@ export function useDeleteClient() {
       toastError(err, 'Suppression du client');
       if (ctx?.prev) qc.setQueryData(clientKeys.all, ctx.prev);
     },
-    onSuccess: () => toastSuccess('Client supprimé'),
-    onSettled: () => qc.invalidateQueries({ queryKey: clientKeys.all }),
+    onSuccess: () => toastSuccess('Client supprim'),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: clientKeys.all });
+      qc.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
   });
 }

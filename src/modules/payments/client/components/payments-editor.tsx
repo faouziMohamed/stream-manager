@@ -46,10 +46,9 @@ export function PaymentsEditor({ initialData }: Props) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [confirmPayment, setConfirmPayment] = useState<PaymentDto | null>(null);
 
-  const { data: payments = [] } = usePayments(
-    statusFilter === 'all' ? undefined : { status: statusFilter as 'paid' | 'unpaid' | 'overdue' },
-    initialData
-  );
+  // Always load all payments — filter on the client side so the query key
+  // stays stable and optimistic updates / invalidations work correctly.
+  const { data: allPayments = [] } = usePayments(initialData);
   const { data: subscriptions = [] } = useSubscriptions();
   const { data: clients = [] } = useClients();
   const markPaid = useMarkPaymentPaid();
@@ -74,11 +73,16 @@ export function PaymentsEditor({ initialData }: Props) {
     });
   };
 
-  // Summary counts
-  const all = usePayments().data ?? [];
-  const overdueCount = all.filter((p) => p.status === 'overdue').length;
-  const unpaidCount = all.filter((p) => p.status === 'unpaid').length;
-  const paidCount = all.filter((p) => p.status === 'paid').length;
+  // Client-side filter — no extra network request per status switch.
+  const payments =
+    statusFilter === 'all'
+      ? allPayments
+      : allPayments.filter((p) => p.status === statusFilter);
+
+  // Summary counts derived from the same reactive data.
+  const overdueCount = allPayments.filter((p) => p.status === 'overdue').length;
+  const unpaidCount = allPayments.filter((p) => p.status === 'unpaid').length;
+  const paidCount = allPayments.filter((p) => p.status === 'paid').length;
 
   return (
     <div className="space-y-4">

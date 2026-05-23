@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,22 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { AccountFormFields } from '@/modules/accounts/client/components/accounts-form-fields';
 import {
   accountSchema,
-  profileSchema,
   assignSchema,
+  profileSchema,
   type AccountFormInput,
-  type ProfileFormInput,
   type AssignForm,
+  type ProfileFormInput,
 } from '@/modules/accounts/client/components/accounts-types';
+import { SubscriptionCard } from '@/modules/accounts/client/components/accounts-subscription-card';
 import type {
   StreamingAccountDto,
   StreamingProfileDto,
@@ -35,7 +31,7 @@ import type {
 import type { ServiceDto } from '@/lib/graphql/operations/services.operations';
 import type { SubscriptionDto } from '@/lib/graphql/operations/subscriptions.operations';
 
-// ─── Account Dialog ───────────────────────────────────────────────────────────
+// ─── AccountDialog ────────────────────────────────────────────────────────────
 
 interface AccountDialogProps {
   open: boolean;
@@ -59,6 +55,8 @@ export function AccountDialog({ open, acc, onOpenChange, services, onSubmit }: A
     },
   });
 
+  const submitLabel = acc ? 'Enregistrer' : 'Créer';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -72,7 +70,7 @@ export function AccountDialog({ open, acc, onOpenChange, services, onSubmit }: A
               Annuler
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Enregistrement…' : acc ? 'Enregistrer' : 'Créer'}
+              {form.formState.isSubmitting ? 'Enregistrement…' : submitLabel}
             </Button>
           </DialogFooter>
         </form>
@@ -81,7 +79,7 @@ export function AccountDialog({ open, acc, onOpenChange, services, onSubmit }: A
   );
 }
 
-// ─── Profile Dialog ───────────────────────────────────────────────────────────
+// ─── ProfileDialog ────────────────────────────────────────────────────────────
 
 interface ProfileDialogProps {
   open: boolean;
@@ -153,7 +151,7 @@ export function ProfileDialog({ open, profile, onOpenChange, onSubmit }: Profile
   );
 }
 
-// ─── Assign Dialog ────────────────────────────────────────────────────────────
+// ─── AssignDialog ─────────────────────────────────────────────────────────────
 
 interface AssignDialogProps {
   open: boolean;
@@ -174,43 +172,67 @@ export function AssignDialog({
     resolver: zodResolver(assignSchema),
     defaultValues: { subscriptionId: '' },
   });
+  const [selected, setSelected] = useState('');
 
-  const hasActiveSubs = subscriptions.some((s) => s.status === 'active');
+  const activeSubscriptions = subscriptions.filter((s) => s.status === 'active');
+
+  const handleSelect = (id: string) => {
+    setSelected(id);
+    form.setValue('subscriptionId', id, { shouldValidate: true });
+  };
+
+  const handleOpenChange = (o: boolean) => {
+    if (!o) {
+      setSelected('');
+      form.reset();
+    }
+    onOpenChange(o);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{title ?? 'Assigner à un abonné'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Abonnement actif *</Label>
-            <Select onValueChange={(v) => form.setValue('subscriptionId', v)}>
-              <SelectTrigger error={form.formState.errors.subscriptionId?.message}>
-                <SelectValue placeholder="Choisir un abonnement" />
-              </SelectTrigger>
-              <SelectContent>
-                {subscriptions
-                  .filter((s) => s.status === 'active')
-                  .map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.client?.name ?? s.clientId}
-                      {' — '}jusqu&apos;au {s.endDate}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            {!hasActiveSubs && (
-              <p className="text-muted-foreground text-xs">Aucun abonnement actif trouvé.</p>
-            )}
-          </div>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+          {activeSubscriptions.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed py-10 text-center">
+              <User className="text-muted-foreground h-8 w-8" />
+              <p className="text-muted-foreground text-sm">Aucun abonnement actif disponible.</p>
+              <p className="text-muted-foreground text-xs">
+                Créez d&apos;abord un abonnement actif pour l&apos;assigner ici.
+              </p>
+            </div>
+          ) : (
+            <div className="max-h-85 space-y-2 overflow-y-auto pr-1">
+              {activeSubscriptions.map((sub) => (
+                <SubscriptionCard
+                  key={sub.id}
+                  sub={sub}
+                  selected={selected === sub.id}
+                  onSelect={() => handleSelect(sub.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {form.formState.errors.subscriptionId && (
+            <p className="text-destructive text-xs">
+              {form.formState.errors.subscriptionId.message}
+            </p>
+          )}
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              Assigner
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting || !selected}
+            >
+              {form.formState.isSubmitting ? 'Assignation…' : 'Assigner'}
             </Button>
           </DialogFooter>
         </form>
@@ -218,3 +240,4 @@ export function AssignDialog({
     </Dialog>
   );
 }
+

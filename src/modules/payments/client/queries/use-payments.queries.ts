@@ -14,28 +14,18 @@ import { toastError, toastSuccess } from '@/lib/utils/toast';
 
 export const paymentKeys = {
   all: ['payments'] as QueryKey,
-  filtered: (filters: {
-    subscriptionId?: string;
-    status?: PaymentStatus;
-    fromDate?: string;
-    toDate?: string;
-  }) => ['payments', filters] as QueryKey,
   detail: (id: string) => ['payments', id] as QueryKey,
 };
 
-export function usePayments(
-  filters?: {
-    subscriptionId?: string;
-    status?: PaymentStatus;
-    fromDate?: string;
-    toDate?: string;
-  },
-  initialData?: PaymentDto[]
-) {
+/**
+ * Always loads ALL payments — filter on the client side.
+ * Keeping the query key stable (`paymentKeys.all`) ensures optimistic updates
+ * and invalidations in mutations are always hitting the right cache entry.
+ */
+export function usePayments(initialData?: PaymentDto[]) {
   return useQuery({
-    queryKey: paymentKeys.filtered(filters ?? {}),
-    queryFn: () =>
-      gqlRequest<{ payments: PaymentDto[] }>(GET_PAYMENTS, filters).then((r) => r.payments),
+    queryKey: paymentKeys.all,
+    queryFn: () => gqlRequest<{ payments: PaymentDto[] }>(GET_PAYMENTS).then((r) => r.payments),
     initialData,
   });
 }
