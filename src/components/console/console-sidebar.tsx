@@ -38,6 +38,8 @@ type NavLink = {
   href: string;
   icon: ElementType;
   exact?: boolean;
+  badge?: number;
+  badgeVariant?: 'red' | 'amber';
 };
 type NavGroup = {
   type: 'group';
@@ -48,7 +50,8 @@ type NavGroup = {
 };
 type NavItem = NavSeparator | NavLink | NavGroup;
 
-const navItems: NavItem[] = [
+function buildNavItems(overdueCount: number, expiringSoonCount: number): NavItem[] {
+  return [
   {
     label: 'Tableau de bord',
     href: ROUTES.console.root,
@@ -56,7 +59,13 @@ const navItems: NavItem[] = [
     exact: true,
   },
   { type: 'separator', label: 'Gestion' },
-  { label: 'Paiements', href: ROUTES.console.payments, icon: CreditCard },
+  {
+    label: 'Paiements',
+    href: ROUTES.console.payments,
+    icon: CreditCard,
+    badge: overdueCount > 0 ? overdueCount : undefined,
+    badgeVariant: 'red' as const,
+  },
   {
     type: 'group',
     label: 'Catalogue',
@@ -65,7 +74,13 @@ const navItems: NavItem[] = [
     children: [
       { label: 'Services', href: ROUTES.console.services, icon: Monitor },
       { label: 'Promotions', href: ROUTES.console.promotions, icon: Star },
-      { label: 'Abonnements', href: ROUTES.console.subscriptions, icon: Tag },
+      {
+        label: 'Abonnements',
+        href: ROUTES.console.subscriptions,
+        icon: Tag,
+        badge: expiringSoonCount > 0 ? expiringSoonCount : undefined,
+        badgeVariant: 'amber' as const,
+      },
     ],
   },
   { label: 'Comptes streaming', href: ROUTES.console.accounts, icon: Tv2 },
@@ -85,19 +100,12 @@ const navItems: NavItem[] = [
     children: [
       { label: 'Général', href: ROUTES.console.settings.root, icon: Settings2 },
       { label: 'SMTP', href: ROUTES.console.settings.smtp, icon: Mail },
-      {
-        label: 'Cloudinary',
-        href: ROUTES.console.settings.cloudinary,
-        icon: Cloud,
-      },
-      {
-        label: 'Notifications',
-        href: ROUTES.console.settings.notifications,
-        icon: Bell,
-      },
+      { label: 'Cloudinary', href: ROUTES.console.settings.cloudinary, icon: Cloud },
+      { label: 'Notifications', href: ROUTES.console.settings.notifications, icon: Bell },
     ],
   },
 ];
+}
 
 // ─── Collapsible group ────────────────────────────────────────────────────────
 
@@ -106,6 +114,9 @@ function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
   const isChildActive = item.children.some((c) => pathname === c.href);
   const [open, setOpen] = useState(isChildActive || item.defaultOpen === true);
   const Icon = item.icon;
+
+  // Total badge count for all children
+  const childBadgeTotal = item.children.reduce((s, c) => s + (c.badge ?? 0), 0);
 
   return (
     <div>
@@ -121,6 +132,11 @@ function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
       >
         <Icon className="h-4 w-4 shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
+        {childBadgeTotal > 0 && !open && (
+          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+            {childBadgeTotal > 9 ? '9+' : childBadgeTotal}
+          </span>
+        )}
         <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
@@ -142,6 +158,16 @@ function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
               >
                 <CIcon className="h-3.5 w-3.5 shrink-0" />
                 {child.label}
+                {child.badge !== undefined && child.badge > 0 && (
+                  <span
+                    className={cn(
+                      'ml-auto flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white',
+                      child.badgeVariant === 'red' ? 'bg-red-500' : 'bg-amber-500'
+                    )}
+                  >
+                    {child.badge > 9 ? '9+' : child.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -153,10 +179,20 @@ function NavGroupItem({ item, onNav }: { item: NavGroup; onNav?: () => void }) {
 
 // ─── Sidebar content ──────────────────────────────────────────────────────────
 
-function SidebarContent({ onNav }: { onNav?: () => void }) {
+function SidebarContent({
+  onNav,
+  overdueCount = 0,
+  expiringSoonCount = 0,
+}: {
+  onNav?: () => void;
+  overdueCount?: number;
+  expiringSoonCount?: number;
+}) {
   const pathname = usePathname();
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
+
+  const navItems = buildNavItems(overdueCount, expiringSoonCount);
 
   return (
     <div className="flex h-full flex-col bg-[hsl(var(--sidebar-bg))] text-[hsl(var(--sidebar-fg))]">
@@ -203,6 +239,16 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
             >
               <Icon className="h-4 w-4 shrink-0" />
               {link.label}
+              {link.badge !== undefined && link.badge > 0 && (
+                <span
+                  className={cn(
+                    'ml-auto flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white',
+                    link.badgeVariant === 'red' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'
+                  )}
+                >
+                  {link.badge > 9 ? '9+' : link.badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -225,13 +271,19 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 
-export function ConsoleSidebar() {
+export function ConsoleSidebar({
+  overdueCount = 0,
+  expiringSoonCount = 0,
+}: {
+  overdueCount?: number;
+  expiringSoonCount?: number;
+}) {
   const { open, close } = useSidebar();
 
   return (
     <>
       <aside className="hidden h-full w-64 shrink-0 flex-col md:flex">
-        <SidebarContent />
+        <SidebarContent overdueCount={overdueCount} expiringSoonCount={expiringSoonCount} />
       </aside>
 
       {open && (
@@ -258,7 +310,11 @@ export function ConsoleSidebar() {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <SidebarContent onNav={close} />
+        <SidebarContent
+          onNav={close}
+          overdueCount={overdueCount}
+          expiringSoonCount={expiringSoonCount}
+        />
       </aside>
     </>
   );

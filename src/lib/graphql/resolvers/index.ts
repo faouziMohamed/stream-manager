@@ -50,4 +50,5 @@ export const resolvers = {
   SummaryLink: settingsResolvers.SummaryLink,
   StreamingAccount: accountsResolvers.StreamingAccount,
   StreamingProfile: accountsResolvers.StreamingProfile,
+  SubscriptionProfileAssignment: accountsResolvers.SubscriptionProfileAssignment,
 };

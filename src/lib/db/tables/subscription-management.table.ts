@@ -121,6 +121,7 @@ export const subscriptions = pgTable('subscriptions_subscriptions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
 export const payments = pgTable('subscriptions_payments', {
   id: text('id').primaryKey(),
   subscriptionId: text('subscription_id')

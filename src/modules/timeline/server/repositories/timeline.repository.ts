@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
 import {
-  subscriptions,
-  plans,
   clients,
-  services,
+  plans,
   promotions,
+  services,
+  subscriptions,
 } from '@/lib/db/tables/subscription-management.table';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
 
 export interface TimelineSubscription {
   id: string;

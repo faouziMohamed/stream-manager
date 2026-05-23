@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Archive, CheckCheck, Circle, Mail, MessageSquare } from 'lucide-react';
+import { Archive, CheckCheck, Mail, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -28,6 +28,8 @@ function InquiryListItem({
   selected: boolean;
   onClick: () => void;
 }) {
+  const isUnread = !inquiry.isRead;
+  const isReplied = inquiry.replies.length > 0;
   return (
     <button
       type="button"
@@ -35,38 +37,44 @@ function InquiryListItem({
       className={cn(
         'w-full cursor-pointer border-b px-4 py-3 text-left transition-colors',
         'hover:bg-accent/50',
-        selected && 'bg-accent'
+        selected && 'bg-accent',
+        isUnread && !selected && 'bg-primary/5 border-l-2 border-l-primary'
       )}
     >
       <div className="flex items-start gap-2">
-        <div className="mt-0.5 shrink-0">
-          {inquiry.isRead ? (
-            <Circle className="h-2 w-2 text-transparent" />
+        <div className="mt-1.5 shrink-0">
+          {isUnread ? (
+            <span className="block h-2 w-2 rounded-full bg-primary animate-pulse" />
           ) : (
-            <Circle className="fill-primary text-primary h-2 w-2" />
+            <span className="block h-2 w-2 rounded-full bg-transparent" />
           )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className={cn('truncate text-sm', !inquiry.isRead && 'font-semibold')}>
+            <span className={cn('truncate text-sm', isUnread && 'font-semibold')}>
               {inquiry.name}
             </span>
-            <span className="text-muted-foreground shrink-0 text-xs">
-              {new Date(inquiry.createdAt).toLocaleDateString('fr-FR', {
-                day: '2-digit',
-                month: 'short',
-              })}
-            </span>
+            <div className="flex shrink-0 items-center gap-1.5">
+              <span className="text-muted-foreground text-xs">
+                {new Date(inquiry.createdAt).toLocaleDateString('fr-FR', {
+                  day: '2-digit',
+                  month: 'short',
+                })}
+              </span>
+              {isReplied ? (
+                <Badge className="border-emerald-200 bg-emerald-100 px-1.5 py-0 text-[10px] text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border">
+                  Répondu
+                </Badge>
+              ) : (
+                <Badge className="border-red-200 bg-red-100 px-1.5 py-0 text-[10px] text-red-600 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300 border">
+                  En attente
+                </Badge>
+              )}
+            </div>
           </div>
-          <p className="text-muted-foreground mt-0.5 truncate text-xs">
+          <p className={cn('text-muted-foreground mt-0.5 truncate text-xs', isUnread && 'text-foreground/70')}>
             {extractPlainTextFromRichText(inquiry.message)}
           </p>
-          {inquiry.replies.length > 0 && (
-            <div className="mt-1 flex items-center gap-1">
-              <MessageSquare className="text-muted-foreground h-3 w-3" />
-              <span className="text-muted-foreground text-xs">{inquiry.replies.length}</span>
-            </div>
-          )}
         </div>
       </div>
     </button>
@@ -101,15 +109,20 @@ export function InquiriesEditor({ initialData }: Props) {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            Messages
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                {unreadCount}
-              </Badge>
-            )}
-          </h1>
-          <p className="text-muted-foreground text-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+              <MessageSquare className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
+              Messages
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="animate-pulse text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
+            </h1>
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
             Messages reçus via le formulaire de contact
           </p>
         </div>

@@ -9,9 +9,9 @@ interface Props {
 }
 
 const statusColors: Record<string, string> = {
-  active: 'bg-primary/90',
+  active: 'bg-cyan-600/80',
   expired: 'bg-muted-foreground/40',
-  paused: 'bg-orange-400/80',
+  paused: 'bg-orange-400',
   cancelled: 'bg-destructive/60',
 };
 

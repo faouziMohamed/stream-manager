@@ -9,10 +9,10 @@ interface Props {
   toDate: string;
 }
 
-const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const statusVariants: Record<string, 'default' | 'secondary' | 'destructive' | 'paused'> = {
   active: 'default',
   expired: 'secondary',
-  paused: 'outline',
+  paused: 'paused',
   cancelled: 'destructive',
 };
 
@@ -69,7 +69,7 @@ export function TableGrid({ subscriptions, fromDate, toDate }: Props) {
               return (
                 <th
                   key={mo}
-                  className="text-muted-foreground min-w-[80px] border-r px-2 py-2 text-center font-medium last:border-r-0"
+                  className="text-muted-foreground min-w-20 border-r px-2 py-2 text-center font-medium last:border-r-0"
                 >
                   {label}
                 </th>
@@ -80,7 +80,7 @@ export function TableGrid({ subscriptions, fromDate, toDate }: Props) {
         <tbody>
           {clientNames.map((clientName) => (
             <tr key={clientName} className="hover:bg-muted/20 border-b last:border-b-0">
-              <td className="bg-background sticky left-0 max-w-[140px] truncate border-r px-3 py-2 font-medium">
+              <td className="bg-background sticky left-0 max-w-35 truncate border-r px-3 py-2 font-medium">
                 {clientName}
               </td>
               {months.map((month) => {
@@ -97,7 +97,7 @@ export function TableGrid({ subscriptions, fromDate, toDate }: Props) {
                           <Badge
                             key={s.id}
                             variant={statusVariants[s.status] ?? 'secondary'}
-                            className="max-w-[72px] truncate px-1 py-0 text-[9px] leading-tight"
+                            className="max-w-18 truncate px-1 py-0 text-[9px] leading-tight"
                             title={`${s.serviceName} · ${statusLabels[s.status]}`}
                           >
                             {s.serviceName.replace('[Promo] ', '').slice(0, 10)}

@@ -7,6 +7,7 @@ import {
   getAssignmentsBySubscription,
   removeAssignment,
 } from '@/modules/accounts/server/repositories/profile-assignments.repository';
+import { getSubscriptionById } from '@/modules/subscriptions/server/repositories/subscriptions.repository';
 import { createLogger } from '@/lib/logger';
 import type { GraphQLContext } from '@/lib/graphql/context';
 
@@ -71,3 +72,11 @@ export const profileAssignmentsMutationResolvers = {
     return true;
   },
 };
+
+export const profileAssignmentsFieldResolvers = {
+  SubscriptionProfileAssignment: {
+    subscription: (parent: { subscriptionId: string }) =>
+      getSubscriptionById(parent.subscriptionId),
+  },
+};
+

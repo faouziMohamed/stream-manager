@@ -9,6 +9,7 @@ import {
   streamingProfilesQueryResolvers,
 } from '@/modules/accounts/server/graphql/streaming-profiles.resolvers';
 import {
+  profileAssignmentsFieldResolvers,
   profileAssignmentsMutationResolvers,
   profileAssignmentsQueryResolvers,
 } from '@/modules/accounts/server/graphql/profile-assignments.resolvers';
@@ -30,4 +31,5 @@ export const accountsResolvers = {
   },
   ...streamingAccountsFieldResolvers,
   ...streamingProfilesFieldResolvers,
+  ...profileAssignmentsFieldResolvers,
 };

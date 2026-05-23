@@ -9,6 +9,7 @@ import {
   Package,
   Pencil,
   Plus,
+  Star,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/console/confirm-dialog';
 import { toDateTimeString } from '@/lib/utils/date-utils';
+import { cn } from '@/lib/utils/helpers';
 import {
   useCreatePromotion,
   useDeletePromotion,
@@ -38,10 +40,21 @@ function formatDate(iso: string | null | undefined) {
   });
 }
 
-function promoStatus(promo: PromotionDto) {
-  if (!promo.isActive) return { label: 'Inactive', variant: 'secondary' as const };
-  if (promo.isExpired) return { label: 'Expirée', variant: 'destructive' as const };
-  return { label: 'Active', variant: 'default' as const };
+function promoStatus(promo: PromotionDto): { label: string; cls: string } {
+  if (!promo.isActive)
+    return {
+      label: 'Inactive',
+      cls: 'border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-400',
+    };
+  if (promo.isExpired)
+    return {
+      label: 'Expirée',
+      cls: 'border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300',
+    };
+  return {
+    label: 'Active',
+    cls: 'border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+  };
 }
 
 interface Props {
@@ -89,10 +102,15 @@ export function PromotionsEditor({ initialData, defaultCurrency = 'MAD' }: Props
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Promotions</h1>
-          <p className="text-muted-foreground text-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Promotions</h1>
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
             Offres groupées combinant plusieurs services
           </p>
         </div>
@@ -115,8 +133,10 @@ export function PromotionsEditor({ initialData, defaultCurrency = 'MAD' }: Props
             return (
               <Card
                 key={promo.id}
-                className={`card-hover ${promo.isExpired || !promo.isActive ? 'opacity-60' : ''}`}
+                className={`card-hover overflow-hidden ${promo.isExpired || !promo.isActive ? 'opacity-70' : ''}`}
               >
+                {/* Color stripe */}
+                <div className={`h-1 w-full ${promo.isExpired || !promo.isActive ? 'bg-slate-300 dark:bg-slate-700' : 'bg-linear-to-r from-amber-400 to-orange-500'}`} />
                 <CardHeader className="px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -129,9 +149,9 @@ export function PromotionsEditor({ initialData, defaultCurrency = 'MAD' }: Props
                       ) : (
                         <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
                       )}
-                      <Package className="text-primary h-4 w-4 shrink-0" />
+                      <Package className="text-amber-500 h-4 w-4 shrink-0" />
                       <span className="truncate">{promo.name}</span>
-                      <Badge variant={status.variant} className="shrink-0 text-xs">
+                      <Badge className={cn('shrink-0 border text-xs', status.cls)}>
                         {status.label}
                       </Badge>
                       {promo.showOnHomepage === false && (

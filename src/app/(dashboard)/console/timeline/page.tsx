@@ -10,7 +10,7 @@ export default async function TimelinePage() {
   const toDate = endDate.toISOString().slice(0, 10);
 
   const subscriptions = await getTimelineSubscriptions(fromDate, toDate);
-
+  // log.info({ subscriptions: subscriptions }, 'Fetched timeline subscriptions');
   return (
     <Suspense>
       <TimelineDashboard

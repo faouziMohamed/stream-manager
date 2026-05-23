@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
 import type { ElementType } from 'react';
+import { useCallback, useState } from 'react';
 import { BarChart2, CalendarDays, ChevronLeft, ChevronRight, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -33,7 +33,6 @@ function firstDayOfMonth(year: number, month: number) {
 function lastDayOfMonth(year: number, month: number) {
   return new Date(year, month, 0).toISOString().slice(0, 10);
 }
-
 export function TimelineDashboard({
   subscriptions: initialSubs,
   initialView,

@@ -35,9 +35,16 @@ export async function createClient(input: CreateClientInput) {
 }
 
 export async function updateClient(id: string, input: UpdateClientInput) {
+  // remove fields if not provided (partial update)
+  const newUpdate = { ...input };
+  if (input.email === undefined) newUpdate.email = null;
+  if (input.phone === undefined) newUpdate.phone = null;
+  if (input.notes === undefined) newUpdate.notes = null;
+  if (Object.keys(newUpdate).length === 0) return null;
+
   const [client] = await db
     .update(clients)
-    .set({ ...input, updatedAt: new Date() })
+    .set({ ...newUpdate, updatedAt: new Date() })
     .where(eq(clients.id, id))
     .returning();
   return client ?? null;

@@ -153,8 +153,30 @@ export function useRemoveAssignment() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (subscriptionId: string) => gqlRequest(REMOVE_ASSIGNMENT, { subscriptionId }),
+    onMutate: async (subscriptionId) => {
+      await qc.cancelQueries({ queryKey: accountKeys.all });
+      const prev = qc.getQueryData<StreamingAccountDto[]>(accountKeys.all);
+      qc.setQueryData<StreamingAccountDto[]>(accountKeys.all, (old) =>
+        old?.map((acc) => ({
+          ...acc,
+          accountAssignment:
+            acc.accountAssignment?.subscriptionId === subscriptionId
+              ? null
+              : acc.accountAssignment,
+          profiles: acc.profiles.map((p) => ({
+            ...p,
+            assignment:
+              p.assignment?.subscriptionId === subscriptionId ? null : p.assignment,
+          })),
+        })) ?? []
+      );
+      return { prev };
+    },
+    onError: (err, _, ctx) => {
+      toastError(err, "Retrait de l'assignation");
+      if (ctx?.prev) qc.setQueryData(accountKeys.all, ctx.prev);
+    },
     onSuccess: () => toastSuccess('Assignation retirée'),
-    onError: (err) => toastError(err, "Retrait de l'assignation"),
     onSettled: () => qc.invalidateQueries({ queryKey: accountKeys.all }),
   });
 }
