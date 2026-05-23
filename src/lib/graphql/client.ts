@@ -1,13 +1,8 @@
 'use client';
 
-import { GraphQLClient } from 'graphql-request';
-import { env } from '@/lib/settings/env';
+import { createBrowserGraphQLClient } from '@/lib/graphql/client-config';
 
-const GRAPHQL_ENDPOINT = `${env.NEXT_PUBLIC_URL}/api/graphql`;
-
-export const gqlClient = new GraphQLClient(GRAPHQL_ENDPOINT, {
-  credentials: 'include',
-});
+export const gqlClient = createBrowserGraphQLClient();
 
 export async function gqlRequest<T>(
   document: string,

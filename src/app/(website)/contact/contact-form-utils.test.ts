@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import {
-  contactSchema,
-  toCreateInquiryInput,
-} from '@/app/(website)/contact/contact-form-utils';
+import { contactSchema, toCreateInquiryInput } from '@/app/(website)/contact/contact-form-utils';
 import { createRichTextDocumentFromText } from '@/components/rich-text/rich-text-utils';
 
 test('contactSchema accepts a rich text message with enough plain text', () => {

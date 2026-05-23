@@ -9,8 +9,7 @@ function setGraphQLRouteTestEnv() {
   process.env.GITHUB_CLIENT_ID ??= 'test-github-client-id';
   process.env.GITHUB_CLIENT_SECRET ??= 'test-github-client-secret';
   process.env.DB_SSL_CA ??= 'test-db-ssl-ca';
-  process.env.ENCRYPTION_KEY ??=
-    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+  process.env.ENCRYPTION_KEY ??= '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
   process.env.NEXT_PUBLIC_URL ??= 'http://localhost:3000';
 }
 
