@@ -7,6 +7,8 @@ import { SidebarProvider } from '@/components/console/sidebar-context';
 import { getAllPayments } from '@/modules/payments/server/repositories/payments.repository';
 import { getAllSubscriptions } from '@/modules/subscriptions/server/repositories/subscriptions.repository';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
