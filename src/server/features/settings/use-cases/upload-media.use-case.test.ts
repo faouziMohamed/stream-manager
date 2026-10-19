@@ -31,7 +31,7 @@ describe('uploadMediaUseCase', () => {
     const inserted: Record<string, unknown>[] = [];
     const createdAt = new Date('2026-01-01T00:00:00.000Z');
     const result = await uploadMediaUseCase(
-      { category: 'SERVICES', file: fileFrom(Buffer.from([0xff, 0xd8, 0xff, 0xdb]), 'avatar.jpg') },
+      { category: 'SERVICES', file: fileFrom(Buffer.from([0xFF, 0xD8, 0xFF, 0xDB]), 'avatar.jpg') },
       adminContext,
       {
         createId: () => 'img_1',
@@ -131,7 +131,7 @@ describe('uploadMediaUseCase', () => {
       uploadMediaUseCase(
         {
           category: 'LIBRARY',
-          file: fileFrom(Buffer.from([0xff, 0xd8, 0xff, 0xdb]), 'avatar.jpg'),
+          file: fileFrom(Buffer.from([0xFF, 0xD8, 0xFF, 0xDB]), 'avatar.jpg'),
         },
         adminContext,
         {

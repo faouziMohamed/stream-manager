@@ -166,7 +166,7 @@ function assertPdfText(value: string, field: string) {
   const unsupported = [...value].filter((character) => {
     const code = character.codePointAt(0) ?? 0;
 
-    return code > 0x7f && !WIN_ANSI_EXTRAS.has(code);
+    return code > 0x7F && !WIN_ANSI_EXTRAS.has(code);
   });
 
   if (unsupported.length > 0) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { CalendarMonthGrid } from '@/components/console/calendar/calendar-month-grid';
 import { CalendarTimeline } from '@/components/console/calendar/calendar-timeline';
@@ -40,6 +40,18 @@ export function PaymentsCalendar({
 }: PaymentsCalendarProps) {
   const [status, setStatus] = useState<string>('all');
   const [layout, setLayout] = useState<CalendarLayout>('month');
+  // On a phone the timeline is the readable reading of the same events: day
+  // columns scroll horizontally instead of squeezing a month into 55px cells.
+  // `useSyncExternalStore` reads the media query without setting state in an
+  // effect; the server snapshot is desktop, so hydration matches. The layout
+  // switch stays honest: choosing Month on a phone shows the month grid.
+  const compact = useSyncExternalStore(
+    subscribeCompactQuery,
+    getCompactSnapshot,
+    getServerCompactSnapshot
+  );
+  const [hasChosenLayout, setHasChosenLayout] = useState(false);
+  const effectiveLayout = compact && !hasChosenLayout ? 'timeline' : layout;
   const [viewMonth, setViewMonth] = useState(() => startOfThisMonth());
   const [timelineStart, setTimelineStart] = useState(() => todayIsoDate());
   const [viewPayment, setViewPayment] = useState<PaymentEvent | null>(null);
@@ -82,10 +94,10 @@ export function PaymentsCalendar({
     () => buildTimelineDays(timelineStart, TIMELINE_WINDOW_DAYS),
     [timelineStart]
   );
-  const label = layout === 'month' ? monthLabel : formatTimelineRangeLabel(timelineDays);
+  const label = effectiveLayout === 'month' ? monthLabel : formatTimelineRangeLabel(timelineDays);
 
   function step(direction: -1 | 1) {
-    if (layout === 'timeline') {
+    if (effectiveLayout === 'timeline') {
       setTimelineStart((current) => stepTimelineStart(current, direction * TIMELINE_WINDOW_DAYS));
       return;
     }
@@ -101,35 +113,29 @@ export function PaymentsCalendar({
   function renderSurface() {
     if (mode === 'agenda') return <PaymentsAgendaList events={events} onOpen={setViewPayment} />;
 
-    return (
-      <>
-        <div className="sm:hidden">
-          <PaymentsAgendaList events={events} onOpen={setViewPayment} />
-        </div>
-        <div className="hidden sm:block">
-          {layout === 'timeline' ? (
-            <CalendarTimeline
-              ariaLabel="Payments timeline"
-              events={events}
-              renderEvent={(event, key) => (
-                <PaymentChip event={event} key={key} onOpen={setViewPayment} />
-              )}
-              today={today}
-              windowStart={timelineStart}
-            />
-          ) : (
-            <CalendarMonthGrid
-              events={events}
-              onOpenDay={(day) => setViewMonth(new Date(`${day}T00:00:00`))}
-              renderEvent={(event, key) => (
-                <PaymentChip event={event} key={key} onOpen={setViewPayment} />
-              )}
-              today={today}
-              viewMonth={viewMonth}
-            />
-          )}
-        </div>
-      </>
+    // The same surface at every width: the timeline scrolls horizontally, and
+    // choosing Month renders the grid on a phone too. The list reading lives
+    // in the Agenda tab, which is now available on small screens as well.
+    return effectiveLayout === 'timeline' ? (
+      <CalendarTimeline
+        ariaLabel="Payments timeline"
+        events={events}
+        renderEvent={(event, key) => (
+          <PaymentChip event={event} key={key} onOpen={setViewPayment} />
+        )}
+        today={today}
+        windowStart={timelineStart}
+      />
+    ) : (
+      <CalendarMonthGrid
+        events={events}
+        onOpenDay={(day) => setViewMonth(new Date(`${day}T00:00:00`))}
+        renderEvent={(event, key) => (
+          <PaymentChip event={event} key={key} onOpen={setViewPayment} />
+        )}
+        today={today}
+        viewMonth={viewMonth}
+      />
     );
   }
 
@@ -139,9 +145,12 @@ export function PaymentsCalendar({
         <CalendarToolbar
           counts={counts}
           label={label}
-          layout={layout}
-          onLabelChange={layout === 'month' ? setViewMonth : undefined}
-          onLayoutChange={setLayout}
+          layout={effectiveLayout}
+          onLabelChange={effectiveLayout === 'month' ? setViewMonth : undefined}
+          onLayoutChange={(next) => {
+            setHasChosenLayout(true);
+            setLayout(next);
+          }}
           onNext={() => step(1)}
           onPrevious={() => step(-1)}
           onStatusChange={setStatus}
@@ -174,6 +183,23 @@ export function PaymentsCalendar({
       />
     </>
   );
+}
+
+const COMPACT_QUERY = '(max-width: 639px)';
+
+function subscribeCompactQuery(onChange: () => void) {
+  const media = window.matchMedia(COMPACT_QUERY);
+  media.addEventListener('change', onChange);
+
+  return () => media.removeEventListener('change', onChange);
+}
+
+function getCompactSnapshot(): boolean {
+  return window.matchMedia(COMPACT_QUERY).matches;
+}
+
+function getServerCompactSnapshot(): boolean {
+  return false;
 }
 
 function startOfThisMonth(): Date {

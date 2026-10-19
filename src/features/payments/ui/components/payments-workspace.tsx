@@ -30,7 +30,7 @@ export function PaymentsWorkspace({ canManage, initialData, initialPage }: Payme
           <CalendarDays className="size-4" />
           Calendar
         </TabsTrigger>
-        <TabsTrigger className="hidden sm:inline-flex" value="agenda">
+        <TabsTrigger value="agenda">
           <ListOrdered className="size-4" />
           Agenda
         </TabsTrigger>
