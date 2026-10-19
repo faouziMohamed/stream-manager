@@ -6,7 +6,7 @@ import { logoutUserDevicesAction } from '@/features/users/server/actions/logout-
 import { updateUserRoleAction } from '@/features/users/server/actions/update-user-role.action';
 import type { UserRole } from '@/features/users/shared/user.types';
 import { useAuthRecoveredOperation } from '@/lib/auth/use-auth-recovered-operation';
-import type { UserManagementDto } from '@/lib/graphql/generated/graphql.users';
+import type { UserManagementDto } from '@/lib/graphql/generated/graphql';
 import { clientLogger } from '@/lib/logger/client-logger';
 
 export const USERS_QUERY_KEY = ['users', 'list'] as const;

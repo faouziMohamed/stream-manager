@@ -8,7 +8,7 @@ import {
   UpdateUserRoleDocument,
   type UpdateUserRoleMutation,
   type UpdateUserRoleMutationVariables,
-} from '@/lib/graphql/generated/graphql.users';
+} from '@/lib/graphql/generated/graphql';
 
 const log = createLogger('users.actions');
 

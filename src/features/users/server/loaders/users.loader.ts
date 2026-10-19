@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth/auth';
 import { canAccessConsole, isAdmin } from '@/lib/auth/role.helpers';
 import { gqlRequest } from '@/lib/graphql/client';
-import { ListUsersDocument } from '@/lib/graphql/generated/graphql.users';
-import type { ListUsersQuery } from '@/lib/graphql/generated/graphql.users';
+import { ListUsersDocument } from '@/lib/graphql/generated/graphql';
+import type { ListUsersQuery } from '@/lib/graphql/generated/graphql';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('users.loader');

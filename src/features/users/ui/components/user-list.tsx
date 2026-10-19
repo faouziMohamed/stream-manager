@@ -44,7 +44,7 @@ import {
   useUpdateUserRole,
   useUsers,
 } from '@/features/users/ui/queries/use-users.queries';
-import type { UserManagementDto } from '@/lib/graphql/generated/graphql.users';
+import type { UserManagementDto } from '@/lib/graphql/generated/graphql';
 
 export function UserList({ initialUsers }: UserListProps) {
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 'use server';
 
-import type { UserManagementDto } from '@/lib/graphql/generated/graphql.users';
+import type { UserManagementDto } from '@/lib/graphql/generated/graphql';
 
 import { loadUsers } from '@/features/users/server/loaders/users.loader';
 import { createLogger } from '@/lib/logger';

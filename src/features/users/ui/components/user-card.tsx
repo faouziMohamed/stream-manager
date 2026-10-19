@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ROLE_LABELS, type UserRole } from '@/features/users/shared/user.types';
-import type { UserManagementDto } from '@/lib/graphql/generated/graphql.users';
+import type { UserManagementDto } from '@/lib/graphql/generated/graphql';
 
 export function UserCard({
   deletePending,
