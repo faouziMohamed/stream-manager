@@ -1,0 +1,35 @@
+mutation CreateCustomer($input: CreateCustomerInput!) {
+  createCustomer(input: $input) {
+    id
+    businessId
+    name
+    email
+    phone
+    isActive
+    language
+    createdAt
+    updatedAt
+  }
+}
+
+mutation UpdateCustomer($input: UpdateCustomerInput!) {
+  updateCustomer(input: $input) {
+    id
+    businessId
+    name
+    email
+    phone
+    isActive
+    language
+    createdAt
+    updatedAt
+  }
+}
+
+mutation ArchiveCustomer($id: ID!) {
+  archiveCustomer(id: $id) {
+    id
+    businessId
+    isActive
+  }
+}

@@ -1,29 +1,16 @@
-import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
-import { Geist_Mono, Inter, Space_Grotesk } from 'next/font/google';
-import './globals.css';
-import { Providers } from '@/components/shared/providers';
-import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
+import { Geist, Geist_Mono } from 'next/font/google';
+
+import { AppProviders } from '@/components/shared/providers/app-providers';
+import { JsonLd } from '@/lib/seo/json-ld';
 import { env } from '@/lib/settings/env';
-import { Analytics } from '@vercel/analytics/next';
-import { JsonLd } from '@/modules/seo/client/components/json-ld';
-import {
-  appleTouchIconUrl,
-  faviconUrl,
-  ogImageUrl,
-  SEO,
-} from '@/modules/seo/client/helpers/social-card';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  weight: ['300', '400', '500', '600', '700', '800'],
-});
+import './globals.css';
 
-const spaceGrotesk = Space_Grotesk({
+const geistSans = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
-  variable: '--font-display',
-  weight: ['500', '600', '700'],
 });
 
 const geistMono = Geist_Mono({
@@ -31,80 +18,53 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-const SITE_URL = env.NEXT_PUBLIC_URL;
-const DEFAULT_OG = ogImageUrl(
-  'StreamManager — Gestion des abonnements streaming',
-  'Gérez, suivez et renouvelez vos abonnements Netflix, Disney+, Spotify et plus encore au meilleur prix.',
-  SEO.siteName
-);
+const SITE_URL = env.NEXT_PUBLIC_APP_URL.replace(/\/+$/, '');
+const SITE_DESCRIPTION =
+  'Customers, memberships, payments and streaming accounts in one operations console for subscription resellers.';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'StreamManager — Gestion des abonnements',
-    template: '%s — StreamManager',
-  },
-  description:
-    'Gérez, suivez et renouvelez vos abonnements Netflix, Disney+, Spotify et plus encore au meilleur prix.',
-  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: '/' },
+  applicationName: 'StreamManager',
+  description: SITE_DESCRIPTION,
   manifest: '/manifest.webmanifest',
-  alternates: {
-    canonical: '/',
-  },
+  metadataBase: new URL(SITE_URL),
   openGraph: {
+    description: SITE_DESCRIPTION,
+    locale: 'en_US',
+    siteName: 'StreamManager',
+    title: 'StreamManager — streaming subscription operations',
     type: 'website',
-    locale: 'fr_FR',
-    siteName: SEO.siteName,
     url: SITE_URL,
-    title: 'StreamManager — Gestion des abonnements streaming',
-    description:
-      'Gérez, suivez et renouvelez vos abonnements Netflix, Disney+, Spotify et plus encore au meilleur prix.',
-    images: [{ url: DEFAULT_OG, width: 1200, height: 630 }],
+  },
+  other: {
+    'msapplication-TileColor': '#0a0a0a',
+    'theme-color': '#0a0a0a',
+  },
+  title: {
+    default: 'StreamManager — streaming subscription operations',
+    template: '%s | StreamManager',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'StreamManager — Gestion des abonnements streaming',
-    description:
-      'Gérez, suivez et renouvelez vos abonnements Netflix, Disney+, Spotify et plus encore au meilleur prix.',
-    images: [DEFAULT_OG],
-  },
-  icons: {
-    icon: faviconUrl('SM'),
-    apple: appleTouchIconUrl('SM'),
-    shortcut: faviconUrl('SM'),
-  },
-  other: {
-    'msapplication-TileColor': SEO.bgColor,
-    'theme-color': SEO.bgColor,
+    description: SITE_DESCRIPTION,
+    title: 'StreamManager — streaming subscription operations',
   },
 };
 
 const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: SEO.siteName,
+  description: SITE_DESCRIPTION,
+  logo: `${SITE_URL}/icon.svg`,
+  name: 'StreamManager',
   url: SITE_URL,
-  logo: faviconUrl('SM'),
-  description:
-    "Service de gestion d'abonnements streaming au Maroc — Netflix, Disney+, Spotify, et plus.",
-  address: {
-    '@type': 'PostalAddress',
-    addressCountry: 'MA',
-  },
 };
 
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: SEO.siteName,
+  name: 'StreamManager',
   url: SITE_URL,
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: {
-      '@type': 'EntryPoint',
-      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
-    },
-    'query-input': 'required name=search_term_string',
-  },
 };
 
 export default function RootLayout({
@@ -114,15 +74,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="fr"
+      lang="en"
       suppressHydrationWarning
-      className={cn('font-sans', inter.variable, spaceGrotesk.variable)}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className={`${geistMono.variable} antialiased`}>
+      {/* Browser extensions (Grammarly and similar) inject attributes on <body> before hydration. */}
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
-        <Providers>{children}</Providers>
-        <Analytics />
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

@@ -1,0 +1,49 @@
+query ListSummaryLinks {
+  summaryLinks {
+    id
+    token
+    label
+    expiresAt
+    createdAt
+  }
+}
+
+mutation GenerateSummaryLink($input: GenerateSummaryLinkInput) {
+  generateSummaryLink(input: $input) {
+    id
+    token
+    label
+    expiresAt
+    createdAt
+  }
+}
+
+mutation RevokeSummaryLink($input: RevokeSummaryLinkInput!) {
+  revokeSummaryLink(input: $input)
+}
+
+query GetAccountantSummary($token: String!) {
+  summaryByToken(token: $token) {
+    memberships {
+      id
+      businessId
+      customerName
+      planName
+      status
+      startDate
+      endDate
+      isRecurring
+    }
+    payments {
+      id
+      businessId
+      customerName
+      amount
+      currencyCode
+      status
+      dueDate
+      paidDate
+      method
+    }
+  }
+}

@@ -1,0 +1,16 @@
+query Sessions {
+  sessions {
+    id
+    browser
+    os
+    deviceType
+    countryCode
+    createdAt
+    lastUsedAt
+    current
+  }
+}
+
+mutation RevokeSession($input: RevokeSessionInput!) {
+  revokeSession(input: $input)
+}

@@ -1,26 +1,52 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils/helpers';
+import type { LucideIcon } from 'lucide-react';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: string;
-}
+import { cn } from '@/lib/utils';
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          'border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-          error && 'border-destructive focus-visible:ring-destructive',
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
+  { className, error, icon: Icon, ...props },
+  ref
+) {
+  const field = (
+    <input
+      ref={ref}
+      data-slot="input"
+      aria-invalid={error === undefined ? undefined : true}
+      className={cn(
+        'border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm',
+        'ring-offset-background transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium',
+        'placeholder:text-muted-foreground focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        error !== undefined && 'border-destructive focus-visible:ring-destructive',
+        // The offset lives here so every iconned field in the app lines up,
+        // instead of each form inventing its own padding.
+        Icon !== undefined && 'pl-9',
+        className
+      )}
+      {...props}
+    />
+  );
+
+  if (Icon === undefined) {
+    return field;
   }
-);
-Input.displayName = 'Input';
 
-export { Input };
+  return (
+    <div className="relative" data-slot="input-with-icon">
+      <Icon
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-(--sm-muted)"
+      />
+      {field}
+    </div>
+  );
+});
+
+type InputProps = React.ComponentProps<'input'> & {
+  error?: string;
+  /**
+   * Leading icon naming the DATA in the field (Mail for an e-mail, Phone for a
+   * number). Decorative: it repeats the label visually, never replaces it.
+   */
+  icon?: LucideIcon;
+};

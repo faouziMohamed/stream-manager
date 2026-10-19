@@ -1,61 +1,44 @@
-/**
- * Centralised route definitions for the entire app.
- * Import from here — never hardcode paths in components or pages.
- */
-
-// ── Public website ────────────────────────────────────────────────────────────
 export const ROUTES = {
-  // Public
   home: '/',
-  contact: '/contact',
-
-  // Auth
+  forbidden: '/forbidden',
+  notFound: '/not-found',
   auth: {
-    login: '/auth/login',
-    signup: '/auth/signup',
+    login: '/login',
+    register: '/register',
+    forgotPassword: '/forgot-password',
+    resetPassword: '/reset-password',
+    verifyEmail: '/verify-email',
+    pendingApproval: '/pending-approval',
   },
-
-  // Shared summary (public token link)
-  summary: (token: string) => `/s/${token}`,
-
-  // Console — root
   console: {
     root: '/console',
-
-    // Management
+    customers: '/console/customers',
+    customerDetail: (id: string) => `/console/customers/${id}`,
     services: '/console/services',
-    promotions: '/console/promotions',
-    clients: '/console/clients',
-    subscriptions: '/console/subscriptions',
+    serviceDetail: (id: string) => `/console/services/${id}`,
+    memberships: '/console/memberships',
+    membershipDetail: (id: string) => `/console/memberships/${id}`,
+    // The guided one-screen flow. Called "subscription" in the UI; the entity
+    // behind it is still Membership (GraphQL reserves `Subscription`).
+    newSubscription: '/console/subscriptions/new',
     payments: '/console/payments',
-    accounts: '/console/accounts',
-
-    // Visualisation
+    streamingAccounts: '/console/streaming-accounts',
+    streamingAccountDetail: (id: string) => `/console/streaming-accounts/${id}`,
+    plans: '/console/plans',
+    planDetail: (id: string) => `/console/plans/${id}`,
     timeline: '/console/timeline',
     analytics: '/console/analytics',
-
-    // Account
     summary: '/console/summary',
-
-    // Inquiries / contact messages
-    inquiries: '/console/inquiries',
-
-    // Outils
     media: '/console/media',
-
-    // Settings
     settings: {
       root: '/console/settings',
-      smtp: '/console/settings/smtp',
-      cloudinary: '/console/settings/cloudinary',
-      notifications: '/console/settings/notifications',
+      sessions: '/console/settings/sessions',
     },
+    users: '/console/users',
   },
 } as const;
 
-// ── Route prefix segments (used in proxy.ts for startsWith checks) ────────────
 export const ROUTE_PREFIXES = {
   console: '/console',
-  auth: '/auth/',
-  sharedSummary: '/s/',
+  auth: '/login',
 } as const;

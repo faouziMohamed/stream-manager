@@ -1,38 +1,40 @@
-import type { NextRequest } from 'next/server';
+import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
-import { getSessionCookie } from 'better-auth/cookies';
 
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+import { authBaseConfig } from '@/lib/auth/auth.config';
+import { buildLoginRedirectPath } from '@/lib/auth/auth-routing.helpers';
+import { hasSignedInSession, hasValidConsoleSession } from '@/lib/auth/auth-session.helpers';
+import { ROUTES } from '@/lib/config/routes';
 
-  // Allow public summary share routes
-  if (pathname.startsWith('/s/')) {
-    return NextResponse.next();
+// Middleware reads the session cookie only, so it uses the edge-safe config.
+// The database-backed providers live in src/lib/auth/auth.ts.
+const { auth } = NextAuth(authBaseConfig);
+
+export const proxy = auth((request) => {
+  const interruptedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+
+  if (!hasSignedInSession(request.auth)) {
+    return NextResponse.redirect(
+      new URL(buildLoginRedirectPath(interruptedPath), request.nextUrl.origin)
+    );
   }
 
-  const sessionCookie = getSessionCookie(request);
-
-  // Redirect authenticated users away from auth pages
-  if (pathname.startsWith('/auth/')) {
-    if (sessionCookie) {
-      return NextResponse.redirect(new URL('/console', request.url));
-    }
-    return NextResponse.next();
+  if (!hasValidConsoleSession(request.auth)) {
+    // Rewrite, not redirect: the operator keeps the address they typed, and
+    // the denied page is what they see at that address.
+    return NextResponse.rewrite(new URL(ROUTES.forbidden, request.nextUrl.origin));
   }
 
-  // Protect all /console routes
-  if (pathname.startsWith('/console')) {
-    if (!sessionCookie) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    return NextResponse.next();
-  }
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-current-path', interruptedPath);
 
-  return NextResponse.next();
-}
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+});
 
 export const config = {
-  matcher: ['/console/:path*', '/auth/:path*', '/s/:path*'],
+  matcher: ['/console/:path*'],
 };

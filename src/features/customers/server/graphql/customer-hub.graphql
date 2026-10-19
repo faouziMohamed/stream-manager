@@ -1,0 +1,59 @@
+query CustomerHubMemberships($customerId: ID!, $page: Int, $pageSize: Int) {
+  memberships(customerId: $customerId, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      businessId
+      planId
+      status
+      isRecurring
+      startDate
+      endDate
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query CustomerHubPayments($customerId: ID!, $page: Int, $pageSize: Int) {
+  payments(customerId: $customerId, page: $page, pageSize: $pageSize) {
+    items {
+      id
+      businessId
+      membershipId
+      amount
+      currencyCode
+      status
+      dueDate
+      paidDate
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query CustomerHubPlans($page: Int, $pageSize: Int) {
+  plans(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      name
+      durationMonths
+      price
+      currencyCode
+      serviceId
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}

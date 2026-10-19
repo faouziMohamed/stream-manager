@@ -1,7 +1,15 @@
-import { getDefaultCurrency } from '@/lib/db/repositories/analytics.repository';
-import { SettingsEditor } from '@/modules/settings/client/components/settings-editor';
+import { redirect } from 'next/navigation';
 
-export default async function SettingsPage() {
-  const currency = await getDefaultCurrency();
-  return <SettingsEditor defaultCurrency={currency} />;
+import { ROUTES } from '@/lib/config/routes';
+
+/**
+ * The settings hub had nothing to configure.
+ *
+ * Storage and mail are environment variables, media lives in the sidebar,
+ * and sessions and users are their own destinations — so the page was a card
+ * linking to a link. It redirects instead, which keeps old bookmarks working
+ * without keeping a screen that only repeats the navigation.
+ */
+export default function SettingsPage() {
+  redirect(ROUTES.console.settings.sessions);
 }

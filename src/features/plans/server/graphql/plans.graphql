@@ -1,0 +1,118 @@
+query ListPlans($page: Int, $pageSize: Int, $serviceId: ID, $planType: String, $isActive: Boolean) {
+  plans(
+    page: $page
+    pageSize: $pageSize
+    serviceId: $serviceId
+    planType: $planType
+    isActive: $isActive
+  ) {
+    items {
+      id
+      name
+      durationMonths
+      price
+      currencyCode
+      planType
+      descriptionContent
+      serviceId
+      isActive
+      createdAt
+      updatedAt
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query PlanDetail($id: ID!) {
+  plan(id: $id) {
+    id
+    name
+    durationMonths
+    price
+    currencyCode
+    planType
+    descriptionContent
+    serviceId
+    isActive
+    createdAt
+    updatedAt
+  }
+  memberships(planId: $id, pageSize: 100) {
+    items {
+      id
+      businessId
+      customerId
+      status
+      startDate
+      endDate
+    }
+    pageInfo {
+      total
+    }
+  }
+  services(pageSize: 100) {
+    items {
+      id
+      name
+    }
+  }
+}
+
+query ListPlanServiceOptions($page: Int, $pageSize: Int) {
+  services(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      name
+      category
+      isActive
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+mutation CreatePlan($input: CreatePlanInput!) {
+  createPlan(input: $input) {
+    id
+    name
+    durationMonths
+    price
+    currencyCode
+    planType
+    descriptionContent
+    serviceId
+    isActive
+    createdAt
+  }
+}
+
+mutation UpdatePlan($input: UpdatePlanInput!) {
+  updatePlan(input: $input) {
+    id
+    name
+    durationMonths
+    price
+    currencyCode
+    planType
+    descriptionContent
+    serviceId
+    isActive
+    updatedAt
+  }
+}
+
+mutation DeletePlan($input: DeletePlanInput!) {
+  deletePlan(input: $input) {
+    id
+    name
+  }
+}

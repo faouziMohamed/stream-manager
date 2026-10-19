@@ -1,0 +1,9 @@
+query MembershipTimeline {
+  membershipTimeline {
+    id
+    customerName
+    planName
+    startDate
+    endDate
+  }
+}

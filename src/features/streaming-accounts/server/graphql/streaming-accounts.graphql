@@ -1,0 +1,151 @@
+query ListStreamingAccounts {
+  streamingAccounts {
+    id
+    label
+    email
+    serviceId
+    isActive
+    maxProfiles
+    supportsProfiles
+    profiles {
+      assignedAt
+      assignmentId
+      id
+      membershipId
+      name
+      isAssigned
+    }
+    createdAt
+  }
+}
+
+query ListStreamingAccountServiceOptions($page: Int, $pageSize: Int) {
+  services(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      name
+      category
+      isActive
+      supportsProfiles
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ListStreamingAccountMembershipOptions($page: Int, $pageSize: Int, $status: String) {
+  memberships(page: $page, pageSize: $pageSize, status: $status) {
+    items {
+      id
+      businessId
+      customerId
+      planId
+      status
+      isRecurring
+      startDate
+      endDate
+      renewedFromId
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+mutation UpdateStreamingAccount($input: UpdateStreamingAccountInput!) {
+  updateStreamingAccount(input: $input) {
+    id
+    label
+    serviceId
+    isActive
+    maxProfiles
+    supportsProfiles
+    email
+    updatedAt
+  }
+}
+
+mutation DeleteStreamingAccount($input: DeleteStreamingAccountInput!) {
+  deleteStreamingAccount(input: $input) {
+    id
+    label
+    isActive
+  }
+}
+
+mutation UpdateStreamingProfile($input: UpdateStreamingProfileInput!) {
+  updateStreamingProfile(input: $input) {
+    id
+    accountId
+    name
+    isAssigned
+    updatedAt
+  }
+}
+
+mutation DeleteStreamingProfile($input: DeleteStreamingProfileInput!) {
+  deleteStreamingProfile(input: $input) {
+    id
+    accountId
+    name
+    isAssigned
+  }
+}
+
+mutation CreateStreamingAccount($input: CreateStreamingAccountInput!) {
+  createStreamingAccount(input: $input) {
+    id
+    label
+    serviceId
+    isActive
+    maxProfiles
+    supportsProfiles
+    profiles {
+      assignedAt
+      assignmentId
+      id
+      membershipId
+      name
+      isAssigned
+    }
+    createdAt
+  }
+}
+
+mutation CreateStreamingProfile($input: CreateStreamingProfileInput!) {
+  createStreamingProfile(input: $input) {
+    id
+    accountId
+    name
+    isAssigned
+    createdAt
+    updatedAt
+  }
+}
+
+mutation AssignProfileToMembership($input: AssignProfileToMembershipInput!) {
+  assignProfileToMembership(input: $input) {
+    id
+    membershipId
+    accountId
+    profileId
+    assignedAt
+  }
+}
+
+mutation UnassignProfile($input: UnassignProfileInput!) {
+  unassignProfile(input: $input) {
+    assignmentId
+    id
+    membershipId
+    name
+    isAssigned
+  }
+}

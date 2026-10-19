@@ -1,39 +1,83 @@
-**StreamManager** — a subscription management dashboard for streaming service resellers.
+# StreamManager
 
-## Getting Started
+A single Next.js 16 application. The UI, the GraphQL API, the business logic and
+the database layer all live in one project and run in one process.
 
-First, install dependencies:
-
-```bash
-npm install
+```
+src/
+  app/                  App Router — pages, /api/graphql, /api/cron/[job], Auth.js
+  components/           Shared UI
+  features/<domain>/    server/ (loaders, actions, .graphql) · shared/ · ui/
+  lib/                  auth, graphql client, logger, settings/env, config
+  server/               The former API, now in-process
+    features/<domain>/  resolvers · use-cases · repositories · schemas
+    lib/db/             Drizzle client + tables
+    lib/graphql/        schema + resolver aggregation, Yoga instance, context
+    workers/            Scheduled jobs, invoked by /api/cron/<job>
+drizzle/                Migrations
 ```
 
-Run database migrations (generate + apply):
+## Request flow
 
-```bash
-npm run db:generate
-npm run db:migrate
+```
+Browser
+  → React Server Component or React Query hook
+  → Server Action / RSC loader
+  → gqlRequest  (runs the Yoga pipeline in-process — no network hop)
+  → Resolver → UseCase → Repository → PostgreSQL (Drizzle)
 ```
 
-Then, start the development server:
+`/api/graphql` is a real route handler for external clients and GraphiQL.
+Server-side callers skip the socket: an RSC making an HTTP request to its own
+server can stall during build and prerender.
+
+## Auth
+
+Auth.js owns the browser session. The Credentials and GitHub providers call the
+login use-cases directly; the resulting `auth_sessions` row id is stored in the
+JWT. Every GraphQL request re-checks that row, so revoking a session logs the
+user out on their next request even though their cookie is still valid. There
+are no access/refresh tokens.
+
+`src/lib/auth/auth.config.ts` holds the edge-safe half of the config used by
+`src/proxy.ts` (middleware); `src/lib/auth/auth.ts` adds the database-backed
+providers and runs only in the Node.js runtime.
+
+## Quick start
 
 ```bash
-npm run dev
+pnpm install
+cp .env.example .env     # then fill in the real values
+pnpm db:migrate
+pnpm seed:auth-user
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Commands
 
-## Learn More
+| Command                                         | What it does                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------- |
+| `pnpm dev`                                      | Next dev server (webpack); `pnpm dev:turbo` for Turbopack     |
+| `pnpm build` / `pnpm start`                     | Production build and serve                                    |
+| `pnpm test`                                     | Vitest — app and server layer                                 |
+| `pnpm test:e2e`                                 | Playwright                                                    |
+| `pnpm lint` / `pnpm check:types`                | ESLint / tsc                                                  |
+| `pnpm codegen`                                  | Dump SDL to `schema.graphql`, then regenerate typed documents |
+| `pnpm db:generate` / `db:migrate` / `db:studio` | Drizzle Kit                                                   |
+| `pnpm seed:auth-user`                           | Create the initial admin user                                 |
 
-To learn more about Next.js, take a look at the following resources:
+`make help` lists the same targets.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scheduled jobs
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The former `node-cron` worker process is gone. Each job is a route handler at
+`/api/cron/<job>`, guarded by a `Bearer $CRON_SECRET` header; the schedule lives
+in `vercel.json`. Any external scheduler that can send that header works too.
 
-## Deploy on Vercel
+## Conventions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Import types with `import type { Foo }`, not `import { type Foo }`.
+- Use `@/lib/settings/env` instead of `process.env`, and `ROUTES` from
+  `@/lib/config/routes` instead of hardcoded paths.
+- After editing a `.graphql` file under `src/features/*/.../graphql/`, run
+  `pnpm codegen`.

@@ -1,4 +1,7 @@
+# Single package at the repo root — no workspace members. This file only
+# carries pnpm settings, which pnpm reads from here rather than package.json.
 allowBuilds:
+  argon2: true
   esbuild: true
   msw: true
   sharp: true

@@ -1,0 +1,1 @@
+ALTER TABLE "customers_customers" ADD COLUMN "language" varchar(8) DEFAULT 'fr' NOT NULL;

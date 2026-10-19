@@ -1,0 +1,36 @@
+fragment MediaAssetFields on MediaAsset {
+  id
+  storageKey
+  originalFilename
+  contentType
+  sizeBytes
+  uploadedByUserId
+  createdAt
+  imageUrl
+}
+
+query MediaAssets($input: ListMediaAssetsInput) {
+  mediaAssets(input: $input) {
+    items {
+      ...MediaAssetFields
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+mutation UploadMedia($file: Upload!, $category: MediaCategory) {
+  uploadMedia(file: $file, category: $category) {
+    ...MediaAssetFields
+  }
+}
+
+mutation DeleteMediaAsset($input: DeleteMediaAssetInput!) {
+  deleteMediaAsset(input: $input) {
+    id
+  }
+}

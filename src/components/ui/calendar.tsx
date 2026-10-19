@@ -1,64 +1,62 @@
 'use client';
 
-import * as React from 'react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
-import { fr } from 'react-day-picker/locale';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils/helpers';
+import type { DayPickerProps } from 'react-day-picker';
 
-type CalendarProps = React.ComponentProps<typeof DayPicker>;
+import { cn } from '@/lib/utils';
 
-/**
- * Themed calendar using react-day-picker with shadcn/Tailwind styling.
- * No react-day-picker/style.css — fully custom classNames.
- */
-function Calendar({ className, classNames, ...props }: CalendarProps) {
+const CURRENT_YEAR = new Date().getFullYear();
+const DEFAULT_START = new Date(CURRENT_YEAR - 10, 0);
+const DEFAULT_END = new Date(CURRENT_YEAR + 10, 11);
+
+function Calendar({ className, classNames, ...props }: DayPickerProps) {
   return (
     <DayPicker
-      locale={fr}
-      showOutsideDays
-      className={cn('p-3', className)}
+      captionLayout="dropdown"
+      startMonth={DEFAULT_START}
+      endMonth={DEFAULT_END}
+      className={cn('p-1', className)}
       classNames={{
-        months: 'flex flex-col sm:flex-row gap-4',
-        month: 'flex flex-col gap-3',
-        month_caption: 'flex justify-center relative items-center h-7',
-        caption_label: 'text-sm font-medium capitalize',
-        nav: 'flex items-center gap-1',
-        button_previous:
-          'absolute left-1 top-0 inline-flex items-center justify-center rounded-md h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity',
         button_next:
-          'absolute right-1 top-0 inline-flex items-center justify-center rounded-md h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity',
-        weekday: 'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] capitalize',
+          'inline-flex size-8 items-center justify-center rounded-md text-(--sm-muted) hover:bg-(--sm-hover) hover:text-(--sm-fg)',
+        button_previous:
+          'inline-flex size-8 items-center justify-center rounded-md text-(--sm-muted) hover:bg-(--sm-hover) hover:text-(--sm-fg)',
+        // Visible label sitting under the transparent native <select> overlay.
+        caption_label:
+          'inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-sm font-semibold text-(--sm-fg) hover:bg-(--sm-hover)',
+        day: 'size-9 p-0 text-center text-sm',
+        day_button:
+          'size-9 rounded-md text-(--sm-fg) hover:bg-(--sm-hover) aria-selected:bg-(--sm-coral) aria-selected:text-(--sm-coral-fg)',
+        disabled: 'opacity-40',
+        // The real <select> react-day-picker renders for the dropdown caption,
+        // laid transparently over the label so clicking opens the OS picker.
+        dropdown: 'absolute inset-0 z-10 size-full cursor-pointer opacity-0',
+        dropdown_root: 'relative inline-flex items-center',
+        dropdowns: 'flex items-center justify-center gap-2',
+        month_caption: 'flex h-9 items-center justify-center',
+        month_grid: 'w-full border-collapse',
+        months: 'flex flex-col',
+        nav: 'absolute inset-x-1 top-1 flex items-center justify-between',
+        outside: 'text-(--sm-muted) opacity-50',
+        root: 'relative',
+        selected: 'rounded-md bg-(--sm-coral) text-(--sm-coral-fg)',
+        today: 'rounded-md border border-(--sm-coral-b)',
+        week: 'mt-1 flex w-full',
+        weekday: 'w-9 text-center text-[0.7rem] font-medium text-(--sm-muted)',
         weekdays: 'flex',
-        week: 'flex w-full mt-1',
-        day: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20',
-        day_button: cn(
-          'inline-flex items-center justify-center rounded-md h-8 w-8 p-0 font-normal',
-          'hover:bg-accent hover:text-accent-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          'aria-selected:opacity-100 cursor-pointer transition-colors'
-        ),
-        selected:
-          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground rounded-md',
-        today: 'bg-accent text-accent-foreground rounded-md',
-        outside: 'text-muted-foreground/40',
-        disabled: 'text-muted-foreground opacity-50 cursor-not-allowed',
-        hidden: 'invisible',
         ...classNames,
       }}
       components={{
-        Chevron: ({ orientation }) =>
-          orientation === 'left' ? (
-            <ChevronLeft className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          ),
+        Chevron: ({ orientation }) => {
+          if (orientation === 'left') return <ChevronLeft className="size-4" />;
+          if (orientation === 'right') return <ChevronRight className="size-4" />;
+          return <ChevronDown className="size-3.5" />;
+        },
       }}
       {...props}
     />
   );
 }
-Calendar.displayName = 'Calendar';
 
 export { Calendar };
-export type { CalendarProps };

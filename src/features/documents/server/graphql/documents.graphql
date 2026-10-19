@@ -1,0 +1,6 @@
+mutation GenerateDocument($input: GenerateDocumentInput!) {
+  generateDocument(input: $input) {
+    base64
+    filename
+  }
+}

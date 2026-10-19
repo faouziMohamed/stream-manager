@@ -1,0 +1,112 @@
+query GetMembership($id: ID!) {
+  membership(id: $id) {
+    id
+    businessId
+    customerId
+    planId
+    status
+    isRecurring
+    startDate
+    endDate
+    createdAt
+    updatedAt
+  }
+}
+
+query ListMemberships($page: Int, $pageSize: Int, $customerId: ID) {
+  memberships(page: $page, pageSize: $pageSize, customerId: $customerId) {
+    items {
+      id
+      businessId
+      customerId
+      planId
+      status
+      isRecurring
+      startDate
+      endDate
+      createdAt
+      updatedAt
+      renewedFromId
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ListMembershipCustomerOptions($page: Int, $pageSize: Int) {
+  customers(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      businessId
+      name
+      isActive
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ListMembershipPlanOptions($page: Int, $pageSize: Int, $isActive: Boolean) {
+  plans(page: $page, pageSize: $pageSize, isActive: $isActive) {
+    items {
+      id
+      name
+      durationMonths
+      price
+      currencyCode
+      planType
+      serviceId
+      isActive
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+mutation CancelMembership($input: CancelMembershipInput!) {
+  cancelMembership(input: $input) {
+    id
+    status
+    updatedAt
+  }
+}
+
+mutation CreateMembership($input: CreateMembershipInput!) {
+  createMembership(input: $input) {
+    id
+    businessId
+    customerId
+    planId
+    status
+    isRecurring
+    startDate
+    endDate
+    createdAt
+  }
+}
+
+mutation RenewMembership($input: RenewMembershipInput!) {
+  renewMembership(input: $input) {
+    id
+    businessId
+    customerId
+    planId
+    status
+    isRecurring
+    startDate
+    endDate
+    createdAt
+  }
+}

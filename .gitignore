@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -11,7 +11,12 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
+
+# playwright
+/test-results
+/playwright-report
+/e2e/.auth
 
 # next.js
 /.next/
@@ -32,6 +37,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env*.example
+
+# database backups — they contain customer personal data and must never be
+# committed, even though they are kept beside the project.
+/backups/
 
 # vercel
 .vercel
@@ -39,11 +49,27 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-/.agents/
-/.claude/
+
+# generated: `pnpm codegen` writes both
+/schema.graphql
+/src/lib/graphql/generated/
+
+# Session/copilot
+.claude/
+/.copilot/
+
+# superpowers/codex/idea
+.superpowers
+.idea
+.codex
 
 # Stakpak session files
 .stakpak/session*
-/.superpowers
-/.idea
-/.codex
+
+.agents
+skills-lock.json
+frontend.old
+/.turbo/
+/docs/rebuild
+/docs/superpowers
+/PRODUCT.md

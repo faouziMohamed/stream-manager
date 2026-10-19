@@ -1,52 +1,35 @@
-import {
-  getDashboardStats,
-  getMonthlyRevenue,
-  getPaymentBreakdown,
-  getSubscriptionsByService,
-} from '@/lib/db/repositories/analytics.repository';
-import { SummaryView } from '@/modules/settings/client/components/summary-view';
-import { SummaryLinksManager } from '@/modules/settings/client/components/summary-links-manager';
-import type { AnalyticsDto } from '@/lib/graphql/operations/analytics.operations';
+import { ConsolePageHeader } from '@/components/console/shared/console-page-header';
+import { ConsoleRefreshButton } from '@/components/console/shared/console-refresh-button';
+import { ForbiddenScreen } from '@/components/shared/forbidden-screen';
+import { loadSummaryLinks } from '@/features/summary/server/loaders/summary.loader';
+import { SUMMARY_LINKS_QUERY_KEY } from '@/features/summary/ui/queries/use-summary-links.queries';
+import { SummaryLinksConsole } from '@/features/summary/ui/components/summary-links-console';
+import { getCurrentConsoleUser } from '@/lib/auth/current-user';
 
 export default async function SummaryPage() {
-  const [stats, monthlyRevenue, paymentBreakdown, subscriptionsByService] = await Promise.all([
-    getDashboardStats(),
-    getMonthlyRevenue(6),
-    getPaymentBreakdown(6),
-    getSubscriptionsByService(),
-  ]);
+  // Listing summary links requires `requireAdmin`, and so do generate/revoke.
+  const user = await getCurrentConsoleUser();
 
-  const analytics: AnalyticsDto = {
-    monthlyRevenue,
-    paymentBreakdown,
-    subscriptionsByService,
-  };
+  if (user?.role !== 'admin') {
+    return <ForbiddenScreen email={user?.email} role={user?.role} />;
+  }
+
+  const { items } = await loadSummaryLinks();
 
   return (
-    <div className="space-y-8">
-      {/* Admin live preview */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">Résumé & Liens de partage</h1>
-        <p className="text-muted-foreground text-sm">
-          Prévisualisation du résumé public. Gérez vos liens de partage ci-dessous.
-        </p>
-      </div>
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <ConsolePageHeader
+        title="Summary"
+        description="Create controlled summary links for accountants, customer follow-ups, and external reviews."
+        actions={
+          <ConsoleRefreshButton
+            ariaLabel="Refresh summary links"
+            queryKey={SUMMARY_LINKS_QUERY_KEY}
+          />
+        }
+      />
 
-      {/* Summary link manager */}
-      <SummaryLinksManager />
-
-      {/* Live preview */}
-      <div className="overflow-hidden rounded-xl border">
-        <div className="bg-muted/40 text-muted-foreground border-b px-4 py-2 text-xs font-medium">
-          Aperçu du résumé partagé (informations sensibles visibles)
-        </div>
-        <SummaryView
-          stats={stats}
-          analytics={analytics}
-          showSensitiveInfo={true}
-          label="Aperçu administrateur"
-        />
-      </div>
-    </div>
+      <SummaryLinksConsole initialData={{ items }} />
+    </main>
   );
 }

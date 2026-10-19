@@ -1,0 +1,121 @@
+query ListServices($page: Int, $pageSize: Int) {
+  services(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      name
+      category
+      descriptionContent
+      imageKey
+      imageUrl
+      isActive
+      supportsProfiles
+      createdAt
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ServiceDetail($id: ID!) {
+  service(id: $id) {
+    id
+    name
+    category
+    descriptionContent
+    imageKey
+    imageUrl
+    isActive
+    supportsProfiles
+    createdAt
+    updatedAt
+  }
+  plans(serviceId: $id, pageSize: 100) {
+    items {
+      id
+      name
+      price
+      currencyCode
+      durationMonths
+      planType
+      isActive
+    }
+    pageInfo {
+      total
+    }
+  }
+  memberships(serviceId: $id, pageSize: 100) {
+    items {
+      id
+      businessId
+      customerId
+      status
+      startDate
+      endDate
+    }
+    pageInfo {
+      total
+    }
+  }
+  streamingAccounts {
+    id
+    serviceId
+    label
+    email
+    supportsProfiles
+    maxProfiles
+    isActive
+  }
+}
+
+query PublicServices {
+  publicServices {
+    id
+    name
+    category
+    supportsProfiles
+  }
+}
+
+mutation ArchiveService($id: ID!) {
+  archiveService(id: $id) {
+    id
+    isActive
+    updatedAt
+  }
+}
+
+mutation CreateService($input: CreateServiceInput!) {
+  createService(input: $input) {
+    id
+    name
+    category
+    imageUrl
+    isActive
+    supportsProfiles
+    createdAt
+  }
+}
+
+mutation RestoreService($id: ID!) {
+  restoreService(id: $id) {
+    id
+    isActive
+    updatedAt
+  }
+}
+
+mutation UpdateService($input: UpdateServiceInput!) {
+  updateService(input: $input) {
+    id
+    name
+    category
+    imageUrl
+    isActive
+    supportsProfiles
+    createdAt
+  }
+}

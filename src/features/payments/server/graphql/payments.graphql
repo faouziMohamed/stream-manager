@@ -1,0 +1,65 @@
+query ListPayments(
+  $page: Int
+  $pageSize: Int
+  $status: String
+  $dueFrom: String
+  $dueTo: String
+  $order: String
+) {
+  payments(
+    page: $page
+    pageSize: $pageSize
+    status: $status
+    dueFrom: $dueFrom
+    dueTo: $dueTo
+    order: $order
+  ) {
+    items {
+      id
+      businessId
+      amount
+      currencyCode
+      status
+      dueDate
+      paidDate
+      method
+      notes
+      createdAt
+      updatedAt
+      membershipId
+      customerId
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+mutation CreatePayment($input: CreatePaymentInput!) {
+  createPayment(input: $input) {
+    id
+    businessId
+    amount
+    currencyCode
+    status
+    dueDate
+    paidDate
+    membershipId
+    customerId
+    method
+    notes
+    createdAt
+  }
+}
+
+mutation MarkPaymentPaid($input: MarkPaymentPaidInput!) {
+  markPaymentPaid(input: $input) {
+    id
+    status
+    paidDate
+    updatedAt
+  }
+}

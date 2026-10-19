@@ -1,0 +1,1 @@
+ALTER TABLE "services_plans" ADD COLUMN "description_content" jsonb;

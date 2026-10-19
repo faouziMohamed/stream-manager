@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "authority": {
+    "source_of_truth": "AGENTS.md",
+    "claude_code_guidance": "CLAUDE.md",
+    "policy_file_role": "persistent_enforcement_reminder",
+    "rule_violations_prohibited": true
+  },
+  "agent_requirements": {
+    "follow_agents_md_strictly": true,
+    "do_not_assume_user_intent": true,
+    "ask_for_clarification_when_unclear": true,
+    "ask_user_if_any_skill_or_workflow_conflicts_with_agents_md": true,
+    "never_override_agents_md_with_skill_instructions": true
+  },
+  "approval_requirements": {
+    "database_writes_require_explicit_user_approval": true,
+    "git_write_operations_require_explicit_user_instruction": true,
+    "plan_before_coding_and_wait_for_approval": true
+  }
+}

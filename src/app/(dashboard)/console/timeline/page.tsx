@@ -1,23 +1,24 @@
-import { Suspense } from 'react';
-import { getTimelineSubscriptions } from '@/lib/db/repositories/timeline.repository';
-import { TimelineDashboard } from '@/modules/timeline/client/components/timeline-dashboard';
+import { ConsolePageHeader } from '@/components/console/shared/console-page-header';
+import { loadTimeline } from '@/features/timeline/server/loaders/timeline.loader';
+import type { ViewMode } from '@/features/timeline/ui/components/timeline-console.helpers';
+import { TimelineConsole } from '@/features/timeline/ui/components/timeline-console';
 
-export default async function TimelinePage() {
-  // Default: current month → +3 months
-  const today = new Date();
-  const fromDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
-  const endDate = new Date(today.getFullYear(), today.getMonth() + 4, 0);
-  const toDate = endDate.toISOString().slice(0, 10);
+export default async function TimelinePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const [items, params] = await Promise.all([loadTimeline(), searchParams]);
+  const rawView = params.view;
+  const initialView: ViewMode = rawView === 'calendar' ? 'calendar' : 'gantt';
 
-  const subscriptions = await getTimelineSubscriptions(fromDate, toDate);
-  // log.info({ subscriptions: subscriptions }, 'Fetched timeline subscriptions');
   return (
-    <Suspense>
-      <TimelineDashboard
-        subscriptions={subscriptions}
-        initialFromDate={fromDate}
-        initialToDate={toDate}
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <ConsolePageHeader
+        title="Timeline"
+        description="Coverage in force over time: every subscription window, by customer, on one axis."
       />
-    </Suspense>
+      <TimelineConsole initialData={{ items }} initialView={initialView} />
+    </main>
   );
 }

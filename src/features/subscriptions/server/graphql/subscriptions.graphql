@@ -1,0 +1,60 @@
+query ListSubscriptionCustomerOptions($page: Int, $pageSize: Int) {
+  customers(page: $page, pageSize: $pageSize) {
+    items {
+      id
+      businessId
+      name
+      email
+      phone
+      isActive
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ListSubscriptionPlanOptions($page: Int, $pageSize: Int, $isActive: Boolean) {
+  plans(page: $page, pageSize: $pageSize, isActive: $isActive) {
+    items {
+      id
+      name
+      durationMonths
+      price
+      currencyCode
+      serviceId
+      isActive
+    }
+    pageInfo {
+      page
+      pageSize
+      total
+      totalPages
+    }
+  }
+}
+
+query ListAvailableProfiles($serviceId: ID!) {
+  availableProfiles(serviceId: $serviceId) {
+    accountId
+    accountLabel
+    profileId
+    profileName
+  }
+}
+
+mutation CreateSubscription($input: CreateSubscriptionInput!) {
+  createSubscription(input: $input) {
+    id
+    reference
+    customerId
+    startDate
+    endDate
+    paymentId
+    paymentStatus
+    assignedProfileId
+  }
+}

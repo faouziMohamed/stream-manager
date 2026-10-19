@@ -5,8 +5,99 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778753555528,
-      "tag": "0000_init_db",
+      "when": 1779983836095,
+      "tag": "0000_init-auth-foundatio",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779987969127,
+      "tag": "0001_add-service-plan-customer-foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780018148801,
+      "tag": "0002_add-memberships-payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780018599285,
+      "tag": "0003_add-promotions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780020414002,
+      "tag": "0004_fresh_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780021172584,
+      "tag": "0005_daffy_ravenous",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780066433000,
+      "tag": "0006_add_settings_storage_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780067462000,
+      "tag": "0007_add_contact_inquiries",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1780561367895,
+      "tag": "0008_add_media_assets",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782132284020,
+      "tag": "0009_rare_shen",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786277499576,
+      "tag": "0010_simplify_backoffice",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792404472941,
+      "tag": "0011_bouncy_blue_shield",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792434518864,
+      "tag": "0012_add_audit_events",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792439110642,
+      "tag": "0013_drop_settings_app",
       "breakpoints": true
     }
   ]

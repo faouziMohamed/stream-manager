@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/cron/overdue-payments", "schedule": "5 0 * * *" },
+    { "path": "/api/cron/memberships-expiring", "schedule": "0 8 * * *" },
+    { "path": "/api/cron/memberships-expired", "schedule": "5 8 * * *" },
+    { "path": "/api/cron/summary-link-ttl", "schedule": "0 1 * * *" }
+  ]
+}

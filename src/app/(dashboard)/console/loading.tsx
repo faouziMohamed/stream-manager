@@ -1,31 +1,18 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
-function StatCardSkeleton() {
+export default function ConsoleLoading() {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <Skeleton className="h-4 w-28" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-8 w-16" />
-      </CardContent>
-    </Card>
-  );
-}
-
-export default function ConsoleDashboardLoading() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="mt-1 h-4 w-64" />
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <StatCardSkeleton key={i} />
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <div className="h-3 w-32 animate-pulse rounded-full bg-(--sm-surface2)" />
+      <div className="mt-4 h-8 w-48 animate-pulse rounded-md bg-(--sm-surface2)" />
+      <div className="mt-3 h-4 w-96 max-w-full animate-pulse rounded-md bg-(--sm-surface2)" />
+      <div className="mt-7 border-b border-(--sm-border)" />
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        {[0, 1, 2, 3].map((item) => (
+          <div
+            key={item}
+            className="h-28 animate-pulse rounded-xl border border-(--sm-border) bg-(--sm-surface)"
+          />
         ))}
       </div>
-    </div>
+    </main>
   );
 }

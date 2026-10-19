@@ -1,0 +1,15 @@
+query DashboardStats {
+  dashboardStats {
+    activeMemberships
+    revenueThisMonth
+    overduePayments
+    expiringInSevenDays
+  }
+}
+
+query RevenueChart($input: RevenueChartInput) {
+  revenueChart(input: $input) {
+    month
+    revenue
+  }
+}

@@ -1,0 +1,35 @@
+query ListUsers {
+  users {
+    id
+    name
+    email
+    role
+    avatar
+    createdAt
+    updatedAt
+  }
+}
+
+mutation UpdateUserRole($input: UpdateUserRoleInput!) {
+  updateUserRole(input: $input) {
+    id
+    name
+    email
+    role
+    avatar
+    createdAt
+    updatedAt
+  }
+}
+
+mutation DeleteUser($input: DeleteUserInput!) {
+  deleteUser(input: $input) {
+    id
+    name
+    email
+  }
+}
+
+mutation LogoutUserDevices($input: LogoutUserDevicesInput!) {
+  logoutUserDevices(input: $input)
+}
