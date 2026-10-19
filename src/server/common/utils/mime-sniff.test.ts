@@ -12,11 +12,11 @@ function ascii(text: string, length = text.length): Buffer {
 
 describe('sniffMimeType', () => {
   it('detects JPEG magic bytes', () => {
-    expect(sniffMimeType(bytes(0xff, 0xd8, 0xff, 0xe0))).toBe('image/jpeg');
+    expect(sniffMimeType(bytes(0xFF, 0xD8, 0xFF, 0xE0))).toBe('image/jpeg');
   });
 
   it('detects PNG magic bytes', () => {
-    expect(sniffMimeType(bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a))).toBe('image/png');
+    expect(sniffMimeType(bytes(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A))).toBe('image/png');
   });
 
   it('detects GIF magic bytes', () => {
@@ -37,7 +37,7 @@ describe('sniffMimeType', () => {
   });
 
   it('returns null for buffers shorter than 4 bytes', () => {
-    expect(sniffMimeType(bytes(0xff, 0xd8))).toBeNull();
+    expect(sniffMimeType(bytes(0xFF, 0xD8))).toBeNull();
     expect(sniffMimeType(Buffer.alloc(0))).toBeNull();
   });
 

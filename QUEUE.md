@@ -54,11 +54,12 @@ pulling the old Vercel env vars, then removing and recreating the project.
       complete SMTP block, currency, cron secret, logging.
 - [x] Production build with `.env.vercel` loaded: compiles and prerenders all
       18 pages, including robots/sitemap with the production URL.
-- [ ] Vercel: the CLI is authenticated (`faouzimohamed`) and the existing
-      `stream-manager` project still serves the legacy app at
-      `stream.mfaouzi.com`. Do **not** overwrite that project's env — it would
-      break the live app. The user is removing/recreating the project; then
-      import `.env.vercel`, assign the domain and set Node 24.x.
+- [x] Vercel: project recreated, `.env.vercel` imported, commit `37b375d`
+      deployed (Ready, 59 s), Node 24.x. `stream.mfaouzi.com` now serves the
+      new app — root 307s to `/console`, `/login` renders, and a real sign-in
+      with the seeded admin reaches the dashboard and the memberships ledger
+      (5 subscriptions from the ported data). Database connectivity from
+      Vercel is proven by that login.
 - [x] `SMTP_PASSWORD`: recovered offline from `settings_smtp` using the legacy
       `frontend.old/src/lib/utils/crypto.ts` format (base64 of iv+tag+ciphertext
       — different from this repo's encryptor, so it was a one-off decryption,
@@ -66,8 +67,11 @@ pulling the old Vercel env vars, then removing and recreating the project.
       name normalized to `Stream Manager`. Verified twice: a direct nodemailer
       send and the real `sendTransactionalEmail` service both returned success
       and the mail was accepted for `me@mfaouzi.com`.
-- [ ] After deploy: sign in with the seeded admin, change the password, open a
-      console page, trigger a renewal on a test customer and confirm the email.
+- [x] After deploy: signed in with the seeded admin and opened the memberships
+      console; the ported data renders.
+- [ ] Change the seeded admin password.
+- [ ] Trigger a renewal/payment on the production data and confirm the email
+      arrives (SMTP itself is verified; the deployed path is not yet).
 - [x] S3 credentials replaced and written to both env files (old pair had the
       access key duplicated as the secret). `ListObjectsV2` verified 200;
       upload/delete still to be exercised after deploy.

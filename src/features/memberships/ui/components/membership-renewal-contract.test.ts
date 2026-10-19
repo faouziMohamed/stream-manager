@@ -16,11 +16,11 @@ test('renewal asks for a term count before dispatching', async () => {
   assert.match(dialog, /markPaid/);
   assert.match(
     dialog,
-    /onConfirmAction\(\{ markPaid, paidDate: markPaid \? paidDate : undefined, terms \}\)/
+    /onConfirmAction\({ markPaid, paidDate: markPaid \? paidDate : undefined, terms }\)/
   );
   assert.match(
     consoleSource,
-    /renewMutation\.mutate\(\s*\{ id: renewTarget\.id, markPaid, paidDate, terms \}/
+    /renewMutation\.mutate\(\s*{ id: renewTarget\.id, markPaid, paidDate, terms }/
   );
 });
 
@@ -28,6 +28,6 @@ test('the ledger renews through the dialog rather than firing on click', async (
   const source = await readFile(consolePath, 'utf8');
 
   assert.match(source, /<RenewMembershipDialog/);
-  assert.match(source, /onClick=\{\(\) => setRenewTarget\(row\)\}/);
-  assert.doesNotMatch(source, /onClick=\{\(\) => renewMutation\.mutate\(row\.id\)\}/);
+  assert.match(source, /onClick={\(\) => setRenewTarget\(row\)}/);
+  assert.doesNotMatch(source, /onClick={\(\) => renewMutation\.mutate\(row\.id\)}/);
 });

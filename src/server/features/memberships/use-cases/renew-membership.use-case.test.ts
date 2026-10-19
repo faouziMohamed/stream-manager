@@ -240,7 +240,7 @@ describe('renewMembershipUseCase', () => {
         insertMembershipTerms: async () => null,
         today: () => '2026-01-01',
       })
-    ).rejects.toThrow(/already renewed|renewed as MBR-2026-0002/i);
+    ).rejects.toThrow(/already renewed|renewed as mbr-2026-0002/i);
   });
 
   it('retries with next membership/payment business ids on unique violation', async () => {

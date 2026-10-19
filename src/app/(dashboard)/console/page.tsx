@@ -3,7 +3,6 @@ import { AlertTriangle, ChartBar, Clock3, Wallet } from 'lucide-react';
 import { ConsolePageHeader } from '@/components/console/shared/console-page-header';
 import { StatsCard } from '@/components/console/shared/stats-card';
 import { loadDashboardStats } from '@/features/analytics/server/loaders/analytics.loader';
-import { ROUTES } from '@/lib/config/routes';
 import { formatCurrency } from '@/lib/utils';
 import { DEFAULT_CURRENCY } from '@/lib/utils/currency';
 
@@ -42,13 +41,6 @@ export default async function ConsolePage() {
           description="Memberships nearing end date"
           icon={<Clock3 className="size-4 text-(--sm-muted)" />}
         />
-      </section>
-
-      <section className="mt-6 rounded-xl border border-(--sm-border) bg-(--sm-surface) p-6">
-        <h2 className="text-sm font-semibold text-(--sm-fg)">Current status</h2>
-        <p className="mt-2 text-sm leading-6 text-(--sm-muted)">
-          You are viewing the protected dashboard entry page at <code>{ROUTES.console.root}</code>.
-        </p>
       </section>
     </main>
   );

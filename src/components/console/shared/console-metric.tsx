@@ -17,11 +17,11 @@ const TONE_RULE: Record<StatusTone, string> = {
  */
 export function ConsoleMetric({ description, label, tone = 'neutral', value }: ConsoleMetricProps) {
   return (
-    <article className={cn('border-l-2 py-1 pl-4', TONE_RULE[tone])}>
+    <article className={cn('min-w-0 border-l-2 py-1 pl-4', TONE_RULE[tone])}>
       <p className="text-[11px] font-medium tracking-[0.1em] text-(--sm-muted) uppercase">
         {label}
       </p>
-      <p className="mt-1.5 text-2xl font-semibold tracking-tight text-(--sm-fg) tabular-nums">
+      <p className="mt-1.5 text-2xl font-semibold tracking-tight [overflow-wrap:anywhere] text-(--sm-fg) tabular-nums">
         {value}
       </p>
       {description === undefined ? null : (
