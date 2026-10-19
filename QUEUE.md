@@ -54,11 +54,12 @@ pulling the old Vercel env vars, then removing and recreating the project.
       complete SMTP block, currency, cron secret, logging.
 - [x] Production build with `.env.vercel` loaded: compiles and prerenders all
       18 pages, including robots/sitemap with the production URL.
-- [ ] Vercel: the CLI is authenticated (`faouzimohamed`) and the existing
-      `stream-manager` project still serves the legacy app at
-      `stream.mfaouzi.com`. Do **not** overwrite that project's env — it would
-      break the live app. The user is removing/recreating the project; then
-      import `.env.vercel`, assign the domain and set Node 24.x.
+- [x] Vercel: project recreated, `.env.vercel` imported, commit `37b375d`
+      deployed (Ready, 59 s), Node 24.x. `stream.mfaouzi.com` now serves the
+      new app — root 307s to `/console`, `/login` renders, and a real sign-in
+      with the seeded admin reaches the dashboard and the memberships ledger
+      (5 subscriptions from the ported data). Database connectivity from
+      Vercel is proven by that login.
 - [x] `SMTP_PASSWORD`: recovered offline from `settings_smtp` using the legacy
       `frontend.old/src/lib/utils/crypto.ts` format (base64 of iv+tag+ciphertext
       — different from this repo's encryptor, so it was a one-off decryption,
@@ -66,8 +67,11 @@ pulling the old Vercel env vars, then removing and recreating the project.
       name normalized to `Stream Manager`. Verified twice: a direct nodemailer
       send and the real `sendTransactionalEmail` service both returned success
       and the mail was accepted for `me@mfaouzi.com`.
-- [ ] After deploy: sign in with the seeded admin, change the password, open a
-      console page, trigger a renewal on a test customer and confirm the email.
+- [x] After deploy: signed in with the seeded admin and opened the memberships
+      console; the ported data renders.
+- [ ] Change the seeded admin password.
+- [ ] Trigger a renewal/payment on the production data and confirm the email
+      arrives (SMTP itself is verified; the deployed path is not yet).
 - [x] S3 credentials replaced and written to both env files (old pair had the
       access key duplicated as the secret). `ListObjectsV2` verified 200;
       upload/delete still to be exercised after deploy.
@@ -103,6 +107,8 @@ pulling the old Vercel env vars, then removing and recreating the project.
   claim to have run on a date their file hashes suggest otherwise.
 
 ## Shipped
+
+- 2026-10-20 — The payments calendar works on a phone. The Calendar tab used to swap the whole surface for the agenda list below 640px, which hid the calendar and left the Agenda tab itself hidden (`hidden sm:inline-flex`) so the list had nowhere else to live. All three tabs now render at every width, the Calendar tab shows the horizontal timeline by default on phones (compact read via `useSyncExternalStore`, no setState-in-effect and no hydration mismatch), and the timeline's scroll arrows work there. Verified at 390px: tabs `Calendar · Agenda · Ledger`, timeline visible with both arrows, `scrollWidth` = 390 on both Calendar and Agenda. Working tree only — not committed, per the no-git-writes rule.
 
 - 2026-10-19 — Role-gated UI verified with a real **accountant** session. Seeded `accountant@example.com` in `stream-test`, signed in, and confirmed: memberships show no New/Cancel/Renew; payments no Record payment/Mark paid (the only "Cancel" match is the Cancelled filter chip); customers, plans, services and streaming accounts show no create/edit/delete controls; Users, Media and Summary render the 403 screen; Sessions stays available; the sidebar has no Media, Summary, Users or Administration. Admin sessions still render every management control. The 500 that started this task cannot be reached from the UI for a non-admin any more.
 
