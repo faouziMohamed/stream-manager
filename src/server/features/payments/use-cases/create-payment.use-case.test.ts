@@ -65,12 +65,28 @@ describe('createPaymentUseCase', () => {
     expect(result.businessId).toBe('PAY-2026-0001');
   });
 
-  it('emails a receipt when the payment is recorded as already paid', async () => {
-    const sent: { event: string; html: string; subject: string; to: string }[] = [];
+  it('emails the customer a receipt with the PDF attached', async () => {
+    const sent: {
+      attachments?: { content: Buffer; contentType?: string; filename: string }[];
+      event: string;
+      html: string;
+      subject: string;
+      to: string;
+    }[] = [];
 
     await createPaymentUseCase(paymentInput, adminContext, {
+      buildReceiptPdf: async () => ({
+        bytes: new Uint8Array([37, 80, 68, 70]),
+        filename: 'receipt-PAY-2026-0001.pdf',
+      }),
       createPaymentId: () => 'pay_1',
-      findCustomerById: async () => ({ email: 'hermann@example.com', name: 'Hermann' }),
+      findCustomerById: async () => ({
+        businessId: 'CST-0001',
+        email: 'hermann@example.com',
+        language: 'fr',
+        name: 'Hermann',
+        phone: null,
+      }),
       findLatestPaymentBusinessId: async () => null,
       findMembershipById: async () => membership,
       insertPayment: async () => makePaymentRecord('PAY-2026-0001'),
@@ -84,6 +100,33 @@ describe('createPaymentUseCase', () => {
     expect(sent[0]?.to).toBe('hermann@example.com');
     expect(sent[0]?.html).toContain('PAY-2026-0001');
     expect(sent[0]?.html).toContain('50.00');
+    expect(sent[0]?.attachments?.[0]?.filename).toBe('receipt-PAY-2026-0001.pdf');
+    expect(sent[0]?.attachments?.[0]?.contentType).toBe('application/pdf');
+  });
+
+  it('emails the admins even when the customer has no address', async () => {
+    const adminEvents: { event: string; subject: string }[] = [];
+
+    await createPaymentUseCase(paymentInput, adminContext, {
+      createPaymentId: () => 'pay_1',
+      findCustomerById: async () => ({
+        businessId: 'CST-0001',
+        email: null,
+        language: 'fr',
+        name: 'Hermann',
+        phone: null,
+      }),
+      findLatestPaymentBusinessId: async () => null,
+      findMembershipById: async () => membership,
+      insertPayment: async () => makePaymentRecord('PAY-2026-0001'),
+      notifyAdmins: async (input) => {
+        adminEvents.push(input);
+      },
+    });
+
+    await vi.waitFor(() => expect(adminEvents).toHaveLength(1));
+    expect(adminEvents[0]?.event).toBe('ADMIN_PAYMENT_RECEIVED');
+    expect(adminEvents[0]?.subject).toContain('Payment received');
   });
 
   it('does not email a receipt for an unpaid charge', async () => {
@@ -94,7 +137,13 @@ describe('createPaymentUseCase', () => {
       adminContext,
       {
         createPaymentId: () => 'pay_1',
-        findCustomerById: async () => ({ email: 'hermann@example.com', name: 'Hermann' }),
+        findCustomerById: async () => ({
+          businessId: 'CST-0001',
+          email: 'hermann@example.com',
+          language: 'fr',
+          name: 'Hermann',
+          phone: null,
+        }),
         findLatestPaymentBusinessId: async () => null,
         findMembershipById: async () => membership,
         insertPayment: async () => ({

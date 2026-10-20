@@ -6,6 +6,8 @@ import { requireAdmin } from '@/server/features/common/guards/require-admin.guar
 import { findCustomerById } from '@/server/features/customers/repositories/customers.repository';
 import { findMembershipById } from '@/server/features/memberships/repositories/memberships.repository';
 import { sendTransactionalEmail } from '@/server/features/notifications/service/notifications.service';
+import { buildPaymentReceiptPdf } from '@/server/features/documents/documents.receipt';
+import { notifyAdmins } from '@/server/features/notifications/service/notify-admins.service';
 import { buildNotificationTemplate } from '@/server/features/notifications/templates/notifications.templates';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -61,7 +63,7 @@ export async function createPaymentUseCase(
       // existing payment marked paid does. An unpaid charge has nothing to
       // acknowledge yet.
       if (payment.status === 'paid') {
-        notifyPaymentReceived(payment, dependencies);
+        void notifyPaymentReceived(payment, dependencies);
       }
 
       return payment;
@@ -87,39 +89,89 @@ export async function createPaymentUseCase(
   throw new AppError('Failed to record payment after retries', 500, 'PAYMENT_CREATE_FAILED');
 }
 
-/** Fire-and-forget: a receipt that fails must not undo a recorded payment. */
-function notifyPaymentReceived(payment: PaymentRecord, dependencies: Dependencies): void {
-  dependencies
-    .findCustomerById?.(payment.customerId)
-    .then((customer) => {
-      if (customer === null || customer === undefined || customer.email === null) return;
+/**
+ * Fire-and-forget: a receipt that fails must not undo a recorded payment.
+ *
+ * The customer gets a receipt when an address exists; every administrator gets
+ * an operator copy regardless, because the ported customers have no email and
+ * silence is not an acceptable outcome for a recorded payment.
+ */
+async function notifyPaymentReceived(
+  payment: PaymentRecord,
+  dependencies: Dependencies
+): Promise<void> {
+  try {
+    const customer = (await dependencies.findCustomerById?.(payment.customerId)) ?? null;
+    const amount = formatCurrency(Number.parseFloat(payment.amount), payment.currencyCode);
 
+    if (customer?.email) {
       const template = buildNotificationTemplate('PAYMENT_RECEIVED', {
-        amount: formatCurrency(Number.parseFloat(payment.amount), payment.currencyCode),
+        amount,
         customerName: customer.name,
         paidDate: payment.paidDate ?? undefined,
         paymentRef: payment.businessId,
       });
+      const receipt =
+        dependencies.buildReceiptPdf === undefined
+          ? null
+          : await dependencies.buildReceiptPdf({ customer, payment }).catch((error: unknown) => {
+              log.warn({ err: error }, 'Payment receipt PDF failed — sending without attachment');
+              return null;
+            });
 
-      return dependencies.sendPaymentNotification?.({
+      await dependencies.sendPaymentNotification?.({
+        attachments:
+          receipt === null
+            ? undefined
+            : [
+                {
+                  content: Buffer.from(receipt.bytes),
+                  contentType: 'application/pdf',
+                  filename: receipt.filename,
+                },
+              ],
         event: 'PAYMENT_RECEIVED',
         html: template.html,
         subject: template.subject,
         to: customer.email,
       });
-    })
-    .catch((error: unknown) => {
-      log.warn({ err: error }, 'PAYMENT_RECEIVED notification failed — non-fatal');
+    }
+
+    const adminTemplate = buildNotificationTemplate('ADMIN_PAYMENT_RECEIVED', {
+      amount,
+      customerName: customer?.name ?? 'Unknown customer',
+      paidDate: payment.paidDate ?? undefined,
+      paymentRef: payment.businessId,
     });
+
+    await dependencies.notifyAdmins?.({
+      event: 'ADMIN_PAYMENT_RECEIVED',
+      html: adminTemplate.html,
+      subject: adminTemplate.subject,
+    });
+  } catch (error) {
+    log.warn({ err: error }, 'Payment notifications failed — non-fatal');
+  }
 }
 
+type ReceiptCustomer = {
+  businessId: string;
+  email: string | null;
+  language: string | null;
+  name: string;
+  phone: string | null;
+};
+
 interface Dependencies {
+  buildReceiptPdf?: typeof buildPaymentReceiptPdf;
   createPaymentId: () => string;
-  findCustomerById?: (id: string) => Promise<{ email: string | null; name: string } | null>;
+  findCustomerById?: (id: string) => Promise<ReceiptCustomer | null>;
   findLatestPaymentBusinessId: (year: number) => Promise<string | null>;
   findMembershipById: (id: string) => Promise<{ customerId: string; id: string } | null>;
   insertPayment: (input: Parameters<typeof insertPayment>[0]) => Promise<PaymentRecord | null>;
+  notifyAdmins?: typeof notifyAdmins;
   sendPaymentNotification?: (input: {
+    attachments?: { content: Buffer; contentType?: string; filename: string }[];
     event: string;
     html: string;
     subject: string;
@@ -130,11 +182,13 @@ interface Dependencies {
 const maxRetryAttempts = 3;
 
 const defaultDependencies: Dependencies = {
+  buildReceiptPdf: buildPaymentReceiptPdf,
   createPaymentId: () => createResourceId('pay'),
   findCustomerById,
   findLatestPaymentBusinessId,
   findMembershipById,
   insertPayment,
+  notifyAdmins,
   sendPaymentNotification: (input) =>
     sendTransactionalEmail(input).then(() => {
       /* the email result is not part of this contract */

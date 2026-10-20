@@ -6,6 +6,8 @@ import {
   findPaymentById,
   updatePaymentPaid,
 } from '@/server/features/payments/repositories/payments.repository';
+import { buildPaymentReceiptPdf } from '@/server/features/documents/documents.receipt';
+import { notifyAdmins } from '@/server/features/notifications/service/notify-admins.service';
 import { sendTransactionalEmail } from '@/server/features/notifications/service/notifications.service';
 import { buildNotificationTemplate } from '@/server/features/notifications/templates/notifications.templates';
 import type { GqlContext } from '@/server/features/common/schemas/model/context.model';
@@ -48,8 +50,30 @@ export async function markPaymentPaidUseCase(
       paidDate: updatedPayment.paidDate ?? paidDate,
       paymentRef: updatedPayment.businessId,
     });
+    const receipt =
+      dependencies.buildReceiptPdf === undefined
+        ? null
+        : await dependencies
+            .buildReceiptPdf({ customer, payment: updatedPayment })
+            .catch((error: unknown) => {
+              // The payment stands even if the PDF cannot be drawn; send the
+              // receipt text without the attachment rather than no receipt.
+              log.warn({ err: error }, 'Payment receipt PDF failed — sending without attachment');
+              return null;
+            });
+
     dependencies
       .sendPaymentNotification?.({
+        attachments:
+          receipt === null
+            ? undefined
+            : [
+                {
+                  content: Buffer.from(receipt.bytes),
+                  contentType: 'application/pdf',
+                  filename: receipt.filename,
+                },
+              ],
         event: 'PAYMENT_RECEIVED',
         html: template.html,
         subject: template.subject,
@@ -60,13 +84,40 @@ export async function markPaymentPaidUseCase(
       });
   }
 
+  const amount = formatCurrency(
+    Number.parseFloat(updatedPayment.amount),
+    updatedPayment.currencyCode
+  );
+  const adminTemplate = buildNotificationTemplate('ADMIN_PAYMENT_RECEIVED', {
+    amount,
+    customerName: customer?.name ?? 'Unknown customer',
+    paidDate: updatedPayment.paidDate ?? paidDate,
+    paymentRef: updatedPayment.businessId,
+  });
+  dependencies
+    .notifyAdmins?.({
+      event: 'ADMIN_PAYMENT_RECEIVED',
+      html: adminTemplate.html,
+      subject: adminTemplate.subject,
+    })
+    .catch((error: unknown) => {
+      log.warn({ err: error }, 'Admin payment notification failed — non-fatal');
+    });
+
   return updatedPayment;
 }
 
 interface MarkPaymentPaidDependencies {
+  buildReceiptPdf?: typeof buildPaymentReceiptPdf;
   findCustomerById: typeof findCustomerById;
   findPaymentById: (id: string) => Promise<PaymentRecord | null>;
+  notifyAdmins?: typeof notifyAdmins;
   sendPaymentNotification?: (input: {
+    attachments?: {
+      content: Buffer;
+      contentType?: string;
+      filename: string;
+    }[];
     event: string;
     html: string;
     subject: string;
@@ -76,8 +127,10 @@ interface MarkPaymentPaidDependencies {
 }
 
 const defaultDependencies: MarkPaymentPaidDependencies = {
+  buildReceiptPdf: buildPaymentReceiptPdf,
   findCustomerById,
   findPaymentById,
+  notifyAdmins,
   sendPaymentNotification: (input) =>
     sendTransactionalEmail(input).then(() => {
       /* the email result is not part of this contract */

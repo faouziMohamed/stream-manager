@@ -1,8 +1,8 @@
 import { buildNotificationTemplate } from '@/server/features/notifications/templates/notifications.templates';
 
 describe('buildNotificationTemplate', () => {
-  it('says a renewal was a renewal, with the plan and the covered period', () => {
-    const template = buildNotificationTemplate('MEMBERSHIP_RENEWED', {
+  it('tells an admin who renewed and for which period', () => {
+    const template = buildNotificationTemplate('ADMIN_MEMBERSHIP_RENEWED', {
       customerName: 'Hermann',
       endDate: '2026-12-09',
       membershipRef: 'MBR-2026-0016',
@@ -10,8 +10,7 @@ describe('buildNotificationTemplate', () => {
       startDate: '2026-11-09',
     });
 
-    expect(template.subject).toBe('Your membership has been renewed');
-    expect(template.html).toContain('Hermann');
+    expect(template.subject).toBe('Membership renewed — Hermann');
     expect(template.html).toContain('Basic');
     expect(template.html).toContain('2026-11-09 — 2026-12-09');
     expect(template.html).toContain('MBR-2026-0016');

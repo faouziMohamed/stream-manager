@@ -21,10 +21,9 @@ export function buildNotificationTemplate(
         .join('\n');
       return build('Your membership is confirmed', body);
     }
-    case 'MEMBERSHIP_RENEWED': {
+    case 'ADMIN_MEMBERSHIP_RENEWED': {
       const body = [
-        `<p>Hello ${input.customerName ?? 'there'},</p>`,
-        `<p>Your membership has been renewed.</p>`,
+        `<p><strong>${input.customerName ?? 'A customer'}</strong> renewed a membership.</p>`,
         input.planName ? `<p><strong>Plan:</strong> ${input.planName}</p>` : '',
         input.startDate && input.endDate
           ? `<p><strong>Covered period:</strong> ${input.startDate} — ${input.endDate}</p>`
@@ -33,7 +32,19 @@ export function buildNotificationTemplate(
       ]
         .filter(Boolean)
         .join('\n');
-      return build('Your membership has been renewed', body);
+      return build(`Membership renewed — ${input.customerName ?? 'customer'}`, body);
+    }
+    case 'ADMIN_PAYMENT_RECEIVED': {
+      const body = [
+        `<p><strong>${input.customerName ?? 'A customer'}</strong> paid.</p>`,
+        input.amount ? `<p><strong>Amount:</strong> ${input.amount}</p>` : '',
+        input.paymentRef ? `<p><strong>Payment:</strong> ${input.paymentRef}</p>` : '',
+        input.paidDate ? `<p><strong>Paid on:</strong> ${input.paidDate}</p>` : '',
+        input.membershipRef ? `<p><strong>Membership:</strong> ${input.membershipRef}</p>` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+      return build(`Payment received — ${input.amount ?? input.paymentRef ?? 'payment'}`, body);
     }
     case 'PAYMENT_OVERDUE': {
       const body = [

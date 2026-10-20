@@ -47,6 +47,7 @@ export async function sendTransactionalEmail(
 
   try {
     await cachedTransporter.sendMail({
+      attachments: input.attachments,
       from: `${config.fromName} <${config.fromAddress}>`,
       html: input.html,
       subject: input.subject,
@@ -105,7 +106,14 @@ const defaultDependencies: NotificationsDependencies = {
   logNotificationEvent,
 };
 
+export interface EmailAttachment {
+  content: Buffer;
+  contentType?: string;
+  filename: string;
+}
+
 interface TransactionalEmailInput {
+  attachments?: EmailAttachment[];
   event: string;
   html: string;
   subject: string;

@@ -12,7 +12,7 @@ import {
 } from '@/server/features/memberships/repositories/memberships.repository';
 import { addDays, getYear } from '@/server/features/memberships/use-cases/membership-date.helpers';
 import { addTermMonths, todayIsoDate } from '@/lib/utils/iso-date';
-import { sendTransactionalEmail } from '@/server/features/notifications/service/notifications.service';
+import { notifyAdmins } from '@/server/features/notifications/service/notify-admins.service';
 import { buildNotificationTemplate } from '@/server/features/notifications/templates/notifications.templates';
 import { findLatestPaymentBusinessId } from '@/server/features/payments/repositories/payments.repository';
 import { findPlanById } from '@/server/features/plans/repositories/plans.repository';
@@ -157,27 +157,25 @@ export async function renewMembershipUseCase(
 
       const customer = await dependencies.findCustomerById(oldMembership.customerId);
 
-      if (customer !== null && customer.email !== null) {
-        // One mail for the whole renewal, covering the first term's start to
-        // the last term's end — not one per term.
-        const template = buildNotificationTemplate('MEMBERSHIP_RENEWED', {
-          customerName: customer.name,
-          endDate: membership.endDate,
-          membershipRef: membership.businessId,
-          planName: plan.name,
-          startDate: firstStartDate,
+      // Customers hear about money, not about renewals: the payment receipt is
+      // their only mail. Renewals go to the operators, who need to know the
+      // book moved even when the customer has no address on file.
+      const adminTemplate = buildNotificationTemplate('ADMIN_MEMBERSHIP_RENEWED', {
+        customerName: customer?.name ?? 'Unknown customer',
+        endDate: membership.endDate,
+        membershipRef: membership.businessId,
+        planName: plan.name,
+        startDate: firstStartDate,
+      });
+      dependencies
+        .notifyAdmins?.({
+          event: 'ADMIN_MEMBERSHIP_RENEWED',
+          html: adminTemplate.html,
+          subject: adminTemplate.subject,
+        })
+        .catch((error: unknown) => {
+          log.warn({ err: error }, 'Admin renewal notification failed — non-fatal');
         });
-        dependencies
-          .sendMembershipNotification?.({
-            event: 'MEMBERSHIP_RENEWED',
-            html: template.html,
-            subject: template.subject,
-            to: customer.email,
-          })
-          .catch((error: unknown) => {
-            log.warn({ err: error }, 'MEMBERSHIP_RENEWED notification failed — non-fatal');
-          });
-      }
 
       return membership;
     } catch (error) {
@@ -209,12 +207,7 @@ interface RenewMembershipDependencies {
   insertMembershipTerms: (
     terms: InsertMembershipWithPaymentInput[]
   ) => Promise<MembershipWithPaymentRecord[] | null>;
-  sendMembershipNotification?: (input: {
-    event: string;
-    html: string;
-    subject: string;
-    to: string;
-  }) => Promise<void>;
+  notifyAdmins?: typeof notifyAdmins;
   today: () => string;
 }
 
@@ -229,10 +222,7 @@ const defaultDependencies: RenewMembershipDependencies = {
   findPlanById,
   findServiceById,
   insertMembershipTerms,
-  sendMembershipNotification: (input) =>
-    sendTransactionalEmail(input).then(() => {
-      /* the email result is not part of this contract */
-    }),
+  notifyAdmins,
   today: () => todayIsoDate(),
 };
 

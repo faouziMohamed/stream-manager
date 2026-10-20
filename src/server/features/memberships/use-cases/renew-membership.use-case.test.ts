@@ -113,8 +113,8 @@ describe('renewMembershipUseCase', () => {
     expect(membership.endDate).toBe('2026-09-10');
   });
 
-  it('emails a renewal notice rather than a first-time confirmation', async () => {
-    const sent: { event: string; subject: string }[] = [];
+  it('emails the admins even when the customer has no address', async () => {
+    const adminEvents: { event: string; subject: string }[] = [];
 
     await renewMembershipUseCase({ id: 'mbr_old', markPaid: false, terms: 1 }, adminContext, {
       createMembershipId: () => 'mbr_new',
@@ -122,12 +122,12 @@ describe('renewMembershipUseCase', () => {
       findCustomerById: async () => ({
         businessId: 'CST-0001',
         createdAt: new Date('2026-01-01T00:00:00.000Z'),
-        email: 'hermann@example.com',
+        email: null,
         id: 'cst_test',
         isActive: true,
         name: 'Hermann',
         notesContent: null,
-        phone: null,
+        phone: '+212 700-161745',
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       }),
       findLatestMembershipBusinessId: async () => 'MBR-2026-0001',
@@ -137,15 +137,15 @@ describe('renewMembershipUseCase', () => {
       findPlanById: async () => planRecord,
       findServiceById: async () => serviceRecord,
       insertMembershipTerms: async (terms) => insertedTerms(terms),
-      sendMembershipNotification: async (input) => {
-        sent.push(input);
+      notifyAdmins: async (input) => {
+        adminEvents.push(input);
       },
       today: () => '2026-06-01',
     });
 
-    await vi.waitFor(() => expect(sent).toHaveLength(1));
-    expect(sent[0]?.event).toBe('MEMBERSHIP_RENEWED');
-    expect(sent[0]?.subject).toBe('Your membership has been renewed');
+    await vi.waitFor(() => expect(adminEvents).toHaveLength(1));
+    expect(adminEvents[0]?.event).toBe('ADMIN_MEMBERSHIP_RENEWED');
+    expect(adminEvents[0]?.subject).toContain('Hermann');
   });
 
   it('settles every payment it creates when the money was taken up front', async () => {

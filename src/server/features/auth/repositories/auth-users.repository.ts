@@ -19,6 +19,16 @@ export async function createAuthUser(input: CreateAuthUserInput) {
   return user;
 }
 
+/** Every administrator's address, for operator-facing notifications. */
+export async function findAdminEmails(): Promise<string[]> {
+  const rows = await db
+    .select({ email: authUsersTable.email })
+    .from(authUsersTable)
+    .where(eq(authUsersTable.role, 'admin'));
+
+  return rows.map((row) => row.email);
+}
+
 export async function findUserByEmail(email: string) {
   const [user] = await db
     .select()
