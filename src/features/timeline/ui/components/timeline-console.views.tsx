@@ -215,7 +215,9 @@ export function CalendarView({
             <article
               key={date}
               className={cn(
-                'min-h-28 bg-(--sm-surface2) p-2',
+                // A phone gives each cell ~50px. Its content must be allowed
+                // to shrink and must not paint over the next column.
+                'min-h-28 min-w-0 overflow-hidden bg-(--sm-surface2) p-1 sm:p-2',
                 isToday && 'ring-1 ring-(--sm-coral) ring-inset'
               )}
             >
@@ -232,24 +234,32 @@ export function CalendarView({
                   <div
                     key={item.id}
                     className={cn(
-                      'space-y-1 rounded-lg border p-2.5',
+                      // On a phone the card is a compact colour swatch with
+                      // the plan; customer and status badge only where the
+                      // column is wide enough to hold them.
+                      'min-w-0 overflow-hidden rounded-md border px-1 py-1 sm:px-1.5 sm:py-1 lg:space-y-1 lg:rounded-lg lg:p-2.5',
                       statusPillClass(item.status)
                     )}
                     title={`${item.customerName} · ${item.planName}`}
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    {/* The cell width is set by the calendar, not the screen:
+                        a phone cell is ~50px, a tablet's is ~77px. Below `lg`
+                        the chip carries the plan name only — a badge and a
+                        customer name there would squeeze the name to nothing
+                        and print the status four times across the week. */}
+                    <div className="hidden items-start justify-between gap-2 sm:flex">
                       <div className="min-w-0">
-                        <p className="truncate text-[11px] leading-4 font-semibold">
+                        <p className="truncate text-[10px] leading-3 font-semibold lg:text-[11px] lg:leading-4">
                           {item.planName}
                         </p>
-                        <p className="truncate text-[10px] leading-4 opacity-80">
+                        <p className="hidden truncate text-[10px] leading-4 opacity-80 lg:block">
                           {item.customerName}
                         </p>
                       </div>
                       <Badge
                         variant="secondary"
                         className={cn(
-                          'shrink-0 border px-2 py-0.5 text-[9px] font-semibold',
+                          'hidden shrink-0 border px-2 py-0.5 text-[9px] font-semibold lg:inline-flex',
                           statusPillClass(item.status)
                         )}
                       >
