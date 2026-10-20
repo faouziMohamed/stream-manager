@@ -213,4 +213,6 @@ function getSubmitLabel(isEdit: boolean, isPending: boolean) {
   return isEdit ? 'Save changes' : 'Create customer';
 }
 
-function handleInvalid() {}
+function handleInvalid() {
+  // Errors render inline; this handler only stops an invalid submission.
+}

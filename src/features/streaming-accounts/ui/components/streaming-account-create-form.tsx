@@ -59,6 +59,7 @@ export function StreamingAccountCreateForm({
     defaultValues: toStreamingAccountFormValues(),
     resolver: zodResolver(streamingAccountFormSchema),
   });
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() cannot be memoized by the React Compiler.
   const supportsProfiles = form.watch('supportsProfiles');
 
   function handleOpenChange(nextOpen: boolean) {
@@ -236,4 +237,6 @@ export function StreamingAccountCreateForm({
   );
 }
 
-function handleInvalid() {}
+function handleInvalid() {
+  // Errors render inline; this handler only stops an invalid submission.
+}

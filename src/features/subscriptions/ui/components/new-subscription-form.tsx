@@ -61,6 +61,7 @@ export function NewSubscriptionForm({ customers, plans }: NewSubscriptionFormPro
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() cannot be memoized by the React Compiler.
   const customerMode = watch('customerMode');
   const planId = watch('planId');
   const startDate = watch('startDate');

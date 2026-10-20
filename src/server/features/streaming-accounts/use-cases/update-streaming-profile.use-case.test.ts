@@ -44,7 +44,7 @@ describe('updateStreamingProfileUseCase', () => {
       updateStreamingProfileUseCase(input({ name: 'New name' }), userContext, {
         encryptor: testEncryptor,
         findProfileById: async () => {
-          findCalls++;
+          findCalls += 1;
           return existingProfile;
         },
         updateStreamingProfile: async () => existingProfile,

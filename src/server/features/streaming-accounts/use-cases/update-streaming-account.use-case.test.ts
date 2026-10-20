@@ -47,7 +47,7 @@ describe('updateStreamingAccountUseCase', () => {
       updateStreamingAccountUseCase(input({ label: 'New' }), userContext, {
         encryptor: testEncryptor,
         findStreamingAccountById: async () => {
-          findCalls++;
+          findCalls += 1;
           return existingAccount;
         },
         updateStreamingAccount: async () => existingAccount,

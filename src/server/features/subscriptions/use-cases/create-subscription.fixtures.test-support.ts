@@ -66,7 +66,9 @@ export function createDependencies(overrides: Record<string, unknown> = {}) {
       };
     },
     // Email is a side effect; tests assert on data, not delivery.
-    sendSubscriptionNotification: async () => {},
+    sendSubscriptionNotification: async () => {
+      /* delivery is a side effect; tests assert on data */
+    },
     ...overrides,
   };
 

@@ -39,7 +39,7 @@ export function RichTextContent({
   );
 
   if (empty || editor === null) {
-    return <>{fallback}</>;
+    return fallback;
   }
 
   return <EditorContent editor={editor} />;

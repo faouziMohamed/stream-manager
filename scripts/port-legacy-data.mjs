@@ -275,7 +275,7 @@ async function main() {
   const [{ count: profileCount }] =
     await target`select count(*)::int as count from streaming_profiles`;
 
-  console.log(
+  console.info(
     `Ported ${services.length} services, ${plans.length} plans, ${customers} customers, ` +
       `${memberships} memberships, ${paymentCount} payments, ${profileCount} profiles, ` +
       `${assignments.length} assignments, ${notifications.length} notifications, ${links.length} links.`

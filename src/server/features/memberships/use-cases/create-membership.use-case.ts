@@ -168,7 +168,10 @@ const defaultDependencies: CreateMembershipDependencies = {
   findPlanById,
   findServiceById,
   insertMembershipWithPayment,
-  sendMembershipNotification: (input) => sendTransactionalEmail(input).then(() => {}),
+  sendMembershipNotification: (input) =>
+    sendTransactionalEmail(input).then(() => {
+      /* the email result is not part of this contract */
+    }),
 };
 
 const maxBusinessIdRetryAttempts = 3;

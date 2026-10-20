@@ -275,5 +275,8 @@ const defaultDependencies: CreateSubscriptionDependencies = {
   findServiceById,
   getYear,
   insertSubscription,
-  sendSubscriptionNotification: (input) => sendTransactionalEmail(input).then(() => {}),
+  sendSubscriptionNotification: (input) =>
+    sendTransactionalEmail(input).then(() => {
+      /* the email result is not part of this contract */
+    }),
 };

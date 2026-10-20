@@ -227,4 +227,6 @@ function FormSelect({
   );
 }
 
-function handleInvalid() {}
+function handleInvalid() {
+  // Errors render inline; this handler only stops an invalid submission.
+}

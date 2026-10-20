@@ -67,6 +67,7 @@ export function StreamingAccountEditForm({
     onSubmitAction(account.id, values);
   }
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() cannot be memoized by the React Compiler.
   const supportsProfiles = watch('supportsProfiles');
 
   return (
@@ -181,4 +182,6 @@ type StreamingAccountEditFormProps = {
   onSubmitAction: (id: string, values: StreamingAccountUpdateValues) => void;
 };
 
-function handleInvalid() {}
+function handleInvalid() {
+  // Errors render inline; this handler only stops an invalid submission.
+}

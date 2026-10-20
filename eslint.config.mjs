@@ -60,6 +60,14 @@ export default [
     },
   },
   {
+    // Prettier writes hex literals in lowercase; the unicorn default (uppercase)
+    // would make `lint` and `format` fight over every buffer comparison.
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      'unicorn/number-literal-case': ['error', { hexadecimalValue: 'lowercase' }],
+    },
+  },
+  {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/components/ui/**'],
     rules: {

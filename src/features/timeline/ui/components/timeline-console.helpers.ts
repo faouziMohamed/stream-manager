@@ -142,12 +142,3 @@ export function dayDiff(from: Date | string, to: Date | string): number {
   const end = typeof to === 'string' ? new Date(to) : to;
   return Math.floor((end.getTime() - start.getTime()) / 86_400_000);
 }
-
-function compareTimelineItems(left: DerivedTimelineItem, right: DerivedTimelineItem): number {
-  return (
-    left.customerName.localeCompare(right.customerName) ||
-    left.startDate.localeCompare(right.startDate) ||
-    left.endDate.localeCompare(right.endDate) ||
-    left.id.localeCompare(right.id)
-  );
-}

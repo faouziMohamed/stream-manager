@@ -78,6 +78,9 @@ interface MarkPaymentPaidDependencies {
 const defaultDependencies: MarkPaymentPaidDependencies = {
   findCustomerById,
   findPaymentById,
-  sendPaymentNotification: (input) => sendTransactionalEmail(input).then(() => {}),
+  sendPaymentNotification: (input) =>
+    sendTransactionalEmail(input).then(() => {
+      /* the email result is not part of this contract */
+    }),
   updatePaymentPaid,
 };

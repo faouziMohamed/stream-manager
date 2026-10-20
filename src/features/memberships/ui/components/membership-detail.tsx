@@ -17,7 +17,7 @@ import {
   useRenewMembership,
 } from '@/features/memberships/ui/queries/use-memberships.queries';
 import { ROUTES } from '@/lib/config/routes';
-import { StatusBadge, type StatusTone } from '@/components/console/shared/status-badge';
+import { StatusBadge } from '@/components/console/shared/status-badge';
 import {
   formatAmountOwed,
   getTermSettlement,
@@ -248,11 +248,4 @@ function InfoField({
       <dd className="text-sm text-(--sm-fg)">{children}</dd>
     </div>
   );
-}
-
-function getStatusTone(status: string): StatusTone {
-  if (status === 'active' || status === 'paid') return 'positive';
-  if (status === 'cancelled' || status === 'overdue') return 'critical';
-  if (status === 'pending' || status === 'unpaid') return 'caution';
-  return 'neutral';
 }

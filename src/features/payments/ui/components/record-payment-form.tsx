@@ -302,4 +302,6 @@ type RecordPaymentFormProps = {
   onSubmitAction: (values: RecordPaymentFormValues) => void;
 };
 
-function handleInvalid() {}
+function handleInvalid() {
+  // Errors render inline; this handler only stops an invalid submission.
+}
